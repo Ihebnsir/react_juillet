@@ -1,0 +1,95 @@
+{
+  "nav": {
+    "formations": "الدورات",
+    "favorites": "المفضلات",
+    "reservations": "حجوزاتي",
+    "profile": "الملف الشخصي",
+    "admin": "الإدارة",
+    "login": "تسجيل الدخول",
+    "register": "إنشاء حساب",
+    "logout": "تسجيل الخروج"
+  },
+  "common": {
+    "search": "بحث",
+    "back": "رجوع",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "loading": "جارٍ التحميل...",
+    "viewAll": "عرض الكل",
+    "verifiedCenter": "مركز موثق",
+    "stageBadge": "تدريب + شهادة"
+  },
+  "home": {
+    "title": "مرحبًا بكم في SkillBridge",
+    "subtitle": "تواصل مع أفضل البرامج التدريبية وطور مهاراتك",
+    "searchPlaceholder": "ابحث عن دورة...",
+    "trendingTitle": "الدورات الرائجة",
+    "ctaTitle": "هل أنت مستعد للبدء؟",
+    "ctaText": "استكشف دوراتنا وابدأ في تطوير مهاراتك اليوم"
+  },
+  "catalog": {
+    "title": "كتالوج الدورات",
+    "filters": "المرشحات",
+    "search": "البحث",
+    "domain": "المجال",
+    "city": "المدينة",
+    "budget": "الميزانية",
+    "sort": "ترتيب حسب",
+    "results": "نتيجة تم العثور عليها",
+    "noResults": "لم يتم العثور على دورات. جرّب تعديل المرشحات."
+  },
+  "detail": {
+    "reserve": "احجز الآن",
+    "moreInfo": "مزيد من المعلومات",
+    "about": "نبذة",
+    "program": "البرنامج",
+    "reviews": "التقييمات",
+    "addReview": "إضافة تقييم",
+    "rating": "التقييم",
+    "comment": "التعليق",
+    "publish": "نشر التقييم",
+    "noReviews": "لا توجد تقييمات بعد",
+    "offeredBy": "مقدم من",
+    "partnerships": "الفرص والشراكات",
+    "similar": "دورات مشابهة",
+    "breadcrumbHome": "الرئيسية",
+    "breadcrumbDomain": "المجال",
+    "breadcrumbFormation": "الدورة"
+  },
+  "profile": {
+    "title": "ملفي الشخصي",
+    "accountInfo": "معلومات الحساب",
+    "edit": "تعديل",
+    "save": "حفظ التغييرات",
+    "description": "وصف المركز",
+    "city": "المدينة",
+    "phone": "الهاتف",
+    "website": "الموقع الإلكتروني",
+    "cv": "السيرة / السيرة الذاتية",
+    "portfolio": "الملف الشخصي / الموقع",
+    "certifications": "شهاداتي"
+  },
+  "login": {
+    "title": "تسجيل الدخول",
+    "subtitle": "الوصول إلى مساحة SkillBridge الخاصة بك",
+    "email": "البريد الإلكتروني",
+    "emailRequired": "البريد الإلكتروني مطلوب",
+    "emailInvalid": "يرجى إدخال بريد إلكتروني صالح",
+    "emailPlaceholder": "name@email.com",
+    "password": "كلمة المرور",
+    "passwordRequired": "كلمة المرور مطلوبة",
+    "passwordMin": "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل",
+    "passwordPlaceholder": "كلمة المرور الخاصة بك",
+    "remember": "تذكرني",
+    "forgot": "نسيت كلمة المرور؟",
+    "submit": "تسجيل الدخول",
+    "demoTitle": "حسابات العرض",
+    "createAccount": "ليس لديك حساب بعد؟ أنشئ واحدًا",
+    "back": "رجوع",
+    "alreadyHaveAccount": "هل لديك حساب بالفعل؟"
+  },
+  "errors": {
+    "notFound": "لم يتم العثور على الدورة",
+    "loginRequired": "لا يمكن للمستخدمين سوى المتعلمين إجراء الحجوزات"
+  }
+}

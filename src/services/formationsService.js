@@ -1,11 +1,18 @@
 import { MOCK_FORMATIONS, MOCK_REVIEWS } from "../data/mockData";
 
+const enrichFormation = (formation) => ({
+  ...formation,
+  centre: formation.centre || null,
+  offreStage: formation.offreStage || false,
+  entreprisesPartenaires: formation.entreprisesPartenaires || [],
+});
+
 // Service pour gérer les formations
 export const formationsService = {
   // Récupérer toutes les formations
   getAll: async () => {
     return new Promise((resolve) => {
-      setTimeout(() => resolve(MOCK_FORMATIONS), 500);
+      setTimeout(() => resolve(MOCK_FORMATIONS.map(enrichFormation)), 500);
     });
   },
 
@@ -15,7 +22,7 @@ export const formationsService = {
       setTimeout(() => {
         const formation = MOCK_FORMATIONS.find((f) => f.id === id);
         if (formation) {
-          resolve(formation);
+          resolve(enrichFormation(formation));
         } else {
           reject("Formation non trouvée");
         }
@@ -46,6 +53,10 @@ export const formationsService = {
           results = results.filter((f) => f.city === filters.city);
         }
 
+        if (filters.stageOnly) {
+          results = results.filter((f) => f.offreStage);
+        }
+
         if (filters.priceMin !== undefined && filters.priceMax !== undefined) {
           results = results.filter(
             (f) => f.price >= filters.priceMin && f.price <= filters.priceMax
@@ -61,7 +72,7 @@ export const formationsService = {
           results = results.sort((a, b) => b.price - a.price);
         }
 
-        resolve(results);
+        resolve(results.map(enrichFormation));
       }, 600);
     });
   },

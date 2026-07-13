@@ -1,104 +1,127 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
+import { mockUsers } from "../../data/mockUsers";
 
 export const LoginForm = () => {
-  const [formData, setFormData] = useState({
-    email: "ahmed@example.com",
-    password: "password",
-  });
+  const { register: registerUser, login } = useAuth();
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    defaultValues: {
+      email: "apprenant@demo.com",
+      password: "123456",
+    },
+  });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setError("");
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     setLoading(true);
     setError("");
 
-    const result = login(formData.email, formData.password);
+    const result = await login(data.email, data.password);
     if (result.success) {
-      navigate("/");
+      const roleRedirect = result.user?.role === "centre" ? "/centre" : result.user?.role === "admin" ? "/admin" : "/dashboard";
+      navigate(roleRedirect);
     } else {
       setError(result.error);
     }
     setLoading(false);
   };
 
+  const isRtl = i18n.language === "ar";
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       {error && (
-        <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-700 dark:bg-red-900/20 dark:text-red-200">
           {error}
         </div>
       )}
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium mb-2">
-          Email
+        <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-200">
+          {t("login.email")}
         </label>
         <div className="relative">
-          <FiMail className="absolute left-3 top-3 text-gray-400" />
+          <FiMail className={`absolute ${isRtl ? "right-3" : "left-3"} top-3 text-gray-400`} />
           <input
             type="email"
             id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-            placeholder="exemple@email.com"
+            {...register("email", {
+              required: t("login.emailRequired"),
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: t("login.emailInvalid"),
+              },
+            })}
+            className={`w-full ${isRtl ? "pr-10 pl-4" : "pl-10 pr-4"} py-2 rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100`}
+            placeholder={t("login.emailPlaceholder")}
           />
         </div>
+        {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-sm font-medium mb-2">
-          Mot de passe
+        <label htmlFor="password" className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-200">
+          {t("login.password")}
         </label>
         <div className="relative">
-          <FiLock className="absolute left-3 top-3 text-gray-400" />
+          <FiLock className={`absolute ${isRtl ? "right-3" : "left-3"} top-3 text-gray-400`} />
           <input
             type={showPassword ? "text" : "password"}
             id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-            placeholder="Votre mot de passe"
+            {...register("password", {
+              required: t("login.passwordRequired"),
+              minLength: {
+                value: 6,
+                message: t("login.passwordMin"),
+              },
+            })}
+            className={`w-full ${isRtl ? "pr-10 pl-10" : "pl-10 pr-10"} py-2 rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100`}
+            placeholder={t("login.passwordPlaceholder")}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-3 text-gray-400"
+            className={`absolute ${isRtl ? "left-3" : "right-3"} top-3 text-gray-400`}
           >
             {showPassword ? <FiEyeOff /> : <FiEye />}
           </button>
         </div>
+        {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>}
+      </div>
+
+      <div className="flex items-center justify-between gap-2 text-sm text-gray-600 dark:text-slate-300">
+        <label className="flex items-center gap-2">
+          <input type="checkbox" className="rounded border-gray-300" />
+          <span>{t("login.remember")}</span>
+        </label>
+        <span className="text-teal-600">{t("login.forgot")}</span>
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition disabled:bg-gray-400"
+        className="flex w-full items-center justify-center rounded-lg bg-teal-600 px-4 py-2 font-medium text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-gray-400"
       >
-        {loading ? "Connexion..." : "Se connecter"}
+        {loading ? t("common.loading") : t("login.submit")}
       </button>
 
-      <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded">
-        <p className="font-medium mb-1">Comptes de test :</p>
-        <p>Email: ahmed@example.com</p>
-        <p>Mot de passe: password</p>
+      <div className="rounded-lg border border-teal-100 bg-teal-50 p-3 text-sm text-gray-700 dark:border-teal-900/50 dark:bg-slate-800 dark:text-slate-200">
+        <p className="mb-2 font-semibold">{t("login.demoTitle")}</p>
+        <ul className="space-y-1">
+          {mockUsers.map((user) => (
+            <li key={user.id}>
+              <span className="font-medium">{user.email}</span> / {user.password}
+            </li>
+          ))}
+        </ul>
       </div>
     </form>
   );

@@ -47,3 +47,7 @@ code {
 html {
   scroll-behavior: smooth;
 }
+
+html.dark body {
+  @apply bg-slate-900 text-slate-100;
+}

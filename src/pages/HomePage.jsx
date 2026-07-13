@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { formationsService } from "../services/formationsService";
 import { FormationCard } from "../components/Cards/FormationCard";
 import { FiSearch, FiArrowRight } from "react-icons/fi";
 
 export const HomePage = () => {
+  const { t } = useTranslation();
   const [trendingFormations, setTrendingFormations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,17 +30,16 @@ export const HomePage = () => {
   };
 
   return (
-    <main>
+    <main className="bg-gray-50 dark:bg-slate-900">
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-teal-600 to-teal-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h1 className="text-4xl sm:text-5xl font-bold mb-4">
-              Bienvenue sur SkillBridge
+              {t('home.title')}
             </h1>
             <p className="text-xl text-teal-100">
-              Connectez-vous avec les meilleures formations et développez vos
-              compétences
+              {t('home.subtitle')}
             </p>
           </div>
 
@@ -53,7 +54,7 @@ export const HomePage = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Rechercher une formation..."
+                placeholder={t('home.searchPlaceholder')}
                 className="w-full pl-10 pr-4 py-2 text-gray-800 focus:outline-none"
               />
             </div>
@@ -61,7 +62,7 @@ export const HomePage = () => {
               to={`/formations?search=${searchTerm}`}
               className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium"
             >
-              Rechercher
+              {t('common.search')}
             </Link>
           </form>
         </div>
@@ -77,13 +78,13 @@ export const HomePage = () => {
           <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-3xl font-bold text-gray-900">
-                Formations Tendances
+                {t('home.trendingTitle')}
               </h2>
               <Link
                 to="/formations"
                 className="flex items-center gap-2 text-teal-600 hover:text-teal-700 transition font-medium"
               >
-                Voir tout <FiArrowRight />
+                {t('common.viewAll')} <FiArrowRight />
               </Link>
             </div>
 
@@ -95,7 +96,7 @@ export const HomePage = () => {
           </section>
 
           {/* Benefits Section */}
-          <section className="bg-gray-50 py-16">
+          <section className="bg-gray-50 dark:bg-slate-900 py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <h2 className="text-3xl font-bold text-center mb-12">
                 Pourquoi choisir SkillBridge?
@@ -118,11 +119,11 @@ export const HomePage = () => {
                       "Apprenez à votre rythme avec nos formations adaptables",
                   },
                 ].map((benefit, index) => (
-                  <div key={index} className="text-center p-6 bg-white rounded-lg">
-                    <h3 className="text-xl font-bold mb-2 text-gray-900">
+                  <div key={index} className="text-center p-6 bg-white dark:bg-slate-800 rounded-lg">
+                    <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-slate-100">
                       {benefit.title}
                     </h3>
-                    <p className="text-gray-600">{benefit.description}</p>
+                    <p className="text-gray-600 dark:text-slate-300">{benefit.description}</p>
                   </div>
                 ))}
               </div>
@@ -132,16 +133,15 @@ export const HomePage = () => {
           {/* CTA Section */}
           <section className="bg-teal-600 text-white py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-              <h2 className="text-3xl font-bold mb-4">Prêt à commencer?</h2>
+              <h2 className="text-3xl font-bold mb-4">{t('home.ctaTitle')}</h2>
               <p className="mb-6 text-teal-100">
-                Explorez nos formations et développez vos compétences dès
-                aujourd'hui
+                {t('home.ctaText')}
               </p>
               <Link
                 to="/formations"
                 className="inline-block px-8 py-3 bg-white text-teal-600 rounded-lg hover:bg-gray-100 transition font-bold"
               >
-                Explorer les formations
+                {t('common.viewAll')}
               </Link>
             </div>
           </section>

@@ -1,7 +1,7 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-export const ProtectedRoute = ({ children, requiredRole = null }) => {
+export const ProtectedRoute = ({ children, requiredRole = null, allowedRoles = [] }) => {
   const { isAuthenticated, user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -16,9 +16,11 @@ export const ProtectedRoute = ({ children, requiredRole = null }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRole && user?.role !== requiredRole) {
-    return <Navigate to="/" replace />;
+  const rolesToCheck = allowedRoles.length > 0 ? allowedRoles : requiredRole ? [requiredRole] : [];
+  if (rolesToCheck.length > 0 && !rolesToCheck.includes(user?.role)) {
+    const fallbackPath = user?.role === "centre" ? "/centre" : user?.role === "admin" ? "/admin" : "/dashboard";
+    return <Navigate to={fallbackPath} replace />;
   }
 
-  return children;
+  return children ? children : <Outlet />;
 };

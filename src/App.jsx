@@ -2,9 +2,15 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { FavoritesProvider } from "./context/FavoritesContext";
 import { ReservationProvider } from "./context/ReservationContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import { Navbar } from "./components/Layout/Navbar";
 import { Footer } from "./components/Layout/Footer";
 import { ProtectedRoute } from "./components/Layout/ProtectedRoute";
+import { CenterProfilePage } from "./pages/CenterProfilePage";
+import { ApprenantLayout } from "./layouts/ApprenantLayout";
+import { CentreLayout } from "./layouts/CentreLayout";
+import { AdminLayout } from "./layouts/AdminLayout";
+import "./i18n";
 
 // Pages
 import { HomePage } from "./pages/HomePage";
@@ -15,101 +21,75 @@ import { FormationDetailPage } from "./pages/FormationDetailPage";
 import { FavoritesPage } from "./pages/FavoritesPage";
 import { ReservationsPage } from "./pages/ReservationsPage";
 import { ProfilePage } from "./pages/ProfilePage";
-import { AdminDashboardPage } from "./pages/AdminDashboardPage";
-import { AdminVerificationsPage } from "./pages/AdminVerificationsPage";
-import { AdminUsersPage } from "./pages/AdminUsersPage";
+import { DashboardPage as ApprenantDashboardPage } from "./pages/apprenant/DashboardPage";
+import { MesReservationsPage } from "./pages/apprenant/MesReservationsPage";
+import { MesFavorisPage } from "./pages/apprenant/MesFavorisPage";
+import { MesCertificationsPage } from "./pages/apprenant/MesCertificationsPage";
+import { DashboardPage as CentreDashboardPage } from "./pages/centre/DashboardPage";
+import { MesOffresPage } from "./pages/centre/MesOffresPage";
+import { NouvelleOffrePage } from "./pages/centre/NouvelleOffrePage";
+import { ReservationsRecuesPage } from "./pages/centre/ReservationsRecuesPage";
+import { StatutVerificationPage } from "./pages/centre/StatutVerificationPage";
+import { DashboardPage as AdminDashboardPage } from "./pages/admin/DashboardPage";
+import { ModerationPage } from "./pages/admin/ModerationPage";
+import { CentresEnAttentePage } from "./pages/admin/CentresEnAttentePage";
+import { UtilisateursPage } from "./pages/admin/UtilisateursPage";
+import { LitigesPage } from "./pages/admin/LitigesPage";
+import { StatistiquesPage } from "./pages/admin/StatistiquesPage";
 
 function App() {
   return (
     <Router>
+      <ThemeProvider>
       <AuthProvider>
         <FavoritesProvider>
           <ReservationProvider>
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 transition-colors duration-300">
               <Navbar />
               <main className="flex-grow">
                 <Routes>
-                  {/* Public Routes */}
                   <Route path="/" element={<HomePage />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/formations" element={<FormationsPage />} />
                   <Route path="/formations/:id" element={<FormationDetailPage />} />
+                  <Route path="/centres/:id" element={<CenterProfilePage />} />
 
-                  {/* Learner Routes */}
-                  <Route
-                    path="/favoris"
-                    element={
-                      <ProtectedRoute requiredRole="learner">
-                        <FavoritesPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/reservations"
-                    element={
-                      <ProtectedRoute requiredRole="learner">
-                        <ReservationsPage />
-                      </ProtectedRoute>
-                    }
-                  />
+                  <Route element={<ProtectedRoute allowedRoles={["apprenant"]} />}>
+                    <Route element={<ApprenantLayout />}>
+                      <Route path="/dashboard" element={<ApprenantDashboardPage />} />
+                      <Route path="/reservations" element={<MesReservationsPage />} />
+                      <Route path="/favoris" element={<MesFavorisPage />} />
+                      <Route path="/certifications" element={<MesCertificationsPage />} />
+                    </Route>
+                  </Route>
 
-                  {/* Profile Route (accessible to all authenticated users) */}
+                  <Route element={<ProtectedRoute allowedRoles={["centre"]} />}>
+                    <Route element={<CentreLayout />}>
+                      <Route path="/centre" element={<CentreDashboardPage />} />
+                      <Route path="/centre/offres" element={<MesOffresPage />} />
+                      <Route path="/centre/offres/nouvelle" element={<NouvelleOffrePage />} />
+                      <Route path="/centre/reservations" element={<ReservationsRecuesPage />} />
+                      <Route path="/centre/verification" element={<StatutVerificationPage />} />
+                    </Route>
+                  </Route>
+
+                  <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+                    <Route element={<AdminLayout />}>
+                      <Route path="/admin" element={<AdminDashboardPage />} />
+                      <Route path="/admin/moderation" element={<ModerationPage />} />
+                      <Route path="/admin/centres-en-attente" element={<CentresEnAttentePage />} />
+                      <Route path="/admin/utilisateurs" element={<UtilisateursPage />} />
+                      <Route path="/admin/litiges" element={<LitigesPage />} />
+                      <Route path="/admin/statistiques" element={<StatistiquesPage />} />
+                    </Route>
+                  </Route>
+
                   <Route
                     path="/profil"
                     element={
                       <ProtectedRoute>
                         <ProfilePage />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  {/* Admin Routes */}
-                  <Route
-                    path="/admin"
-                    element={
-                      <ProtectedRoute requiredRole="admin">
-                        <AdminDashboardPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/admin/centres-verifies"
-                    element={
-                      <ProtectedRoute requiredRole="admin">
-                        <AdminVerificationsPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/admin/utilisateurs"
-                    element={
-                      <ProtectedRoute requiredRole="admin">
-                        <AdminUsersPage />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  {/* Center Routes (placeholder for future implementation) */}
-                  <Route
-                    path="/centre/offres"
-                    element={
-                      <ProtectedRoute requiredRole="center">
-                        <div className="min-h-screen bg-gray-50 py-8">
-                          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                            <h1 className="text-3xl font-bold mb-8">
-                              Mes offres de formation
-                            </h1>
-                            <div className="bg-white rounded-lg shadow-md p-8 text-center">
-                              <p className="text-gray-600 mb-6">
-                                Module en développement
-                              </p>
-                              <button className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
-                                Ajouter une nouvelle offre
-                              </button>
-                            </div>
-                          </div>
-                        </div>
                       </ProtectedRoute>
                     }
                   />
@@ -120,6 +100,7 @@ function App() {
           </ReservationProvider>
         </FavoritesProvider>
       </AuthProvider>
+      </ThemeProvider>
     </Router>
   );
 }

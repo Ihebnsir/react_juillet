@@ -81,6 +81,57 @@ export const MOCK_USERS = [
   },
 ];
 
+export const CENTRES = [
+  {
+    id: "center1",
+    name: "Tech Academy Tunis",
+    logo: "https://api.dicebear.com/7.x/icons/svg?seed=TechAcademy",
+    city: "Tunis",
+    averageRating: 4.8,
+    verified: true,
+    description: "Centre spécialisé en technologies web et mobile, avec une pédagogie pratique et des projets concrets.",
+    website: "https://techacademy.tn",
+  },
+  {
+    id: "center2",
+    name: "Digital Design Institute",
+    logo: "https://api.dicebear.com/7.x/icons/svg?seed=DigitalDesign",
+    city: "Sfax",
+    averageRating: 4.6,
+    verified: true,
+    description: "Institut de formation dédié au design graphique, UX/UI et branding.",
+    website: "https://digitaldesign.tn",
+  },
+  {
+    id: "center3",
+    name: "Business Skills Center",
+    logo: "https://api.dicebear.com/7.x/icons/svg?seed=BusinessSkills",
+    city: "Kasserine",
+    averageRating: 4.3,
+    verified: false,
+    description: "Centre de formation en management, communication et développement de carrière.",
+    website: "https://businessskills.tn",
+  },
+];
+
+export const MOCK_CERTIFICATIONS = [
+  {
+    id: "cert1",
+    title: "Certificat de réalisation - React Avancé",
+    type: "certificat",
+    issueDate: "2024-09-10",
+    center: "Tech Academy Tunis",
+  },
+  {
+    id: "cert2",
+    title: "Attestation de stage - UX/UI",
+    type: "attestationStage",
+    issueDate: "2024-08-22",
+    center: "Digital Design Institute",
+    enterprise: "Orange",
+  },
+];
+
 export const MOCK_FORMATIONS = [
   {
     id: "form1",
@@ -108,6 +159,18 @@ export const MOCK_FORMATIONS = [
     averageRating: 4.8,
     reviewCount: 28,
     trending: true,
+    offreStage: true,
+    entreprisesPartenaires: ["Orange", "STMicroelectronics"],
+    centre: {
+      id: "center1",
+      name: "Tech Academy Tunis",
+      logo: "https://api.dicebear.com/7.x/icons/svg?seed=TechAcademy",
+      city: "Tunis",
+      averageRating: 4.8,
+      verified: true,
+      description: "Centre spécialisé en technologies web et mobile, avec une pédagogie pratique et des projets concrets.",
+      website: "https://techacademy.tn",
+    },
   },
   {
     id: "form2",
@@ -135,6 +198,18 @@ export const MOCK_FORMATIONS = [
     averageRating: 4.6,
     reviewCount: 35,
     trending: true,
+    offreStage: true,
+    entreprisesPartenaires: ["Orange", "Mynk"],
+    centre: {
+      id: "center2",
+      name: "Digital Design Institute",
+      logo: "https://api.dicebear.com/7.x/icons/svg?seed=DigitalDesign",
+      city: "Sfax",
+      averageRating: 4.6,
+      verified: true,
+      description: "Institut de formation dédié au design graphique, UX/UI et branding.",
+      website: "https://digitaldesign.tn",
+    },
   },
   {
     id: "form3",
@@ -162,6 +237,18 @@ export const MOCK_FORMATIONS = [
     averageRating: 4.7,
     reviewCount: 42,
     trending: true,
+    offreStage: false,
+    entreprisesPartenaires: [],
+    centre: {
+      id: "center1",
+      name: "Tech Academy Tunis",
+      logo: "https://api.dicebear.com/7.x/icons/svg?seed=TechAcademy",
+      city: "Tunis",
+      averageRating: 4.8,
+      verified: true,
+      description: "Centre spécialisé en technologies web et mobile, avec une pédagogie pratique et des projets concrets.",
+      website: "https://techacademy.tn",
+    },
   },
   {
     id: "form4",
@@ -188,6 +275,18 @@ export const MOCK_FORMATIONS = [
     averageRating: 4.5,
     reviewCount: 18,
     trending: false,
+    offreStage: true,
+    entreprisesPartenaires: ["DataLab"],
+    centre: {
+      id: "center1",
+      name: "Tech Academy Tunis",
+      logo: "https://api.dicebear.com/7.x/icons/svg?seed=TechAcademy",
+      city: "Tunis",
+      averageRating: 4.8,
+      verified: true,
+      description: "Centre spécialisé en technologies web et mobile, avec une pédagogie pratique et des projets concrets.",
+      website: "https://techacademy.tn",
+    },
   },
   {
     id: "form5",
@@ -214,6 +313,18 @@ export const MOCK_FORMATIONS = [
     averageRating: 4.3,
     reviewCount: 22,
     trending: false,
+    offreStage: true,
+    entreprisesPartenaires: ["Coca-Cola", "Mediatise"],
+    centre: {
+      id: "center3",
+      name: "Business Skills Center",
+      logo: "https://api.dicebear.com/7.x/icons/svg?seed=BusinessSkills",
+      city: "Kasserine",
+      averageRating: 4.3,
+      verified: false,
+      description: "Centre de formation en management, communication et développement de carrière.",
+      website: "https://businessskills.tn",
+    },
   },
   {
     id: "form6",
@@ -240,6 +351,18 @@ export const MOCK_FORMATIONS = [
     averageRating: 4.4,
     reviewCount: 15,
     trending: false,
+    offreStage: false,
+    entreprisesPartenaires: [],
+    centre: {
+      id: "center1",
+      name: "Tech Academy Tunis",
+      logo: "https://api.dicebear.com/7.x/icons/svg?seed=TechAcademy",
+      city: "Tunis",
+      averageRating: 4.8,
+      verified: true,
+      description: "Centre spécialisé en technologies web et mobile, avec une pédagogie pratique et des projets concrets.",
+      website: "https://techacademy.tn",
+    },
   },
   {
     id: "form7",
@@ -266,6 +389,18 @@ export const MOCK_FORMATIONS = [
     averageRating: 4.5,
     reviewCount: 29,
     trending: false,
+    offreStage: true,
+    entreprisesPartenaires: ["Adobe", "Spotify"],
+    centre: {
+      id: "center2",
+      name: "Digital Design Institute",
+      logo: "https://api.dicebear.com/7.x/icons/svg?seed=DigitalDesign",
+      city: "Sfax",
+      averageRating: 4.6,
+      verified: true,
+      description: "Institut de formation dédié au design graphique, UX/UI et branding.",
+      website: "https://digitaldesign.tn",
+    },
   },
   {
     id: "form8",
@@ -292,6 +427,18 @@ export const MOCK_FORMATIONS = [
     averageRating: 4.6,
     reviewCount: 31,
     trending: false,
+    offreStage: false,
+    entreprisesPartenaires: [],
+    centre: {
+      id: "center3",
+      name: "Business Skills Center",
+      logo: "https://api.dicebear.com/7.x/icons/svg?seed=BusinessSkills",
+      city: "Kasserine",
+      averageRating: 4.3,
+      verified: false,
+      description: "Centre de formation en management, communication et développement de carrière.",
+      website: "https://businessskills.tn",
+    },
   },
 ];
 
@@ -348,3 +495,5 @@ export const PRICE_RANGES = [
   { min: 400, max: 600, label: "400 - 600 DT" },
   { min: 600, max: Infinity, label: "Plus de 600 DT" },
 ];
+
+export const getCenterById = (id) => CENTRES.find((centre) => centre.id === id);

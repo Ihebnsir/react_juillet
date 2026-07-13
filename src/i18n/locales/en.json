@@ -1,0 +1,95 @@
+{
+  "nav": {
+    "formations": "Courses",
+    "favorites": "Favorites",
+    "reservations": "My reservations",
+    "profile": "Profile",
+    "admin": "Administration",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout"
+  },
+  "common": {
+    "search": "Search",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "viewAll": "View all",
+    "verifiedCenter": "Verified center",
+    "stageBadge": "Internship + certificate"
+  },
+  "home": {
+    "title": "Welcome to SkillBridge",
+    "subtitle": "Connect with the best training programs and grow your skills",
+    "searchPlaceholder": "Search a course...",
+    "trendingTitle": "Trending courses",
+    "ctaTitle": "Ready to get started?",
+    "ctaText": "Explore our courses and start building your skills today"
+  },
+  "catalog": {
+    "title": "Course catalog",
+    "filters": "Filters",
+    "search": "Search",
+    "domain": "Domain",
+    "city": "City",
+    "budget": "Budget",
+    "sort": "Sort by",
+    "results": "results found",
+    "noResults": "No courses were found. Try adjusting your filters."
+  },
+  "detail": {
+    "reserve": "Book now",
+    "moreInfo": "More info",
+    "about": "About",
+    "program": "Program",
+    "reviews": "Reviews",
+    "addReview": "Add a review",
+    "rating": "Rating",
+    "comment": "Comment",
+    "publish": "Publish review",
+    "noReviews": "No reviews yet",
+    "offeredBy": "Offered by",
+    "partnerships": "Opportunities & partnerships",
+    "similar": "Similar courses",
+    "breadcrumbHome": "Home",
+    "breadcrumbDomain": "Domain",
+    "breadcrumbFormation": "Course"
+  },
+  "profile": {
+    "title": "My profile",
+    "accountInfo": "Account information",
+    "edit": "Edit",
+    "save": "Save changes",
+    "description": "Center description",
+    "city": "City",
+    "phone": "Phone",
+    "website": "Website",
+    "cv": "CV / Bio",
+    "portfolio": "Portfolio / Website",
+    "certifications": "My certifications"
+  },
+  "login": {
+    "title": "Sign in",
+    "subtitle": "Access your SkillBridge workspace",
+    "email": "Email",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Please enter a valid email",
+    "emailPlaceholder": "name@email.com",
+    "password": "Password",
+    "passwordRequired": "Password is required",
+    "passwordMin": "Password must contain at least 6 characters",
+    "passwordPlaceholder": "Your password",
+    "remember": "Remember me",
+    "forgot": "Forgot password?",
+    "submit": "Sign in",
+    "demoTitle": "Demo accounts",
+    "createAccount": "Don't have an account yet? Create one",
+    "back": "Back",
+    "alreadyHaveAccount": "Already have an account?"
+  },
+  "errors": {
+    "notFound": "Course not found",
+    "loginRequired": "Only learners can make reservations"
+  }
+}

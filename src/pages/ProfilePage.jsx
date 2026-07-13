@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { FiEdit, FiCheck, FiX } from "react-icons/fi";
 
 export const ProfilePage = () => {
   const { user, updateProfile } = useAuth();
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(user?.profile || {});
 
@@ -21,9 +23,9 @@ export const ProfilePage = () => {
   const isCenter = user?.role === "center";
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-8">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-teal-600 to-teal-800 h-32 flex items-end p-6">
             <div className="flex items-end gap-4">
@@ -75,13 +77,13 @@ export const ProfilePage = () => {
             {/* Profile Details */}
             <div className="border-t pt-8">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Mon profil</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">{t('profile.title')}</h2>
                 <button
                   onClick={() => setIsEditing(!isEditing)}
                   className="flex items-center gap-2 px-4 py-2 text-teal-600 hover:text-teal-700 transition font-medium"
                 >
                   {isEditing ? <FiX size={20} /> : <FiEdit size={20} />}
-                  {isEditing ? "Annuler" : "Modifier"}
+                  {isEditing ? t('common.cancel') : t('profile.edit')}
                 </button>
               </div>
 
@@ -89,8 +91,8 @@ export const ProfilePage = () => {
                 {isCenter ? (
                   <>
                     <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Description du centre
+                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">
+                        {t('profile.description')}
                       </label>
                       <textarea
                         name="description"
@@ -102,8 +104,8 @@ export const ProfilePage = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Ville
+                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">
+                        {t('profile.city')}
                       </label>
                       <input
                         type="text"
@@ -115,8 +117,8 @@ export const ProfilePage = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Téléphone
+                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">
+                        {t('profile.phone')}
                       </label>
                       <input
                         type="tel"
@@ -128,8 +130,8 @@ export const ProfilePage = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Site web
+                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">
+                        {t('profile.website')}
                       </label>
                       <input
                         type="url"
@@ -156,8 +158,8 @@ export const ProfilePage = () => {
                 ) : (
                   <>
                     <div>
-                      <label className="block text-sm font-medium mb-2">
-                        CV / Bio
+                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">
+                        {t('profile.cv')}
                       </label>
                       <textarea
                         name="cv"
@@ -169,8 +171,8 @@ export const ProfilePage = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Portfolio / Site
+                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">
+                        {t('profile.portfolio')}
                       </label>
                       <input
                         type="url"
@@ -203,7 +205,7 @@ export const ProfilePage = () => {
                   onClick={handleSave}
                   className="mt-6 w-full px-6 py-3 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition flex items-center justify-center gap-2"
                 >
-                  <FiCheck size={20} /> Enregistrer les modifications
+                  <FiCheck size={20} /> {t('profile.save')}
                 </button>
               )}
             </div>

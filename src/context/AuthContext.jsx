@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { MOCK_USERS } from "../data/mockData";
+import { getCurrentUser, login as loginService, logout as logoutService, saveUser } from "../services/authService";
 
 const AuthContext = createContext();
 
@@ -8,33 +8,28 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulating checking if user is already logged in from localStorage
-    const storedUser = localStorage.getItem("skillBridgeUser");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    const storedUser = getCurrentUser();
+    setUser(storedUser);
     setIsLoading(false);
   }, []);
 
-  const login = (email, password) => {
-    // Mock authentication - in real app this would call an API
-    const foundUser = MOCK_USERS.find((u) => u.email === email);
-    if (foundUser) {
-      setUser(foundUser);
-      localStorage.setItem("skillBridgeUser", JSON.stringify(foundUser));
-      return { success: true };
+  const login = async (email, password) => {
+    try {
+      const authenticatedUser = await loginService(email, password);
+      setUser(authenticatedUser);
+      return { success: true, user: authenticatedUser };
+    } catch (error) {
+      return { success: false, error: "Email ou mot de passe incorrect" };
     }
-    return { success: false, error: "Email ou mot de passe incorrect" };
   };
 
   const register = (formData) => {
-    // Mock registration
     const newUser = {
       id: `user${Date.now()}`,
       name: formData.name,
       email: formData.email,
       role: formData.role,
-      profile: formData.role === "center" 
+      profile: formData.role === "center"
         ? { description: "", city: "", phone: "", verified: false }
         : { cv: "", portfolio: "", city: "" },
       favorites: [],
@@ -42,19 +37,19 @@ export const AuthProvider = ({ children }) => {
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name}`,
     };
     setUser(newUser);
-    localStorage.setItem("skillBridgeUser", JSON.stringify(newUser));
-    return { success: true };
+    saveUser(newUser);
+    return { success: true, user: newUser };
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("skillBridgeUser");
+    logoutService();
   };
 
   const updateProfile = (updatedProfile) => {
     const updated = { ...user, profile: { ...user.profile, ...updatedProfile } };
     setUser(updated);
-    localStorage.setItem("skillBridgeUser", JSON.stringify(updated));
+    saveUser(updated);
   };
 
   return (

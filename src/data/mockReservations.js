@@ -1,0 +1,51 @@
+export const mockReservations = [
+  {
+    id: 'res-1',
+    learnerId: 1,
+    formationId: 'form-1',
+    status: 'confirmée',
+    date: '2026-07-18',
+  },
+  {
+    id: 'res-2',
+    learnerId: 1,
+    formationId: 'form-2',
+    status: 'en attente',
+    date: '2026-07-22',
+  },
+  {
+    id: 'res-3',
+    learnerId: 1,
+    formationId: 'form-3',
+    status: 'terminée',
+    date: '2026-05-20',
+  },
+  {
+    id: 'res-4',
+    learnerId: 2,
+    formationId: 'form-4',
+    status: 'confirmée',
+    date: '2026-07-15',
+  },
+  {
+    id: 'res-5',
+    learnerId: 3,
+    formationId: 'form-5',
+    status: 'annulée',
+    date: '2026-07-05',
+  },
+  {
+    id: 'res-6',
+    learnerId: 4,
+    formationId: 'form-6',
+    status: 'confirmée',
+    date: '2026-07-10',
+  },
+  {
+    id: 'res-7',
+    learnerId: 5,
+    formationId: 'form-7',
+    status: 'en attente',
+    date: '2026-07-12',
+  },
+];
