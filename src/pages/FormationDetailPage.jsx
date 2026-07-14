@@ -14,6 +14,7 @@ import {
   FiBriefcase,
   FiPlay,
 } from "react-icons/fi";
+import { formatPriceTND } from "../utils/formatPrice";
 
 export const FormationDetailPage = () => {
   const { id } = useParams();
@@ -142,7 +143,7 @@ export const FormationDetailPage = () => {
                 <FiClock className="text-teal-600" /> {formation.duration}
               </div>
               <div className="flex items-center gap-2 text-gray-700">
-                <FiDollarSign className="text-teal-600" /> {formation.price} DT
+                <FiDollarSign className="text-teal-600" /> {formatPriceTND(formation.price)}
               </div>
               <div className="flex items-center gap-2 text-gray-700">
                 <FiStar className="text-yellow-400 fill-yellow-400" />

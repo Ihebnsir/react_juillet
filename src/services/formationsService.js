@@ -104,17 +104,56 @@ export const formationsService = {
     });
   },
 
+  // Mettre à jour une formation existante
+  update: async (id, updates) => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const index = MOCK_FORMATIONS.findIndex((f) => f.id === id);
+        if (index === -1) {
+          reject(new Error("Formation non trouvée"));
+          return;
+        }
+        MOCK_FORMATIONS[index] = {
+          ...MOCK_FORMATIONS[index],
+          ...updates,
+        };
+        resolve(MOCK_FORMATIONS[index]);
+      }, 500);
+    });
+  },
+
+  // Supprimer une formation
+  delete: async (id) => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const index = MOCK_FORMATIONS.findIndex((f) => f.id === id);
+        if (index === -1) {
+          reject(new Error("Formation non trouvée"));
+          return;
+        }
+        MOCK_FORMATIONS.splice(index, 1);
+        resolve(true);
+      }, 500);
+    });
+  },
+
   // Récupérer les formations d'un centre
-  getCenterFormations: async (centerId) => {
+  getCenterFormations: async (centreId) => {
     return new Promise((resolve) => {
       setTimeout(() => {
         const formations = MOCK_FORMATIONS.filter(
-          (f) => f.centerId === centerId
+          (f) => f.centreId === centreId
         );
         resolve(formations);
       }, 400);
     });
   },
+
+  // Méthode attendue par la page "Mes offres"
+  getMesFormations: async (centreId) => {
+    return formationsService.getCenterFormations(centreId);
+  },
+
 
   // Obtenir les avis d'une formation
   getReviews: async (formationId) => {

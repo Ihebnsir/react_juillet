@@ -24,10 +24,9 @@ import {
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { FormationsPage } from "./pages/FormationsPage";
 import { FormationDetailPage } from "./pages/FormationDetailPage";
-import { FavoritesPage } from "./pages/FavoritesPage";
-import { ReservationsPage } from "./pages/ReservationsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { DashboardPage as ApprenantDashboardPage } from "./pages/apprenant/DashboardPage";
 import { MesReservationsPage } from "./pages/apprenant/MesReservationsPage";
@@ -36,6 +35,7 @@ import { MesCertificationsPage } from "./pages/apprenant/MesCertificationsPage";
 import { DashboardPage as CentreDashboardPage } from "./pages/centre/DashboardPage";
 import { MesOffresPage } from "./pages/centre/MesOffresPage";
 import { NouvelleOffrePage } from "./pages/centre/NouvelleOffrePage";
+import { DetailOffrePage } from "./pages/centre/DetailOffrePage";
 import { ReservationsRecuesPage } from "./pages/centre/ReservationsRecuesPage";
 import { StatutVerificationPage } from "./pages/centre/StatutVerificationPage";
 import { DashboardPage as AdminDashboardPage } from "./pages/admin/DashboardPage";
@@ -85,6 +85,7 @@ function App() {
 
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                   <Route path="/formations" element={<FormationsPage />} />
                   <Route path="/formations/:id" element={<FormationDetailPage />} />
                   <Route path="/centres/:id" element={<CenterProfilePage />} />
@@ -101,8 +102,10 @@ function App() {
                   <Route element={<ProtectedRoute allowedRoles={["centre"]} />}>
                     <Route element={<CentreLayout />}>
                       <Route path="/centre" element={<CentreDashboardPage />} />
-                      <Route path="/centre/offres" element={<MesOffresPage />} />
+                          <Route path="/centre/offres" element={<MesOffresPage />} />
                       <Route path="/centre/offres/nouvelle" element={<NouvelleOffrePage />} />
+                      <Route path="/centre/offres/:id/modifier" element={<NouvelleOffrePage />} />
+                      <Route path="/centre/offres/:id" element={<DetailOffrePage />} />
                       <Route path="/centre/reservations" element={<ReservationsRecuesPage />} />
                       <Route path="/centre/verification" element={<StatutVerificationPage />} />
                     </Route>

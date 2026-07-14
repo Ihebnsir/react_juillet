@@ -44,7 +44,7 @@ export const Navbar = () => {
               to="/formations"
               className="flex items-center gap-2 text-gray-700 dark:text-slate-200 hover:text-teal-600 transition"
             >
-              <FiBook size={20} /> {t('nav.formations')}
+              <FiBook size={20} className="text-current" /> {t('nav.formations')}
             </Link>
 
             {isAuthenticated && user?.role === "learner" && (
@@ -53,7 +53,7 @@ export const Navbar = () => {
                   to="/favoris"
                   className="flex items-center gap-2 text-gray-700 dark:text-slate-200 hover:text-teal-600 transition relative"
                 >
-                  <FiHeart size={20} /> {t('nav.favorites')}
+                  <FiHeart size={20} className="text-current" /> {t('nav.favorites')}
                   {favoriteCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                       {favoriteCount}
@@ -69,7 +69,7 @@ export const Navbar = () => {
               </>
             )}
 
-            {isAuthenticated && user?.role === "center" && (
+            {isAuthenticated && user?.role === "centre" && (
               <Link
                 to="/centre/offres"
                 className="text-gray-700 dark:text-slate-200 hover:text-teal-600 transition"
@@ -93,11 +93,17 @@ export const Navbar = () => {
             {isAuthenticated ? (
               <div className="flex items-center gap-4">
                 <div className="hidden sm:flex items-center gap-2">
-                  <img
-                    src={user?.avatar}
-                    alt={user?.name}
-                    className="w-8 h-8 rounded-full"
-                  />
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user?.name ?? 'Avatar'}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-gray-700 dark:text-slate-200">
+                      <FiUser size={16} className="text-current" />
+                    </div>
+                  )}
                   <span className="text-sm font-medium text-gray-700 dark:text-slate-200">
                     {user?.name}
                   </span>
@@ -106,13 +112,13 @@ export const Navbar = () => {
                   to="/profil"
                   className="text-gray-700 dark:text-slate-200 hover:text-teal-600 transition"
                 >
-                  <FiUser size={20} />
+                  <FiUser size={20} className="text-current" />
                 </Link>
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-2 text-red-600 hover:text-red-700 transition"
                 >
-                  <FiLogOut size={20} />
+                  <FiLogOut size={20} className="text-current" />
                   <span className="hidden sm:inline">{t('nav.logout')}</span>
                 </button>
               </div>
@@ -137,7 +143,7 @@ export const Navbar = () => {
               {i18n.language.toUpperCase()}
             </button>
             <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="rounded-full border border-gray-300 p-2 text-gray-700 dark:text-slate-200">
-              {theme === 'dark' ? <FiSun size={18} /> : <FiMoon size={18} />}
+              {theme === 'dark' ? <FiSun size={18} className="text-current" /> : <FiMoon size={18} className="text-current" />}
             </button>
 
             {/* Mobile Menu Button */}
@@ -145,7 +151,7 @@ export const Navbar = () => {
               className="md:hidden"
               onClick={() => setIsOpen(!isOpen)}
             >
-              {isOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+              {isOpen ? <FiX size={24} className="text-current" /> : <FiMenu size={24} className="text-current" />}
             </button>
           </div>
         </div>
@@ -178,7 +184,7 @@ export const Navbar = () => {
                 </Link>
               </>
             )}
-            {isAuthenticated && user?.role === "center" && (
+            {isAuthenticated && user?.role === "centre" && (
               <Link
                 to="/centre/offres"
                 className="block text-gray-700 hover:text-teal-600 transition"

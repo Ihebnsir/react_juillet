@@ -1,7 +1,7 @@
 import React from 'react';
 import { mockCentres } from '../../data/mockCentres';
-import { mockReservations } from '../../data/mockReservations';
 import { mockFormations } from '../../data/mockFormations';
+import { mockReservations } from '../../data/mockReservations';
 import { StatCard } from '../../components/dashboard/StatCard';
 import { DataChart } from '../../components/dashboard/DataChart';
 import { FiBookOpen, FiCalendar, FiTrendingUp, FiStar } from 'react-icons/fi';

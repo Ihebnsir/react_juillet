@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
-import { FiMapPin, FiDollarSign, FiClock, FiStar, FiHeart, FiBriefcase } from "react-icons/fi";
+import { FiMapPin, FiClock, FiStar, FiHeart, FiBriefcase } from "react-icons/fi";
+import { FaTag } from "react-icons/fa";
 import { useFavorites } from "../../context/FavoritesContext";
+import { formatPriceTND } from "../../utils/formatPrice";
 
 export const FormationCard = ({ formation }) => {
   const { isFavorite, addFavorite, removeFavorite } = useFavorites();
@@ -70,7 +72,7 @@ export const FormationCard = ({ formation }) => {
               <FiClock size={16} /> {formation.duration}
             </div>
             <div className="flex items-center gap-2 text-gray-600 dark:text-slate-300">
-              <FiDollarSign size={16} /> {formation.price.toFixed(2)} DT
+              <FaTag size={16} /> {formatPriceTND(formation.price)}
             </div>
           </div>
 

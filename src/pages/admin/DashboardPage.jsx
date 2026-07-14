@@ -2,7 +2,6 @@ import React from 'react';
 import { mockUsers } from '../../data/mockUsers';
 import { mockCentres } from '../../data/mockCentres';
 import { mockFormations } from '../../data/mockFormations';
-import { mockReservations } from '../../data/mockReservations';
 import { mockLitiges } from '../../data/mockLitiges';
 import { mockSignalements } from '../../data/mockSignalements';
 import { StatCard } from '../../components/dashboard/StatCard';

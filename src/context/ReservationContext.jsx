@@ -1,62 +1,73 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useCallback, useEffect, useMemo, useState, useContext } from "react";
+import { reservationsService } from "../services/reservationsService";
 
 const ReservationContext = createContext();
 
 export const ReservationProvider = ({ children }) => {
-  const [reservations, setReservations] = useState(() => {
-    const stored = localStorage.getItem("skillBridgeReservations");
-    return stored ? JSON.parse(stored) : [];
-  });
+  const [reservations, setReservations] = useState([]);
 
-  const addReservation = (formation, userId) => {
-    const newReservation = {
-      id: `res${Date.now()}`,
-      formationId: formation.id,
-      userId,
-      formationTitle: formation.title,
-      centerName: formation.centerName,
-      date: new Date().toISOString(),
-      status: "confirmed",
-      paid: false,
-    };
-    const updated = [...reservations, newReservation];
-    setReservations(updated);
-    localStorage.setItem("skillBridgeReservations", JSON.stringify(updated));
-    return newReservation;
+  const hydrate = async () => {
+    const all = await reservationsService.getAll();
+    setReservations(all);
   };
 
-  const cancelReservation = (reservationId, reason) => {
-    const updated = reservations.map((r) =>
-      r.id === reservationId
-        ? { ...r, status: "cancelled", cancellationReason: reason }
-        : r
-    );
-    setReservations(updated);
-    localStorage.setItem("skillBridgeReservations", JSON.stringify(updated));
-  };
+  useEffect(() => {
+    hydrate();
+  }, []);
 
-  const markAsPaid = (reservationId) => {
-    const updated = reservations.map((r) =>
-      r.id === reservationId ? { ...r, paid: true } : r
-    );
-    setReservations(updated);
-    localStorage.setItem("skillBridgeReservations", JSON.stringify(updated));
-  };
+  const getReservationsParFormation = useCallback(
+    (formationId) => reservations.filter((r) => r.formationId === formationId),
+    [reservations]
+  );
 
-  const getUserReservations = (userId) => {
-    return reservations.filter((r) => r.userId === userId);
-  };
+  const getReservationsParCentre = useCallback(
+    async (centreId) => {
+      // nécessite un join formation -> centreId : on délègue au service
+      return reservationsService.getReservationsParCentre(centreId);
+    },
+    []
+  );
+
+  const confirmerReservation = useCallback(
+    async (reservationId) => {
+      const updated = await reservationsService.confirmerReservation(reservationId);
+      await hydrate();
+      return updated;
+    },
+    []
+  );
+
+  const annulerReservation = useCallback(
+    async (reservationId, motif) => {
+      const updated = await reservationsService.annulerReservation(
+        reservationId,
+        motif
+      );
+      await hydrate();
+      return updated;
+    },
+    []
+  );
+
+  const value = useMemo(
+    () => ({
+      reservations,
+      getReservationsParFormation,
+      getReservationsParCentre,
+      confirmerReservation,
+      annulerReservation,
+    }),
+    [
+      reservations,
+      getReservationsParFormation,
+      getReservationsParCentre,
+      confirmerReservation,
+      annulerReservation,
+    ]
+  );
 
   return (
-    <ReservationContext.Provider
-      value={{
-        reservations,
-        addReservation,
-        cancelReservation,
-        markAsPaid,
-        getUserReservations,
-      }}
-    >
+    <ReservationContext.Provider value={value}>
       {children}
     </ReservationContext.Provider>
   );
@@ -71,3 +82,4 @@ export const useReservations = () => {
   }
   return context;
 };
+

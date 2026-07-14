@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const authenticatedUser = await loginService(email, password);
+      // Mettre à jour l'état avant de résoudre pour éviter les redirections désynchronisées
       setUser(authenticatedUser);
       return { success: true, user: authenticatedUser };
     } catch (error) {
@@ -29,7 +30,7 @@ export const AuthProvider = ({ children }) => {
       name: formData.name,
       email: formData.email,
       role: formData.role,
-      profile: formData.role === "center"
+      profile: formData.role === "centre"
         ? { description: "", city: "", phone: "", verified: false }
         : { cv: "", portfolio: "", city: "" },
       favorites: [],

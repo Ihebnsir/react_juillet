@@ -8,7 +8,7 @@ export const mockUsers = [
     avatar: null,
   },
   {
-    id: 2,
+    id: "centre-1",
     nom: "Centre Excellence Formation",
     email: "centre@demo.com",
     password: "123456",

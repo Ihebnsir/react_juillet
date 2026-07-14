@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiBarChart2, FiShield, FiUsers, FiAlertTriangle, FiMessageSquare, FiMenu, FiX } from 'react-icons/fi';
+import { FiBarChart2, FiShield, FiUsers, FiAlertTriangle, FiMenu, FiX } from 'react-icons/fi';
 
 const links = [
   { to: '/admin', label: 'Tableau de bord', icon: FiBarChart2 },

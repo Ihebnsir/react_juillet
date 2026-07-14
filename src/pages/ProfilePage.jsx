@@ -20,7 +20,7 @@ export const ProfilePage = () => {
     alert("Profil mis à jour avec succès!");
   };
 
-  const isCenter = user?.role === "center";
+  const isCenter = user?.role === "centre";
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-8">
@@ -39,7 +39,7 @@ export const ProfilePage = () => {
                 <p className="text-teal-100">
                   {user?.role === "learner"
                     ? "Apprenant"
-                    : user?.role === "center"
+                    : user?.role === "centre"
                     ? "Centre de formation"
                     : "Administrateur"}
                 </p>
