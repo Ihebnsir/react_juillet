@@ -2,12 +2,14 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { FiEdit, FiCheck, FiX } from "react-icons/fi";
+import AvatarUpload from "../components/UI/AvatarUpload";
 
 export const ProfilePage = () => {
   const { user, updateProfile } = useAuth();
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(user?.profile || {});
+  const [avatar, setAvatar] = useState(user?.avatar || "");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -15,7 +17,7 @@ export const ProfilePage = () => {
   };
 
   const handleSave = () => {
-    updateProfile(formData);
+    updateProfile({ ...formData, avatar });
     setIsEditing(false);
     alert("Profil mis à jour avec succès!");
   };
@@ -28,9 +30,9 @@ export const ProfilePage = () => {
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-teal-600 to-teal-800 h-32 flex items-end p-6">
-            <div className="flex items-end gap-4">
+              <div className="flex items-end gap-4">
               <img
-                src={user?.avatar}
+                src={avatar || user?.avatar}
                 alt={user?.name}
                 className="w-20 h-20 rounded-full border-4 border-white"
               />
@@ -198,6 +200,13 @@ export const ProfilePage = () => {
                     </div>
                   </>
                 )}
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium mb-2">Photo de profil</label>
+                  {isEditing ? (
+                    <AvatarUpload value={avatar} onChange={setAvatar} />
+                  ) : null}
+                </div>
               </div>
 
               {isEditing && (

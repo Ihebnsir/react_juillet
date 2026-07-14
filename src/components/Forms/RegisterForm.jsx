@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
+import AvatarUpload from "../UI/AvatarUpload";
 
 export const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ export const RegisterForm = () => {
     password: "",
     confirmPassword: "",
     role: "learner",
+    avatar: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
@@ -36,6 +38,8 @@ export const RegisterForm = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleAvatarChange = (b64) => setFormData((prev) => ({ ...prev, avatar: b64 }));
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -59,14 +63,14 @@ export const RegisterForm = () => {
           Nom complet
         </label>
         <div className="relative">
-          <FiUser className="absolute left-3 top-3 text-gray-400" />
+          <FiUser className="absolute top-3 start-3 text-gray-400 pointer-events-none" />
           <input
             type="text"
             id="name"
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+            className={`w-full ps-10 pe-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
               errors.name
                 ? "border-red-500 focus:ring-red-500"
                 : "border-gray-300 focus:ring-teal-500"
@@ -82,14 +86,14 @@ export const RegisterForm = () => {
           Email
         </label>
         <div className="relative">
-          <FiMail className="absolute left-3 top-3 text-gray-400" />
+          <FiMail className="absolute top-3 start-3 text-gray-400 pointer-events-none" />
           <input
             type="email"
             id="email"
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+            className={`w-full ps-10 pe-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
               errors.email
                 ? "border-red-500 focus:ring-red-500"
                 : "border-gray-300 focus:ring-teal-500"
@@ -117,18 +121,23 @@ export const RegisterForm = () => {
       </div>
 
       <div>
+        <label className="block text-sm font-medium mb-2">Photo de profil (optionnel)</label>
+        <AvatarUpload value={formData.avatar} onChange={handleAvatarChange} />
+      </div>
+
+      <div>
         <label htmlFor="password" className="block text-sm font-medium mb-2">
           Mot de passe
         </label>
         <div className="relative">
-          <FiLock className="absolute left-3 top-3 text-gray-400" />
+          <FiLock className="absolute top-3 start-3 text-gray-400 pointer-events-none" />
           <input
             type={showPassword ? "text" : "password"}
             id="password"
             name="password"
             value={formData.password}
             onChange={handleChange}
-            className={`w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+            className={`w-full ps-10 pe-10 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
               errors.password
                 ? "border-red-500 focus:ring-red-500"
                 : "border-gray-300 focus:ring-teal-500"
@@ -138,7 +147,7 @@ export const RegisterForm = () => {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-3 text-gray-400"
+            className="absolute top-3 end-3 text-gray-400"
           >
             {showPassword ? <FiEyeOff /> : <FiEye />}
           </button>
@@ -153,14 +162,14 @@ export const RegisterForm = () => {
           Confirmer le mot de passe
         </label>
         <div className="relative">
-          <FiLock className="absolute left-3 top-3 text-gray-400" />
+          <FiLock className="absolute top-3 start-3 text-gray-400 pointer-events-none" />
           <input
             type={showPassword ? "text" : "password"}
             id="confirmPassword"
             name="confirmPassword"
             value={formData.confirmPassword}
             onChange={handleChange}
-            className={`w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+            className={`w-full ps-10 pe-10 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
               errors.confirmPassword
                 ? "border-red-500 focus:ring-red-500"
                 : "border-gray-300 focus:ring-teal-500"

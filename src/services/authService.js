@@ -6,7 +6,9 @@ export async function login(email, password) {
   await new Promise((resolve) => setTimeout(resolve, 600));
 
   const user = mockUsers.find(
-    (candidate) => candidate.email === email && candidate.password === password
+    (candidate) =>
+      candidate.email.trim().toLowerCase() === email.trim().toLowerCase() &&
+      candidate.password === password
   );
 
   if (!user) {

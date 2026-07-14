@@ -58,13 +58,13 @@ export const FormationsPage = () => {
                   {t('catalog.search')}
                 </label>
                 <div className="relative">
-                  <FiSearch className="absolute left-3 top-3 text-gray-400" />
+                  <FiSearch className="absolute top-3 start-3 text-gray-400" />
                   <input
                     type="text"
                     value={filters.keyword}
                     onChange={(e) => handleFilterChange("keyword", e.target.value)}
                     placeholder="Mots-clés..."
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="w-full ps-10 pe-4 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
               </div>

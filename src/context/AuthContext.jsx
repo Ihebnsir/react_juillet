@@ -14,14 +14,10 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    try {
-      const authenticatedUser = await loginService(email, password);
-      // Mettre à jour l'état avant de résoudre pour éviter les redirections désynchronisées
-      setUser(authenticatedUser);
-      return { success: true, user: authenticatedUser };
-    } catch (error) {
-      return { success: false, error: "Email ou mot de passe incorrect" };
-    }
+    const authenticatedUser = await loginService(email, password);
+    // Mettre à jour l'état avant de résoudre pour éviter les redirections désynchronisées
+    setUser(authenticatedUser);
+    return authenticatedUser;
   };
 
   const register = (formData) => {
@@ -35,7 +31,7 @@ export const AuthProvider = ({ children }) => {
         : { cv: "", portfolio: "", city: "" },
       favorites: [],
       reservations: [],
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name}`,
+      avatar: formData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name}`,
     };
     setUser(newUser);
     saveUser(newUser);
@@ -49,6 +45,9 @@ export const AuthProvider = ({ children }) => {
 
   const updateProfile = (updatedProfile) => {
     const updated = { ...user, profile: { ...user.profile, ...updatedProfile } };
+    if (updatedProfile.avatar !== undefined) {
+      updated.avatar = updatedProfile.avatar;
+    }
     setUser(updated);
     saveUser(updated);
   };

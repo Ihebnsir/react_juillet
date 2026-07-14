@@ -96,6 +96,7 @@
     "weak": "Faible",
     "medium": "Moyen",
     "strong": "Fort",
+    "providerSoonAvailable": "La connexion via {{provider}} sera bientôt disponible",
     "signingIn": "Connexion...",
     "successToast": "Connexion réussie ! Redirection en cours...",
     "errorToast": "Identifiants invalides. Vérifiez votre email et mot de passe.",
