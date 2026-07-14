@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { FavoritesProvider } from "./context/FavoritesContext";
@@ -11,6 +12,13 @@ import { ApprenantLayout } from "./layouts/ApprenantLayout";
 import { CentreLayout } from "./layouts/CentreLayout";
 import { AdminLayout } from "./layouts/AdminLayout";
 import "./i18n";
+
+import { SkillBridgePreloader } from "./components/Preloader/SkillBridgePreloader";
+import {
+  markPreloaderShown,
+  shouldShowPreloader,
+} from "./components/Preloader/skillBridgePreloaderSingleton";
+
 
 // Pages
 import { HomePage } from "./pages/HomePage";
@@ -38,6 +46,30 @@ import { LitigesPage } from "./pages/admin/LitigesPage";
 import { StatistiquesPage } from "./pages/admin/StatistiquesPage";
 
 function App() {
+  const [showPreloader, setShowPreloader] = useState(() => shouldShowPreloader());
+  const [fadingOut, setFadingOut] = useState(false);
+
+  useEffect(() => {
+    if (!showPreloader) return;
+
+    // Requirement: keep visible for ~2 seconds then fade out smoothly.
+    const t1 = window.setTimeout(() => {
+      setFadingOut(true);
+    }, 2000);
+
+    // Match CSS fadeout duration (650ms)
+    const t2 = window.setTimeout(() => {
+      setShowPreloader(false);
+      markPreloaderShown();
+    }, 2650);
+
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [showPreloader]);
+
+
   return (
     <Router>
       <ThemeProvider>
@@ -45,10 +77,12 @@ function App() {
         <FavoritesProvider>
           <ReservationProvider>
             <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 transition-colors duration-300">
+              {showPreloader && <SkillBridgePreloader fadingOut={fadingOut} />}
               <Navbar />
               <main className="flex-grow">
                 <Routes>
                   <Route path="/" element={<HomePage />} />
+
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/formations" element={<FormationsPage />} />
