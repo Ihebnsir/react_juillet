@@ -13,6 +13,9 @@ export const Navbar = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const isLearner = user?.role === 'apprenant' || user?.role === 'learner';
+  const isCentreUser = user?.role === 'centre';
+  const isAdminUser = user?.role === 'admin';
 
   const handleLogout = () => {
     logout();
@@ -29,7 +32,7 @@ export const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
             <div className="bg-teal-600 text-white p-2 rounded-lg font-bold text-xl">
               SB
             </div>
@@ -47,7 +50,7 @@ export const Navbar = () => {
               <FiBook size={20} className="text-current" /> {t('nav.formations')}
             </Link>
 
-            {isAuthenticated && user?.role === "learner" && (
+            {isAuthenticated && isLearner && (
               <>
                 <Link
                   to="/favoris"
@@ -66,25 +69,47 @@ export const Navbar = () => {
                 >
                   {t('nav.reservations')}
                 </Link>
+                <Link
+                  to="/messagerie"
+                  className="text-gray-700 dark:text-slate-200 hover:text-teal-600 transition"
+                >
+                  Messagerie
+                </Link>
               </>
             )}
 
-            {isAuthenticated && user?.role === "centre" && (
-              <Link
-                to="/centre/offres"
-                className="text-gray-700 dark:text-slate-200 hover:text-teal-600 transition"
-              >
-                Mes offres
-              </Link>
+            {isAuthenticated && isCentreUser && (
+              <>
+                <Link
+                  to="/centre/offres"
+                  className="text-gray-700 dark:text-slate-200 hover:text-teal-600 transition"
+                >
+                  Mes offres
+                </Link>
+                <Link
+                  to="/centre/messagerie"
+                  className="text-gray-700 dark:text-slate-200 hover:text-teal-600 transition"
+                >
+                  Messagerie
+                </Link>
+              </>
             )}
 
-            {isAuthenticated && user?.role === "admin" && (
-              <Link
-                to="/admin"
-                className="text-gray-700 dark:text-slate-200 hover:text-teal-600 transition"
-              >
-                {t('nav.admin')}
-              </Link>
+            {isAuthenticated && isAdminUser && (
+              <>
+                <Link
+                  to="/admin"
+                  className="text-gray-700 dark:text-slate-200 hover:text-teal-600 transition"
+                >
+                  {t('nav.admin')}
+                </Link>
+                <Link
+                  to="/admin/support"
+                  className="text-gray-700 dark:text-slate-200 hover:text-teal-600 transition"
+                >
+                  Support
+                </Link>
+              </>
             )}
           </div>
 
@@ -166,7 +191,7 @@ export const Navbar = () => {
             >
               Formations
             </Link>
-            {isAuthenticated && user?.role === "learner" && (
+            {isAuthenticated && isLearner && (
               <>
                 <Link
                   to="/favoris"
@@ -184,7 +209,7 @@ export const Navbar = () => {
                 </Link>
               </>
             )}
-            {isAuthenticated && user?.role === "centre" && (
+            {isAuthenticated && isCentreUser && (
               <Link
                 to="/centre/offres"
                 className="block text-gray-700 hover:text-teal-600 transition"

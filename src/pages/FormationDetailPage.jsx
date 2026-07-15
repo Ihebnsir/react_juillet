@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { messagingService } from "../services/messagingService";
 import { useTranslation } from "react-i18next";
 import { formationsService } from "../services/formationsService";
 import { useAuth } from "../context/AuthContext";
@@ -13,6 +14,7 @@ import {
   FiCheck,
   FiBriefcase,
   FiPlay,
+  FiMessageCircle,
 } from "react-icons/fi";
 import { formatPriceTND } from "../utils/formatPrice";
 
@@ -49,6 +51,23 @@ export const FormationDetailPage = () => {
 
     loadFormation();
   }, [id]);
+
+  const handleContactCentre = () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    const centreId = formation?.centre?.id || 'centre-1';
+    const conversation = messagingService.createDirectConversation({
+      learnerId: user.id,
+      centreId,
+      formationId: formation?.id,
+      initialMessage: `Bonjour, j’ai une question sur la formation ${formation?.title}.`,
+    });
+
+    navigate(`/messagerie?conversation=${conversation.id}`);
+  };
 
   const handleReserve = () => {
     if (!isAuthenticated) {
@@ -183,6 +202,13 @@ export const FormationDetailPage = () => {
                 className="px-8 py-3 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition"
               >
                 {t('detail.reserve')}
+              </button>
+              <button
+                onClick={handleContactCentre}
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-teal-600 px-8 py-3 font-medium text-teal-600 transition hover:bg-teal-50 dark:hover:bg-slate-700"
+              >
+                <FiMessageCircle size={16} />
+                Poser une question au centre
               </button>
               <a
                 href="#payment"

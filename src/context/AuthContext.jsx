@@ -3,27 +3,38 @@ import { getCurrentUser, login as loginService, logout as logoutService, saveUse
 
 const AuthContext = createContext();
 
+const normalizeUser = (user) => {
+  if (!user) return null;
+  const resolvedName = user.name || user.nom || user.email?.split("@")[0] || "Utilisateur";
+  return {
+    ...user,
+    name: resolvedName,
+    nom: user.nom || resolvedName,
+  };
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => normalizeUser(getCurrentUser()));
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = getCurrentUser();
+    const storedUser = normalizeUser(getCurrentUser());
     setUser(storedUser);
     setIsLoading(false);
   }, []);
 
   const login = async (email, password) => {
-    const authenticatedUser = await loginService(email, password);
+    const authenticatedUser = normalizeUser(await loginService(email, password));
     // Mettre à jour l'état avant de résoudre pour éviter les redirections désynchronisées
     setUser(authenticatedUser);
     return authenticatedUser;
   };
 
   const register = (formData) => {
-    const newUser = {
+    const newUser = normalizeUser({
       id: `user${Date.now()}`,
       name: formData.name,
+      nom: formData.name,
       email: formData.email,
       role: formData.role,
       profile: formData.role === "centre"
@@ -32,7 +43,7 @@ export const AuthProvider = ({ children }) => {
       favorites: [],
       reservations: [],
       avatar: formData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name}`,
-    };
+    });
     setUser(newUser);
     saveUser(newUser);
     return { success: true, user: newUser };
@@ -44,12 +55,20 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateProfile = (updatedProfile) => {
-    const updated = { ...user, profile: { ...user.profile, ...updatedProfile } };
+    const updated = normalizeUser({ ...user, profile: { ...(user?.profile || {}), ...updatedProfile } });
     if (updatedProfile.avatar !== undefined) {
       updated.avatar = updatedProfile.avatar;
     }
     setUser(updated);
     saveUser(updated);
+    return updated;
+  };
+
+  const updateUser = (updatedUser) => {
+    const normalized = normalizeUser(updatedUser);
+    setUser(normalized);
+    saveUser(normalized);
+    return normalized;
   };
 
   return (
@@ -61,6 +80,7 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         updateProfile,
+        updateUser,
         isAuthenticated: !!user,
       }}
     >

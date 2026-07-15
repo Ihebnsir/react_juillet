@@ -44,6 +44,9 @@ import { CentresEnAttentePage } from "./pages/admin/CentresEnAttentePage";
 import { UtilisateursPage } from "./pages/admin/UtilisateursPage";
 import { LitigesPage } from "./pages/admin/LitigesPage";
 import { StatistiquesPage } from "./pages/admin/StatistiquesPage";
+import { MessageriePage as ApprenantMessageriePage } from "./pages/apprenant/MessageriePage";
+import { MessageriePage as CentreMessageriePage } from "./pages/centre/MessageriePage";
+import { SupportPage as AdminSupportPage } from "./pages/admin/SupportPage";
 
 function App() {
   const [showPreloader, setShowPreloader] = useState(() => shouldShowPreloader());
@@ -86,24 +89,27 @@ function App() {
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                  <Route path="/formations" element={<FormationsPage />} />
-                  <Route path="/formations/:id" element={<FormationDetailPage />} />
                   <Route path="/centres/:id" element={<CenterProfilePage />} />
 
                   <Route element={<ProtectedRoute allowedRoles={["apprenant"]} />}>
                     <Route element={<ApprenantLayout />}>
                       <Route path="/dashboard" element={<ApprenantDashboardPage />} />
+                      <Route path="/formations" element={<FormationsPage />} />
+                      <Route path="/formations/:id" element={<FormationDetailPage />} />
                       <Route path="/reservations" element={<MesReservationsPage />} />
                       <Route path="/favoris" element={<MesFavorisPage />} />
                       <Route path="/certifications" element={<MesCertificationsPage />} />
+                      <Route path="/messagerie" element={<ApprenantMessageriePage />} />
+                      <Route path="/support" element={<AdminSupportPage />} />
                     </Route>
                   </Route>
 
                   <Route element={<ProtectedRoute allowedRoles={["centre"]} />}>
                     <Route element={<CentreLayout />}>
                       <Route path="/centre" element={<CentreDashboardPage />} />
-                          <Route path="/centre/offres" element={<MesOffresPage />} />
+                      <Route path="/centre/offres" element={<MesOffresPage />} />
                       <Route path="/centre/offres/nouvelle" element={<NouvelleOffrePage />} />
+                      <Route path="/centre/messagerie" element={<CentreMessageriePage />} />
                       <Route path="/centre/offres/:id/modifier" element={<NouvelleOffrePage />} />
                       <Route path="/centre/offres/:id" element={<DetailOffrePage />} />
                       <Route path="/centre/reservations" element={<ReservationsRecuesPage />} />
@@ -114,6 +120,7 @@ function App() {
                   <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
                     <Route element={<AdminLayout />}>
                       <Route path="/admin" element={<AdminDashboardPage />} />
+                      <Route path="/admin/support" element={<AdminSupportPage />} />
                       <Route path="/admin/moderation" element={<ModerationPage />} />
                       <Route path="/admin/centres-en-attente" element={<CentresEnAttentePage />} />
                       <Route path="/admin/utilisateurs" element={<UtilisateursPage />} />

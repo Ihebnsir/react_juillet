@@ -27,6 +27,11 @@
     "ctaTitle": "Ready to get started?",
     "ctaText": "Explore our courses and start building your skills today"
   },
+  "dashboard": {
+    "eyebrow": "Dashboard",
+    "greeting": "Hello {{name}}",
+    "subtitle": "Here is a summary of your activity on SkillBridge"
+  },
   "catalog": {
     "title": "Course catalog",
     "filters": "Filters",
@@ -59,15 +64,23 @@
   "profile": {
     "title": "My profile",
     "accountInfo": "Account information",
-    "edit": "Edit",
-    "save": "Save changes",
+    "edit": "Edit my profile",
+    "save": "Save",
     "description": "Center description",
     "city": "City",
     "phone": "Phone",
     "website": "Website",
     "cv": "CV / Bio",
     "portfolio": "Portfolio / Website",
-    "certifications": "My certifications"
+    "certifications": "My certifications",
+    "name": "Name",
+    "email": "Email",
+    "emailNote": "The email address cannot be changed."
+  },
+  "roles": {
+    "apprenant": "Learner",
+    "centre": "Training center",
+    "admin": "Administrator"
   },
   "login": {
     "title": "Sign in",

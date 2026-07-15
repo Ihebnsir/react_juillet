@@ -27,6 +27,11 @@
     "ctaTitle": "Prêt à commencer ?",
     "ctaText": "Explorez nos formations et développez vos compétences dès aujourd'hui"
   },
+  "dashboard": {
+    "eyebrow": "Tableau de bord",
+    "greeting": "Bonjour {{name}}",
+    "subtitle": "Voici un résumé de votre activité sur SkillBridge"
+  },
   "catalog": {
     "title": "Catalogue de formations",
     "filters": "Filtres",
@@ -59,15 +64,23 @@
   "profile": {
     "title": "Mon profil",
     "accountInfo": "Informations du compte",
-    "edit": "Modifier",
-    "save": "Enregistrer les modifications",
+    "edit": "Modifier mon profil",
+    "save": "Enregistrer",
     "description": "Description du centre",
     "city": "Ville",
     "phone": "Téléphone",
     "website": "Site web",
     "cv": "CV / Bio",
     "portfolio": "Portfolio / Site",
-    "certifications": "Mes certifications"
+    "certifications": "Mes certifications",
+    "name": "Nom",
+    "email": "Email",
+    "emailNote": "L'e-mail ne peut pas être modifié."
+  },
+  "roles": {
+    "apprenant": "Apprenant",
+    "centre": "Centre de formation",
+    "admin": "Administrateur"
   },
   "login": {
     "title": "Connexion",

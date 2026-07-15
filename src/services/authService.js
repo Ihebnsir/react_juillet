@@ -2,6 +2,16 @@ import { mockUsers } from '../data/mockUsers';
 
 const STORAGE_KEY = 'skillbridge_user';
 
+const normalizeUser = (user) => {
+  if (!user) return null;
+  const resolvedName = user.name || user.nom || user.email?.split('@')[0] || 'Utilisateur';
+  return {
+    ...user,
+    name: resolvedName,
+    nom: user.nom || resolvedName,
+  };
+};
+
 export async function login(email, password) {
   await new Promise((resolve) => setTimeout(resolve, 600));
 
@@ -16,8 +26,9 @@ export async function login(email, password) {
   }
 
   const { password: _, ...safeUser } = user;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(safeUser));
-  return safeUser;
+  const normalizedUser = normalizeUser(safeUser);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedUser));
+  return normalizedUser;
 }
 
 export function logout() {
@@ -26,9 +37,11 @@ export function logout() {
 
 export function getCurrentUser() {
   const raw = localStorage.getItem(STORAGE_KEY);
-  return raw ? JSON.parse(raw) : null;
+  return raw ? normalizeUser(JSON.parse(raw)) : null;
 }
 
 export function saveUser(user) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+  const normalizedUser = normalizeUser(user);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedUser));
+  return normalizedUser;
 }

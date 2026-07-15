@@ -1,28 +1,61 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { FiEdit, FiCheck, FiX } from "react-icons/fi";
 import AvatarUpload from "../components/UI/AvatarUpload";
 
 export const ProfilePage = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateUser } = useAuth();
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
+  const [nom, setNom] = useState(user?.nom || user?.name || "");
   const [formData, setFormData] = useState(user?.profile || {});
   const [avatar, setAvatar] = useState(user?.avatar || "");
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState(null);
+
+  useEffect(() => {
+    setNom(user?.nom || user?.name || "");
+    setFormData(user?.profile || {});
+    setAvatar(user?.avatar || "");
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const resetForm = () => {
+    setNom(user?.nom || user?.name || "");
+    setFormData(user?.profile || {});
+    setAvatar(user?.avatar || "");
+  };
+
   const handleSave = () => {
-    updateProfile({ ...formData, avatar });
-    setIsEditing(false);
-    alert("Profil mis à jour avec succès!");
+    setSaving(true);
+    try {
+      updateUser({
+        ...user,
+        nom,
+        name: nom,
+        profile: { ...(user?.profile || {}), ...formData },
+        avatar,
+      });
+      setIsEditing(false);
+      setMessage({ type: "success", text: "Profil mis à jour avec succès." });
+    } catch (error) {
+      setMessage({ type: "error", text: "La mise à jour a échoué." });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const isCenter = user?.role === "centre";
+  const roleLabels = {
+    apprenant: t("roles.apprenant"),
+    centre: t("roles.centre"),
+    admin: t("roles.admin"),
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-8">
@@ -33,18 +66,12 @@ export const ProfilePage = () => {
               <div className="flex items-end gap-4">
               <img
                 src={avatar || user?.avatar}
-                alt={user?.name}
+                alt={nom || user?.name || "Profil"}
                 className="w-20 h-20 rounded-full border-4 border-white"
               />
               <div className="text-white mb-2">
-                <h1 className="text-2xl font-bold">{user?.name}</h1>
-                <p className="text-teal-100">
-                  {user?.role === "learner"
-                    ? "Apprenant"
-                    : user?.role === "centre"
-                    ? "Centre de formation"
-                    : "Administrateur"}
-                </p>
+                <h1 className="text-2xl font-bold">{nom || user?.name || "Utilisateur"}</h1>
+                <p className="text-teal-100">{roleLabels[user?.role] || user?.role}</p>
               </div>
             </div>
           </div>
@@ -56,38 +83,78 @@ export const ProfilePage = () => {
               <h2 className="text-xl font-bold mb-4">Informations du compte</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-gray-600">Email</label>
+                  <label className="block text-sm text-gray-600">{t('profile.email')}</label>
                   <input
                     type="email"
-                    value={user?.email}
+                    value={user?.email || ""}
                     disabled
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
                   />
+                  <p className="mt-2 text-xs text-gray-500">{t('profile.emailNote')}</p>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600">Nom</label>
-                  <input
-                    type="text"
-                    value={user?.name}
-                    disabled
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
-                  />
+                  <label className="block text-sm text-gray-600">{t('profile.name')}</label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={nom}
+                      onChange={(e) => setNom(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                  ) : (
+                    <div className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 dark:bg-slate-700 dark:text-slate-200">
+                      {nom || "Aucun nom renseigné"}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Profile Details */}
             <div className="border-t pt-8">
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">{t('profile.title')}</h2>
-                <button
-                  onClick={() => setIsEditing(!isEditing)}
-                  className="flex items-center gap-2 px-4 py-2 text-teal-600 hover:text-teal-700 transition font-medium"
-                >
-                  {isEditing ? <FiX size={20} /> : <FiEdit size={20} />}
-                  {isEditing ? t('common.cancel') : t('profile.edit')}
-                </button>
+                {!isEditing ? (
+                  <button
+                    onClick={() => {
+                      setIsEditing(true);
+                      setMessage(null);
+                    }}
+                    className="flex items-center gap-2 rounded-lg border border-teal-600 px-4 py-2 font-medium text-teal-600 transition hover:bg-teal-50"
+                  >
+                    <FiEdit size={20} />
+                    {t('profile.edit')}
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 font-medium text-white transition hover:bg-teal-700 disabled:opacity-60"
+                    >
+                      <FiCheck size={20} />
+                      {saving ? t('common.loading') : t('profile.save')}
+                    </button>
+                    <button
+                      onClick={() => {
+                        resetForm();
+                        setIsEditing(false);
+                        setMessage(null);
+                      }}
+                      className="flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 transition hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-700"
+                    >
+                      <FiX size={20} />
+                      {t('common.cancel')}
+                    </button>
+                  </div>
+                )}
               </div>
+
+              {message ? (
+                <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-rose-50 text-rose-700'}`}>
+                  {message.text}
+                </div>
+              ) : null}
 
               <div className="space-y-4">
                 {isCenter ? (
@@ -209,14 +276,6 @@ export const ProfilePage = () => {
                 </div>
               </div>
 
-              {isEditing && (
-                <button
-                  onClick={handleSave}
-                  className="mt-6 w-full px-6 py-3 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition flex items-center justify-center gap-2"
-                >
-                  <FiCheck size={20} /> {t('profile.save')}
-                </button>
-              )}
             </div>
           </div>
         </div>
