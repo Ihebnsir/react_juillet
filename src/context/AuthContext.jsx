@@ -19,9 +19,11 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const storedUser = normalizeUser(getCurrentUser());
+    console.log('[AuthContext] storedUser:', storedUser);
     setUser(storedUser);
     setIsLoading(false);
   }, []);
+
 
   const login = async (email, password) => {
     const authenticatedUser = normalizeUser(await loginService(email, password));

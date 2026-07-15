@@ -19,6 +19,8 @@ const getInitialCollapsed = () => {
 
 export const AdminLayout = () => {
   const { user } = useAuth();
+  console.log('[AdminLayout] user:', user);
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(getInitialCollapsed);
   const isRTL = typeof document !== 'undefined' ? document.documentElement.dir === 'rtl' : false;
