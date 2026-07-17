@@ -19,9 +19,10 @@ export const FormationCard = ({ formation }) => {
 
   return (
     <Link to={`/formations/${formation.id}`}>
-      <div className="card cursor-pointer group overflow-hidden bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
+      <div className="card cursor-pointer group overflow-hidden bg-white dark:bg-slate-800 border border-slate-100/80 dark:border-slate-700/60">
         {/* Image */}
-        <div className="relative h-48 overflow-hidden bg-gray-200">
+        <div className="relative h-48 overflow-hidden bg-brand-50/70 dark:bg-slate-900">
+
           <img
             src={formation.image}
             alt={formation.title}
@@ -29,11 +30,12 @@ export const FormationCard = ({ formation }) => {
           />
           <button
             onClick={toggleFavorite}
-            className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition"
+            className="absolute top-2 right-2 bg-white/90 dark:bg-slate-900/60 rounded-full p-2 shadow-[0_10px_30px_rgba(26,184,153,0.18)] hover:bg-brand-50 transition border border-slate-100 dark:border-slate-700"
+            aria-label="toggle favorite"
           >
             <FiHeart
               size={20}
-              className={favorite ? "fill-red-500 text-red-500" : "text-gray-400"}
+              className={favorite ? "fill-red-500 text-red-500" : "text-slate-400 dark:text-slate-500"}
             />
           </button>
         </div>
@@ -41,13 +43,13 @@ export const FormationCard = ({ formation }) => {
         {/* Content */}
         <div className="p-4 space-y-3">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-bold text-gray-800 dark:text-slate-100 group-hover:text-teal-600 transition line-clamp-2">
+            <h3 className="font-bold text-slate-800 dark:text-slate-100 group-hover:text-brand-600 transition line-clamp-2" style={{WebkitLineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden'}}>
               {formation.title}
             </h3>
           </div>
 
           {formation.centre && (
-            <Link to={`/centres/${formation.centre.id}`} className="flex items-center gap-2 text-sm text-teal-600 hover:text-teal-700">
+            <Link to={`/centres/${formation.centre.id}`} className="flex items-center gap-2 text-sm text-brand-600 hover:text-brand-700">
               <img src={formation.centre.logo} alt={formation.centre.name} className="w-6 h-6 rounded-full object-cover" />
               <span>{formation.centre.name}</span>
             </Link>
@@ -59,7 +61,7 @@ export const FormationCard = ({ formation }) => {
             </div>
           )}
 
-          <p className="text-sm text-gray-600 dark:text-slate-300 line-clamp-2">
+          <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
             {formation.description}
           </p>
 

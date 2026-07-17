@@ -32,20 +32,32 @@ export const AuthProvider = ({ children }) => {
     return authenticatedUser;
   };
 
-  const register = (formData) => {
-    const newUser = normalizeUser({
+  const register = (userData) => {
+    // Extends registration payload: preserve every field coming from the form.
+    const newUserRaw = {
       id: `user${Date.now()}`,
-      name: formData.name,
-      nom: formData.name,
-      email: formData.email,
-      role: formData.role,
-      profile: formData.role === "centre"
-        ? { description: "", city: "", phone: "", verified: false }
-        : { cv: "", portfolio: "", city: "" },
+      ...userData,
+      name: userData?.name ?? userData?.nom ?? userData?.email?.split("@")[0] ?? "Utilisateur",
+      nom: userData?.nom ?? userData?.name ?? userData?.email?.split("@")[0] ?? "Utilisateur",
+      avatar:
+        userData.avatar ??
+        `https://api.dicebear.com/7.x/avataaars/svg?seed=${(userData?.name ?? userData?.nom ?? "user").toString()}`,
       favorites: [],
       reservations: [],
-      avatar: formData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name}`,
-    });
+    };
+
+    // Ensure profile shape exists (only used by the rest of the app later)
+    newUserRaw.profile = newUserRaw.profile ??
+      (newUserRaw.role === "centre"
+        ? { description: "", city: "", phone: "", verified: false }
+        : { cv: "", portfolio: "", city: "" });
+
+    // Strict rule: centre accounts start with statutVerification = 'non_soumis'
+    if (newUserRaw.role === "centre") {
+      newUserRaw.statutVerification = "non_soumis";
+    }
+
+    const newUser = normalizeUser(newUserRaw);
     setUser(newUser);
     saveUser(newUser);
     return { success: true, user: newUser };
