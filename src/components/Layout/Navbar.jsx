@@ -28,24 +28,33 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white dark:bg-slate-800 shadow-md sticky top-0 z-50">
+    <nav className="bg-white/80 dark:bg-slate-900/70 backdrop-blur border-b border-slate-200/60 dark:border-slate-700/60 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
-            <div className="bg-teal-600 text-white p-2 rounded-lg font-bold text-xl">
-              SB
+          <Link
+            to="/"
+            className="flex items-center gap-3 group"
+            onClick={() => setIsOpen(false)}
+            aria-label="SkillBridge"
+          >
+            <div className="relative">
+              <div className="absolute -inset-2 rounded-xl bg-gradient-to-r from-brand-500/40 to-accent-500/30 blur" />
+              <div className="relative bg-gradient-to-r from-brand-600 to-accent-500 text-white p-2.5 rounded-xl font-extrabold text-lg shadow-[0_10px_30px_rgba(26,184,153,0.25)]">
+                SB
+              </div>
             </div>
-            <span className="hidden sm:inline font-bold text-lg text-gray-800 dark:text-slate-100">
+            <span className="hidden sm:inline font-extrabold text-lg text-slate-900 dark:text-slate-100 tracking-tight group-hover:text-brand-700 dark:group-hover:text-brand-300 transition">
               SkillBridge
             </span>
           </Link>
+
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
             <Link
               to="/formations"
-              className="flex items-center gap-2 text-gray-700 dark:text-slate-200 hover:text-teal-600 transition"
+              className="flex items-center gap-2 text-slate-700 dark:text-slate-200 hover:text-brand-600 dark:hover:text-brand-300 transition font-medium"
             >
               <FiBook size={20} className="text-current" /> {t('nav.formations')}
             </Link>
@@ -58,7 +67,7 @@ export const Navbar = () => {
                 >
                   <FiHeart size={20} className="text-current" /> {t('nav.favorites')}
                   {favoriteCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    <span className="absolute -top-2 -right-2 bg-rose-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shadow-[0_8px_22px_rgba(244,63,94,0.35)] animate-[pulse_1.6s_ease-in-out_infinite]">
                       {favoriteCount}
                     </span>
                   )}
@@ -151,13 +160,13 @@ export const Navbar = () => {
               <div className="flex gap-2">
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-teal-600 hover:text-teal-700 transition"
+                  className="btn-outline inline-flex items-center justify-center px-5 py-2 rounded-xl hover:-translate-y-0.5 border-brand-200"
                 >
                   {t('nav.login')}
                 </Link>
                 <Link
                   to="/register"
-                  className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+                  className="btn-primary inline-flex items-center justify-center px-5 py-2 rounded-xl hover:-translate-y-0.5"
                 >
                   {t('nav.register')}
                 </Link>
