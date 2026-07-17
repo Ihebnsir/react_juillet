@@ -1,4 +1,5 @@
- import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { formationsService } from "../services/formationsService";
@@ -86,30 +87,63 @@ export const HomePage = () => {
         </div>
       </section>
 
+      {/* Trust & Proof */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
+        <div className="sb-surface rounded-3xl px-6 py-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[ 
+              { label: "Centres vérifiés", value: "120+", tone: "badge-status-success" },
+              { label: "Formations", value: "350+", tone: "badge-status-warning" },
+              { label: "Apprenants", value: "10k+", tone: "badge-status-success" },
+              { label: "Satisfaction", value: "4.8/5", tone: "badge-status-warning" },
+            ].map((stat, idx) => (
+              <div key={idx} className="p-3 rounded-2xl bg-white/60 dark:bg-slate-900/30 border border-white/50 dark:border-slate-700/50">
+                <div className={`flex items-center gap-2 ${idx % 2 === 0 ? 'justify-start' : 'justify-start'} animate-[fadeInUp_0.5s_ease-out_0.05s_both]`}>
+                  <span className={stat.tone}>{stat.value}</span>
+                </div>
+                <p className="mt-2 sb-p text-slate-600 dark:text-slate-300">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Trending formations */}
       {loading ? (
         <div className="flex justify-center py-20">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600" />
         </div>
       ) : (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-white">{t("home.trendingTitle")}</h2>
-            <Link
-              to="/formations"
-              className="flex items-center gap-2 text-brand-600 hover:text-brand-700 transition font-medium"
-            >
-              {t("common.viewAll")} <FiArrowRight />
-            </Link>
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-8">
+            <div>
+              <h2 className="sb-h2 text-slate-900 dark:text-white">{t("home.trendingTitle")}</h2>
+              <p className="mt-2 sb-p">
+                Les formations les plus réservées en ce moment — choisissez votre prochain apprentissage.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="badge-soft">Nouveautés</span>
+              <span className="badge-soft">Populaires</span>
+              <Link
+                to="/formations"
+                className="btn-outline inline-flex items-center gap-2 justify-center px-5 py-2 rounded-xl border-brand-200"
+              >
+                {t("common.viewAll")} <FiArrowRight />
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {trendingFormations.map((formation) => (
-              <FormationCard key={formation.id} formation={formation} />
+            {trendingFormations.map((formation, idx) => (
+              <div key={formation.id} className="animate-[fadeInUp_0.55s_ease-out_both]" style={{ animationDelay: `${idx * 60}ms` }}>
+                <FormationCard formation={formation} />
+              </div>
             ))}
           </div>
         </section>
       )}
+
 
       {/* Benefits */}
       <section className="sb-page py-16">
