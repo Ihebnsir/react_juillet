@@ -28,6 +28,10 @@ import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { FormationsPage } from "./pages/FormationsPage";
 import { FormationDetailPage } from "./pages/FormationDetailPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { AboutPage } from "./pages/AboutPage";
+import { TestimonialsPage } from "./pages/TestimonialsPage";
+import { ContactPage } from "./pages/ContactPage";
+import { CentresPage } from "./pages/CentresPage";
 import { DashboardPage as ApprenantDashboardPage } from "./pages/apprenant/DashboardPage";
 import { MesReservationsPage } from "./pages/apprenant/MesReservationsPage";
 import { MesFavorisPage } from "./pages/apprenant/MesFavorisPage";
@@ -85,6 +89,11 @@ function App() {
               <main className="flex-grow">
                 <Routes>
                   <Route path="/" element={<HomePage />} />
+                  <Route path="/formations" element={<FormationsPage />} />
+                  <Route path="/centres" element={<CentresPage />} />
+                  <Route path="/a-propos" element={<AboutPage />} />
+                  <Route path="/temoignages" element={<TestimonialsPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
 
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />

@@ -1,6 +1,11 @@
 {
   "nav": {
+    "home": "Accueil",
     "formations": "Formations",
+    "centres": "Centres de formation",
+    "about": "À propos",
+    "testimonials": "Témoignages",
+    "contact": "Contact",
     "favorites": "Favoris",
     "reservations": "Mes réservations",
     "profile": "Profil",
@@ -22,6 +27,15 @@
   "home": {
     "title": "Bienvenue sur SkillBridge",
     "subtitle": "Connectez-vous avec les meilleures formations et développez vos compétences",
+    "heroBadge": "Plateforme de formation professionnelle",
+    "heroTitleLine1": "Développez vos compétences.",
+    "heroTitleLine2": "Réussissez votre avenir.",
+    "heroSubtitle": "SkillBridge connecte les apprenants aux meilleurs centres de formation de Tunisie. Trouvez, réservez et suivez vos formations en toute simplicité.",
+    "heroPrimaryCta": "Découvrir les formations",
+    "heroSecondaryCta": "Commencer maintenant",
+    "heroTrust1": "Centres vérifiés",
+    "heroTrust2": "Paiement sécurisé",
+    "heroTrust3": "Accessible partout",
     "searchPlaceholder": "Rechercher une formation...",
     "trendingTitle": "Formations Tendances",
     "ctaTitle": "Prêt à commencer ?",

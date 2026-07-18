@@ -22,13 +22,19 @@ export default {
           900: '#0E5147',
         },
         accent: {
+          300: '#C4B5FD',
           400: '#A78BFA',
           500: '#8B5CF6',
           600: '#7C3AED',
         },
         sunset: {
+          300: '#FDBA74',
           400: '#FB923C',
           500: '#F97316',
+          600: '#EA580C',
+          700: '#C2410C',
+          800: '#9A2C0C',
+          900: '#7C2D12',
         },
 
         // Legacy tokens (keep for backward compatibility)

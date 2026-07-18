@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { formationsService } from "../services/formationsService";
 import { FormationCard } from "../components/Cards/FormationCard";
-import { FiSearch, FiArrowRight } from "react-icons/fi";
+import { FiSearch, FiArrowRight, FiCheckCircle, FiShield, FiGlobe } from "react-icons/fi";
 
 export const HomePage = () => {
   const { t } = useTranslation();
@@ -33,62 +33,75 @@ export const HomePage = () => {
   return (
     <main className="relative overflow-hidden sb-page">
       <div className="pointer-events-none absolute inset-0 -z-10">
-
         <div className="absolute -top-40 right-[-120px] h-[520px] w-[520px] rounded-full bg-brand-400/25 blur-3xl" />
         <div className="absolute top-10 left-[-160px] h-[480px] w-[480px] rounded-full bg-accent-400/20 blur-3xl" />
         <div className="absolute bottom-[-220px] left-[40%] h-[520px] w-[520px] rounded-full bg-sunset-400/15 blur-3xl" />
       </div>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden py-20">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,theme(colors.brand.900)_0%,theme(colors.slate.950)_60%)] dark:bg-[radial-gradient(circle_at_top_right,theme(colors.brand.900)_0%,theme(colors.slate.950)_60%)]" />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-900/70 via-brand-900/30 to-transparent" />
+      <section className="relative overflow-hidden py-14 sm:py-20 lg:py-24">
+        <img src="/images/hero-bg.svg" alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/75 to-slate-950/45" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(26,184,153,0.35),transparent_45%)]" />
 
-        <div className="text-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-10">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 backdrop-blur">
-                <span className="inline-block h-2 w-2 rounded-full bg-brand-400" />
-                <span className="text-sm font-semibold text-white/85">SkillBridge</span>
-              </div>
-
-              <h1 className="mt-5 sb-h1 text-white animate-[fadeInUp_0.6s_ease-out_0.05s_both]">
-                {t("home.title")}
-              </h1>
-              <p className="mt-4 text-xl sb-p text-brand-100/90 animate-[fadeInUp_0.6s_ease-out_0.12s_both]">
-                {t("home.subtitle")}
-              </p>
-
+        <div className="relative z-10 mx-auto max-w-7xl px-4 text-white sm:px-6 lg:px-8">
+          <div className="max-w-2xl rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-sm sm:p-10 lg:p-12">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium backdrop-blur-sm">
+              <span className="text-lg">🎓</span>
+              <span>{t("home.heroBadge")}</span>
             </div>
 
-            {/* Search Form */}
-            <form
-              onSubmit={handleSearch}
-              className="relative mx-auto max-w-2xl bg-white/90 dark:bg-slate-900/40 border border-white/20 backdrop-blur rounded-2xl shadow-[0_30px_80px_rgba(0,0,0,0.25)] p-4 flex gap-2 animate-[fadeInUp_0.6s_ease-out_0.2s_both]"
-            >
-              <div className="flex-1 relative">
-                <FiSearch className="absolute top-3 start-3 text-slate-500" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder={t("home.searchPlaceholder")}
-                  className="w-full ps-10 pe-4 py-2 text-slate-900 dark:text-slate-100 bg-transparent placeholder:text-slate-500 focus:outline-none"
-                />
-              </div>
-              <Link
-                to={`/formations?search=${searchTerm}`}
-                className="btn-primary inline-flex items-center justify-center"
-              >
-                {t("common.search")}
+            <h1 className="mb-4 font-display text-4xl font-extrabold leading-tight md:text-6xl">
+              {t("home.heroTitleLine1")}
+              <br />
+              <span className="text-brand-400">{t("home.heroTitleLine2")}</span>
+            </h1>
+
+            <p className="mb-8 max-w-xl text-lg leading-relaxed text-slate-300">
+              {t("home.heroSubtitle")}
+            </p>
+
+            <div className="mb-8 flex flex-wrap gap-4">
+              <Link to="/formations" className="btn-primary inline-flex items-center gap-2">
+                {t("home.heroPrimaryCta")} <FiArrowRight />
               </Link>
-            </form>
+              <Link to="/register" className="inline-flex items-center justify-center rounded-xl border-2 border-white/30 px-6 py-3 font-semibold text-white transition hover:bg-white/10">
+                {t("home.heroSecondaryCta")}
+              </Link>
+            </div>
+
+            <div className="flex flex-wrap gap-6 text-sm text-slate-300">
+              <span className="flex items-center gap-2"><FiCheckCircle className="text-brand-400" /> {t("home.heroTrust1")}</span>
+              <span className="flex items-center gap-2"><FiShield className="text-brand-400" /> {t("home.heroTrust2")}</span>
+              <span className="flex items-center gap-2"><FiGlobe className="text-brand-400" /> {t("home.heroTrust3")}</span>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Trust & Proof */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
+      <div className="relative z-20 -mt-6 mx-4 md:-mt-8 md:mx-16">
+        <form
+          onSubmit={handleSearch}
+          className="rounded-2xl border border-slate-200/70 bg-white/95 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.15)] backdrop-blur dark:border-slate-700/50 dark:bg-slate-900/95"
+        >
+          <div className="flex flex-col gap-3 md:flex-row">
+            <div className="relative flex-1">
+              <FiSearch className="absolute start-3 top-3 text-slate-500" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder={t("home.searchPlaceholder")}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 ps-10 pe-4 text-slate-900 outline-none placeholder:text-slate-500 focus:border-brand-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              />
+            </div>
+            <Link to={`/formations?search=${searchTerm}`} className="btn-primary inline-flex items-center justify-center">
+              {t("common.search")}
+            </Link>
+          </div>
+        </form>
+      </div>
+
+      <section className="relative z-10 mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="sb-surface rounded-3xl px-6 py-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[ 
@@ -145,70 +158,143 @@ export const HomePage = () => {
       )}
 
 
-      {/* Benefits */}
+      {/* Benefits (asymmetric, designed composition) */}
       <section className="sb-page py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-start justify-between gap-6 flex-col md:flex-row">
-            <div className="max-w-2xl">
-              <h2 className="sb-h2 text-left text-slate-900 dark:text-white">Pourquoi choisir SkillBridge?</h2>
-              <p className="mt-3 sb-p text-slate-600 dark:text-slate-300">
-                Une expérience EdTech premium : trouvez, réservez et évoluez — en toute confiance.
-              </p>
-            </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="badge-soft">Centres vérifiés</span>
-              <span className="badge-soft">Certificats</span>
-              <span className="badge-soft">Support</span>
-            </div>
-          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 items-start">
+            {/* Dominant feature */}
+            <div className="card p-8 relative overflow-hidden">
+              <div className="absolute -top-10 -left-10 h-40 w-40 rounded-3xl bg-brand-400/15 blur-2xl" />
+              <div className="absolute -bottom-12 -right-12 h-40 w-40 rounded-3xl bg-accent-400/15 blur-2xl" />
 
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                title: "Large Catalogue",
-                description: "Des centaines de formations dans divers domaines",
-              },
-              {
-                title: "Centres Vérifiés",
-                description: "Tous nos centres de formation sont vérifiés et approuvés",
-              },
-              {
-                title: "Flexibilité",
-                description: "Apprenez à votre rythme avec des formations adaptables",
-              },
-            ].map((benefit, index) => (
-              <div
-                key={index}
-                className="card text-left p-6 relative overflow-hidden"
-              >
-                <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-brand-400/20 blur-2xl" />
-                <h3 className="text-lg font-extrabold mb-2 text-slate-900 dark:text-slate-100">
-                  {benefit.title}
-                </h3>
-                <p className="sb-p text-slate-600 dark:text-slate-300">
-                  {benefit.description}
-                </p>
-                <div className="mt-4 h-px w-full bg-gradient-to-r from-brand-400/0 via-brand-400/60 to-brand-400/0" />
+              <div className="flex items-center justify-between gap-6 flex-wrap">
+                <div>
+                  <h2 className="sb-h2 text-slate-900 dark:text-white">Pourquoi choisir SkillBridge?</h2>
+                  <p className="mt-3 sb-p text-slate-600 dark:text-slate-300">
+                    Une expérience EdTech premium : trouvez, réservez et évoluez — en toute confiance.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="badge-soft">Centres vérifiés</span>
+                  <span className="badge-soft">Certificats</span>
+                  <span className="badge-soft">Support</span>
+                </div>
               </div>
-            ))}
+
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="rounded-2xl border border-slate-200/70 bg-white/70 dark:bg-slate-900/30 p-5">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Catologue</p>
+                  <p className="mt-2 font-extrabold text-slate-900 dark:text-slate-100 text-lg">Large Catalogue</p>
+                  <p className="mt-2 sb-p text-slate-600 dark:text-slate-300">
+                    Des centaines de formations dans divers domaines.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200/70 bg-white/70 dark:bg-slate-900/30 p-5">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Confiance</p>
+                  <p className="mt-2 font-extrabold text-slate-900 dark:text-slate-100 text-lg">Centres Vérifiés</p>
+                  <p className="mt-2 sb-p text-slate-600 dark:text-slate-300">
+                    Tous nos centres sont vérifiés et approuvés.
+                  </p>
+                </div>
+
+                <div className="sm:col-span-2 rounded-2xl border border-brand-200/80 bg-gradient-to-r from-brand-500/10 to-accent-500/10 p-6">
+                  <p className="text-xs uppercase tracking-wide text-brand-700 dark:text-brand-200">Flexibilité</p>
+                  <p className="mt-2 font-extrabold text-slate-900 dark:text-slate-100 text-lg">Flexibilité</p>
+                  <p className="mt-2 sb-p text-slate-600 dark:text-slate-300">
+                    Apprenez à votre rythme avec des parcours adaptables.
+                  </p>
+                  <div className="mt-4 h-px w-full bg-gradient-to-r from-brand-400/0 via-brand-400/60 to-brand-400/0" />
+                </div>
+              </div>
+            </div>
+
+            {/* Supporting benefits list */}
+            <div className="space-y-4">
+              {[ 
+                { k: "S1", title: "Parcours guidés", desc: "Des étapes claires pour avancer sans perdre de temps." },
+                { k: "S2", title: "Expérience fiable", desc: "Une sélection cohérente de formations et de centres." },
+                { k: "S3", title: "Impact carrière", desc: "Des certificats pour valoriser vos compétences." },
+              ].map((item) => (
+                <div key={item.k} className="sb-surface rounded-2xl p-5">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-brand-500/15 flex items-center justify-center text-brand-700 dark:text-brand-200 font-extrabold">
+                      {item.k}
+                    </div>
+                    <div>
+                      <p className="font-extrabold text-slate-900 dark:text-slate-100">{item.title}</p>
+                      <p className="mt-2 sb-p text-slate-600 dark:text-slate-300">{item.desc}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
 
-      {/* CTA */}
-      <section className="bg-gradient-to-r from-brand-600 to-brand-700 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="sb-h2 mb-4">{t("home.ctaTitle")}</h2>
-          <p className="mb-6 sb-p text-brand-50/90">{t("home.ctaText")}</p>
-          <Link
-            to="/formations"
-            className="btn-primary inline-flex items-center justify-center px-8 py-3 rounded-xl shadow-[0_10px_30px_rgba(255,255,255,0.12)]"
-          >
-            {t("common.viewAll")}
-          </Link>
+
+      {/* Final CTA (premium landing conclusion) */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-brand-700" />
+        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.8)_0%,transparent_60%)]" />
+        <div className="relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 items-center">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-brand-100/90">Prêt à commencer ?</p>
+                <h2 className="sb-h2 text-white mt-2">{t("home.ctaTitle")}</h2>
+                <p className="mt-4 sb-p text-brand-50/90 max-w-xl">{t("home.ctaText")}</p>
+
+                <div className="mt-8 flex flex-wrap items-center gap-3">
+                  <span className="badge-soft bg-white/10 text-white border border-white/20">Inscription rapide</span>
+                  <span className="badge-soft bg-white/10 text-white border border-white/20">Centres vérifiés</span>
+                  <span className="badge-soft bg-white/10 text-white border border-white/20">Certificats</span>
+                </div>
+              </div>
+
+              <div className="sb-surface rounded-3xl p-6 border-white/20 bg-white/10">
+                <div className="flex items-start justify-between gap-6">
+                  <div>
+                    <p className="text-sm font-semibold text-white">Commencez avec un choix sûr</p>
+                    <p className="mt-2 sb-p text-white/80">Explorez les formations les plus populaires et trouvez le bon centre.</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-3xl bg-white/15 flex items-center justify-center">
+                    <FiArrowRight size={20} className="text-white" />
+                  </div>
+                </div>
+
+                <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                  <Link
+                    to="/formations"
+                    className="btn-primary inline-flex items-center justify-center px-8 py-3 rounded-xl shadow-[0_10px_30px_rgba(26,184,153,0.35)]"
+                  >
+                    {t("common.viewAll")}
+                  </Link>
+                  <Link
+                    to="/favoris"
+                    className="btn-outline inline-flex items-center justify-center px-8 py-3 rounded-xl border-white/30 text-white hover:bg-white/10"
+                  >
+                    Voir les favoris
+                  </Link>
+                </div>
+
+                <div className="mt-6 h-px bg-white/15" />
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                  {[{ v: "4.8/5", l: "Satisfaction" }, { v: "+120", l: "Centres" }].map((s) => (
+                    <div key={s.l}>
+                      <p className="text-lg font-extrabold text-white">{s.v}</p>
+                      <p className="text-xs uppercase tracking-wide text-white/70 mt-1">{s.l}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
+
     </main>
   );
 };

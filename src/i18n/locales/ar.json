@@ -1,6 +1,11 @@
 {
   "nav": {
+    "home": "الرئيسية",
     "formations": "الدورات",
+    "centres": "مراكز التدريب",
+    "about": "من نحن",
+    "testimonials": "الشهادات",
+    "contact": "اتصل بنا",
     "favorites": "المفضلات",
     "reservations": "حجوزاتي",
     "profile": "الملف الشخصي",
@@ -22,6 +27,15 @@
   "home": {
     "title": "مرحبًا بكم في SkillBridge",
     "subtitle": "تواصل مع أفضل البرامج التدريبية وطور مهاراتك",
+    "heroBadge": "منصة تدريب احترافية",
+    "heroTitleLine1": "طور مهاراتك.",
+    "heroTitleLine2": "شكّل مستقبلك.",
+    "heroSubtitle": "تجمع SkillBridge بين المتعلمين ومراكز التدريب الموثوقة في تونس. اعثر على الدورات واحجزها وتابع تطورك بكل سهولة.",
+    "heroPrimaryCta": "استكشف الدورات",
+    "heroSecondaryCta": "ابدأ الآن",
+    "heroTrust1": "مراكز موثوقة",
+    "heroTrust2": "دفعات آمنة",
+    "heroTrust3": "متاحة في كل مكان",
     "searchPlaceholder": "ابحث عن دورة...",
     "trendingTitle": "الدورات الرائجة",
     "ctaTitle": "هل أنت مستعد للبدء؟",

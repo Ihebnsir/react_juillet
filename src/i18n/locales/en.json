@@ -1,6 +1,11 @@
 {
   "nav": {
+    "home": "Home",
     "formations": "Courses",
+    "centres": "Training centres",
+    "about": "About",
+    "testimonials": "Testimonials",
+    "contact": "Contact",
     "favorites": "Favorites",
     "reservations": "My reservations",
     "profile": "Profile",
@@ -22,6 +27,15 @@
   "home": {
     "title": "Welcome to SkillBridge",
     "subtitle": "Connect with the best training programs and grow your skills",
+    "heroBadge": "Professional training platform",
+    "heroTitleLine1": "Build your skills.",
+    "heroTitleLine2": "Shape your future.",
+    "heroSubtitle": "SkillBridge brings learners and trusted training centres together in Tunisia. Find, book and track your learning with ease.",
+    "heroPrimaryCta": "Discover courses",
+    "heroSecondaryCta": "Get started",
+    "heroTrust1": "Verified centres",
+    "heroTrust2": "Secure payments",
+    "heroTrust3": "Accessible everywhere",
     "searchPlaceholder": "Search a course...",
     "trendingTitle": "Trending courses",
     "ctaTitle": "Ready to get started?",

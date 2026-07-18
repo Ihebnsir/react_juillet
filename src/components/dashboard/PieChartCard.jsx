@@ -7,11 +7,11 @@ import {
   Tooltip,
 } from 'recharts';
 
-const COLORS = ['#0d9488', '#2563eb', '#9333ea', '#f97316', '#ef4444', '#10b981'];
+const COLORS = ['#0E9A80', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#10B981'];
 
 export const PieChartCard = ({ data, valueKey, nameKey, label }) => {
   return (
-    <div className="h-72 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+    <div className="h-72 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Tooltip />

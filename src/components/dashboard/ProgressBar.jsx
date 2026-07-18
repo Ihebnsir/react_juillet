@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 
 export const ProgressBar = ({ value, label }) => (
   <div>
@@ -6,8 +7,13 @@ export const ProgressBar = ({ value, label }) => (
       <span>{label}</span>
       <span>{value}%</span>
     </div>
-    <div className="h-2.5 w-full rounded-full bg-gray-200 dark:bg-slate-700">
-      <div className="h-2.5 rounded-full bg-teal-600" style={{ width: `${value}%` }} />
+    <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+      <motion.div
+        className="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-600"
+        initial={{ width: 0 }}
+        animate={{ width: `${value}%` }}
+        transition={{ duration: 0.8, ease: 'easeOut' }}
+      />
     </div>
   </div>
 );
