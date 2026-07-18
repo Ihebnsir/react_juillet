@@ -45,6 +45,12 @@ export const formationsService = {
           );
         }
 
+        if (filters.categorie) {
+          results = results.filter(
+            (f) => String(f.categorie || '').toLowerCase() === String(filters.categorie).toLowerCase()
+          );
+        }
+
         if (filters.domain) {
           results = results.filter((f) => f.domain === filters.domain);
         }

@@ -48,6 +48,7 @@ import { CentresEnAttentePage } from "./pages/admin/CentresEnAttentePage";
 import { UtilisateursPage } from "./pages/admin/UtilisateursPage";
 import { LitigesPage } from "./pages/admin/LitigesPage";
 import { StatistiquesPage } from "./pages/admin/StatistiquesPage";
+import { ContenuAccueilPage } from "./pages/admin/ContenuAccueilPage";
 import { MessageriePage as ApprenantMessageriePage } from "./pages/apprenant/MessageriePage";
 import { MessageriePage as CentreMessageriePage } from "./pages/centre/MessageriePage";
 import { SupportPage as AdminSupportPage } from "./pages/admin/SupportPage";
@@ -135,6 +136,7 @@ function App() {
                       <Route path="/admin/utilisateurs" element={<UtilisateursPage />} />
                       <Route path="/admin/litiges" element={<LitigesPage />} />
                       <Route path="/admin/statistiques" element={<StatistiquesPage />} />
+                      <Route path="/admin/contenu-accueil" element={<ContenuAccueilPage />} />
                     </Route>
                   </Route>
 

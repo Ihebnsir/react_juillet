@@ -5,14 +5,22 @@ import { useTranslation } from "react-i18next";
 import { formationsService } from "../services/formationsService";
 import { FormationCard } from "../components/Cards/FormationCard";
 import { FiSearch, FiArrowRight, FiCheckCircle, FiShield, FiGlobe } from "react-icons/fi";
+import Carousel from "../components/UI/Carousel";
+import CompetencesParDomaine from '../components/home/CompetencesParDomaine';
+import { mockFormations } from '../data/mockFormations';
+import { mockTemoignages } from '../data/mockTemoignages';
+import { getStats, getTemoignages } from '../services/contenuAccueilService';
 
 export const HomePage = () => {
+
   const { t } = useTranslation();
   const [trendingFormations, setTrendingFormations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [stats, setStats] = useState(getStats());
+  const [temoignages, setTemoignages] = useState(getTemoignages());
 
-  useEffect(() => {
+   useEffect(() => {
     const loadFormations = async () => {
       try {
         const trending = await formationsService.getTrending(4);
@@ -23,6 +31,8 @@ export const HomePage = () => {
     };
 
     loadFormations();
+    setStats(getStats());
+    setTemoignages(getTemoignages());
   }, []);
 
   const handleSearch = (e) => {
@@ -104,11 +114,11 @@ export const HomePage = () => {
       <section className="relative z-10 mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="sb-surface rounded-3xl px-6 py-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[ 
-              { label: "Centres vérifiés", value: "120+", tone: "badge-status-success" },
-              { label: "Formations", value: "350+", tone: "badge-status-warning" },
-              { label: "Apprenants", value: "10k+", tone: "badge-status-success" },
-              { label: "Satisfaction", value: "4.8/5", tone: "badge-status-warning" },
+            {[
+              { label: "Centres vérifiés", value: `${stats.centres}+`, tone: "badge-status-success" },
+              { label: "Formations", value: `${stats.formations}+`, tone: "badge-status-warning" },
+              { label: "Apprenants", value: `${stats.apprenants}k+`, tone: "badge-status-success" },
+              { label: "Satisfaction", value: `${stats.satisfaction}/5`, tone: "badge-status-warning" },
             ].map((stat, idx) => (
               <div key={idx} className="p-3 rounded-2xl bg-white/60 dark:bg-slate-900/30 border border-white/50 dark:border-slate-700/50">
                 <div className={`flex items-center gap-2 ${idx % 2 === 0 ? 'justify-start' : 'justify-start'} animate-[fadeInUp_0.5s_ease-out_0.05s_both]`}>
@@ -127,36 +137,70 @@ export const HomePage = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600" />
         </div>
       ) : (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-8">
-            <div>
-              <h2 className="sb-h2 text-slate-900 dark:text-white">{t("home.trendingTitle")}</h2>
-              <p className="mt-2 sb-p">
-                Les formations les plus réservées en ce moment — choisissez votre prochain apprentissage.
-              </p>
-            </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="badge-soft">Nouveautés</span>
-              <span className="badge-soft">Populaires</span>
-              <Link
-                to="/formations"
-                className="btn-outline inline-flex items-center gap-2 justify-center px-5 py-2 rounded-xl border-brand-200"
-              >
-                {t("common.viewAll")} <FiArrowRight />
-              </Link>
-            </div>
-          </div>
+        <>
+          <CompetencesParDomaine formations={mockFormations} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {trendingFormations.map((formation, idx) => (
-              <div key={formation.id} className="animate-[fadeInUp_0.55s_ease-out_both]" style={{ animationDelay: `${idx * 60}ms` }}>
-                <FormationCard formation={formation} />
+          <section className="py-12 px-6 md:px-10 max-w-7xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-8 text-slate-900 dark:text-white">
+              Pourquoi choisir SkillBridge ?
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+              {temoignages.length > 0 ? temoignages.slice(0, 4).map((t) => (
+                <div key={t.id} className="card">
+                  <div className="mb-4 flex items-center gap-3">
+                    <img src={t.avatar || '/images/avatars/avatar1.jpg'} alt={t.nom} className="h-11 w-11 rounded-full object-cover" />
+                    <div>
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">{t.nom}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{t.role}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">“{t.citation}”</p>
+                </div>
+              )) : mockTemoignages.slice(0, 4).map((t) => (
+                <div key={t.id} className="card">
+                  <div className="mb-4 flex items-center gap-3">
+                    <img src={t.avatar} alt={t.nom} className="h-11 w-11 rounded-full object-cover" />
+                    <div>
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">{t.nom}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{t.role}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">“{t.citation}”</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-8">
+              <div>
+                <h2 className="sb-h2 text-slate-900 dark:text-white">{t("home.trendingTitle")}</h2>
+                <p className="mt-2 sb-p">
+                  Les formations les plus réservées en ce moment — choisissez votre prochain apprentissage.
+                </p>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="badge-soft">Nouveautés</span>
+                <span className="badge-soft">Populaires</span>
+                <Link
+                  to="/formations"
+                  className="btn-outline inline-flex items-center gap-2 justify-center px-5 py-2 rounded-xl border-brand-200"
+                >
+                  {t("common.viewAll")} <FiArrowRight />
+                </Link>
+              </div>
+            </div>
 
+            <Carousel itemsPerPage={4}>
+              {trendingFormations.map((formation, idx) => (
+                <div key={formation.id} className="animate-[fadeInUp_0.55s_ease-out_both]" style={{ animationDelay: `${idx * 60}ms` }}>
+                  <FormationCard formation={formation} />
+                </div>
+              ))}
+            </Carousel>
+          </section>
+        </>
+      )}
 
       {/* Benefits (asymmetric, designed composition) */}
       <section className="sb-page py-16">

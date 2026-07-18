@@ -6,15 +6,27 @@ import { FormationCard } from "../components/Cards/FormationCard";
 import { DOMAINS, CITIES, PRICE_RANGES } from "../data/mockData";
 import { FiSearch, FiFilter } from "react-icons/fi";
 
+const CATEGORY_TO_DOMAIN = {
+  "dev-web": "Développement Web",
+  "data-bi": "Data Science",
+  "iot": "Data Science",
+  "python": "Data Science",
+  "cybersecurite": "Marketing",
+  "langues": "Management",
+};
+
 export const FormationsPage = () => {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const [formations, setFormations] = useState([]);
   const [loading, setLoading] = useState(false);
+  const initialCategorie = searchParams.get("categorie") || "";
+  const initialDomain = CATEGORY_TO_DOMAIN[initialCategorie] || searchParams.get("domain") || "";
   const [filters, setFilters] = useState({
     keyword: searchParams?.get("search") || "",
     stageOnly: false,
-    domain: searchParams.get("domain") || "",
+    categorie: initialCategorie,
+    domain: initialDomain,
     city: searchParams.get("city") || "",
     priceMin: 0,
     priceMax: Infinity,
@@ -36,6 +48,11 @@ export const FormationsPage = () => {
   }, [filters]);
 
   const handleFilterChange = (field, value) => {
+    if (field === "domain") {
+      const categorie = Object.entries(CATEGORY_TO_DOMAIN).find(([, domain]) => domain === value)?.[0] || "";
+      setFilters((prev) => ({ ...prev, domain: value, categorie }));
+      return;
+    }
     setFilters((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -86,6 +103,11 @@ export const FormationsPage = () => {
                     </option>
                   ))}
                 </select>
+                {filters.domain ? (
+                  <p className="mt-2 text-xs font-medium text-brand-700 dark:text-brand-300">
+                    Filtre actif : {filters.domain}
+                  </p>
+                ) : null}
               </div>
 
               {/* City */}

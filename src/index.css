@@ -135,6 +135,16 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Hide native scrollbar (used by Carousel indicator instead) */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+
 html.dark body {
   @apply bg-slate-900 text-slate-100;
 }

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { FiMapPin, FiClock, FiStar, FiHeart, FiBriefcase } from "react-icons/fi";
 import { FaTag } from "react-icons/fa";
 import { useFavorites } from "../../context/FavoritesContext";
@@ -6,10 +6,12 @@ import { formatPriceTND } from "../../utils/formatPrice";
 
 export const FormationCard = ({ formation }) => {
   const { isFavorite, addFavorite, removeFavorite } = useFavorites();
+  const navigate = useNavigate();
   const favorite = isFavorite(formation.id);
 
   const toggleFavorite = (e) => {
     e.preventDefault();
+    e.stopPropagation();
     if (favorite) {
       removeFavorite(formation.id);
     } else {
@@ -17,9 +19,15 @@ export const FormationCard = ({ formation }) => {
     }
   };
 
+  const handleCardClick = () => {
+    navigate(`/formations/${formation.id}`);
+  };
+
   return (
-    <Link to={`/formations/${formation.id}`}>
-      <div className="card cursor-pointer group overflow-hidden bg-white dark:bg-slate-800 border border-slate-100/80 dark:border-slate-700/60">
+    <div
+      onClick={handleCardClick}
+      className="card cursor-pointer group overflow-hidden bg-white dark:bg-slate-800 border border-slate-100/80 dark:border-slate-700/60"
+    >
         {/* Image */}
         <div className="relative h-48 overflow-hidden bg-brand-50/70 dark:bg-slate-900">
 
@@ -49,10 +57,17 @@ export const FormationCard = ({ formation }) => {
           </div>
 
           {formation.centre && (
-            <Link to={`/centres/${formation.centre.id}`} className="flex items-center gap-2 text-sm text-brand-600 hover:text-brand-700">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/centres/${formation.centre.id}`);
+              }}
+              className="flex items-center gap-2 text-sm text-brand-600 hover:text-brand-700"
+            >
               <img src={formation.centre.logo} alt={formation.centre.name} className="w-6 h-6 rounded-full object-cover" />
               <span>{formation.centre.name}</span>
-            </Link>
+            </button>
           )}
 
           {formation.offreStage && (
@@ -95,6 +110,5 @@ export const FormationCard = ({ formation }) => {
           </div>
         </div>
       </div>
-    </Link>
   );
 };

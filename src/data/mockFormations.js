@@ -7,6 +7,7 @@ export const mockFormations = [
     price: 499,
     duration: '6 semaines',
     category: 'Développement',
+    categorie: 'dev-web',
     status: 'confirmed',
     offreStage: true,
     entreprisesPartenaires: ['Orange', 'STMicroelectronics'],
@@ -22,7 +23,9 @@ export const mockFormations = [
     price: 399,
     duration: '5 semaines',
     category: 'Design',
+    categorie: 'data-bi',
     status: 'in-progress',
+
     offreStage: true,
     entreprisesPartenaires: ['Mynk'],
     startDate: '2026-07-20',
@@ -37,7 +40,9 @@ export const mockFormations = [
     price: 549,
     duration: '7 semaines',
     category: 'Développement',
+    categorie: 'dev-web',
     status: 'completed',
+
     offreStage: false,
     entreprisesPartenaires: [],
     startDate: '2026-04-01',
@@ -52,7 +57,9 @@ export const mockFormations = [
     price: 349,
     duration: '4 semaines',
     category: 'Marketing',
+    categorie: 'data-bi',
     status: 'pending',
+
     offreStage: true,
     entreprisesPartenaires: ['Coca-Cola'],
     startDate: '2026-08-01',
@@ -67,7 +74,9 @@ export const mockFormations = [
     price: 599,
     duration: '8 semaines',
     category: 'Data',
+    categorie: 'data-bi',
     status: 'confirmed',
+
     offreStage: true,
     entreprisesPartenaires: ['DataLab'],
     startDate: '2026-09-01',
@@ -82,7 +91,9 @@ export const mockFormations = [
     price: 299,
     duration: '3 semaines',
     category: 'Management',
+    categorie: 'langues',
     status: 'confirmed',
+
     offreStage: false,
     entreprisesPartenaires: [],
     startDate: '2026-07-25',
@@ -97,7 +108,9 @@ export const mockFormations = [
     price: 379,
     duration: '4 semaines',
     category: 'Design',
+    categorie: 'data-bi',
     status: 'in-progress',
+
     offreStage: true,
     entreprisesPartenaires: ['Adobe'],
     startDate: '2026-06-15',
@@ -112,7 +125,9 @@ export const mockFormations = [
     price: 629,
     duration: '8 semaines',
     category: 'Data',
+    categorie: 'python',
     status: 'confirmed',
+
     offreStage: true,
     entreprisesPartenaires: ['Orange'],
     startDate: '2026-08-10',
