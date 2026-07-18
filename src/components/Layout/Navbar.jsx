@@ -47,7 +47,7 @@ export const Navbar = () => {
             </span>
           </Link>
 
-          <div className="hidden items-center gap-8 md:flex">
+          <div className="ml-10 hidden items-center gap-8 md:flex">
             <Link to="/" className="whitespace-nowrap font-medium text-slate-700 transition hover:text-brand-600 dark:text-slate-200 dark:hover:text-brand-300">
               {t('nav.home')}
             </Link>
@@ -68,7 +68,7 @@ export const Navbar = () => {
             </Link>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="ml-8 flex items-center gap-2 sm:gap-3">
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
                 <div className="hidden items-center gap-2 sm:flex">
