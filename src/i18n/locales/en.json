@@ -127,6 +127,7 @@
     "signingIn": "Signing in...",
     "successToast": "Login successful! Redirecting...",
     "errorToast": "Invalid credentials. Please check your email and password.",
+    "googleError": "Google login failed.",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "heroTitle": "Boost your career with SkillBridge",

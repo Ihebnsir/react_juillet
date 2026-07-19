@@ -23,7 +23,7 @@ export const FormationsPage = () => {
   const initialCategorie = searchParams.get("categorie") || "";
   const initialDomain = CATEGORY_TO_DOMAIN[initialCategorie] || searchParams.get("domain") || "";
   const [filters, setFilters] = useState({
-    keyword: searchParams?.get("search") || "",
+    keyword: searchParams?.get("q") || searchParams?.get("search") || "",
     stageOnly: false,
     categorie: initialCategorie,
     domain: initialDomain,

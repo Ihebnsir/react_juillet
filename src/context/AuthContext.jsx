@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { getCurrentUser, login as loginService, logout as logoutService, saveUser } from "../services/authService";
+import { mockUsers } from "../data/mockUsers";
 
 const AuthContext = createContext();
 
@@ -25,11 +26,44 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
 
-  const login = async (email, password) => {
-    const authenticatedUser = normalizeUser(await loginService(email, password));
-    // Mettre à jour l'état avant de résoudre pour éviter les redirections désynchronisées
+  const login = async (emailOrParams, password) => {
+    if (typeof emailOrParams === "object" && (emailOrParams?.provider || emailOrParams?.viaGoogle)) {
+      const { email, nom, avatar, provider = emailOrParams?.viaGoogle ? "google" : undefined } = emailOrParams;
+      return loginViaProvider({ email, nom, avatar, provider });
+    }
+
+    const authenticatedUser = normalizeUser(await loginService(emailOrParams, password));
     setUser(authenticatedUser);
     return authenticatedUser;
+  };
+
+  const loginViaProvider = async ({ email, nom, avatar, provider }) => {
+    const existingUser = mockUsers.find(
+      (candidate) => candidate.email?.trim().toLowerCase() === email?.trim().toLowerCase()
+    );
+
+    const userToUse = existingUser
+      ? existingUser
+      : {
+          id: `provider-${Date.now()}`,
+          nom: nom || email?.split("@")[0] || "Utilisateur",
+          name: nom || email?.split("@")[0] || "Utilisateur",
+          email,
+          avatar,
+          role: "apprenant",
+          provider,
+          favorites: [],
+          reservations: [],
+        };
+
+    if (!existingUser) {
+      mockUsers.push(userToUse);
+    }
+
+    const normalizedUser = normalizeUser(userToUse);
+    setUser(normalizedUser);
+    saveUser(normalizedUser);
+    return normalizedUser;
   };
 
   const register = (userData) => {
@@ -91,6 +125,7 @@ export const AuthProvider = ({ children }) => {
         user,
         isLoading,
         login,
+        loginViaProvider,
         register,
         logout,
         updateProfile,

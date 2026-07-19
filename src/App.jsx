@@ -11,6 +11,7 @@ import { CenterProfilePage } from "./pages/CenterProfilePage";
 import { ApprenantLayout } from "./layouts/ApprenantLayout";
 import { CentreLayout } from "./layouts/CentreLayout";
 import { AdminLayout } from "./layouts/AdminLayout";
+import { initFacebookSDK } from "./services/facebookAuth";
 import "./i18n";
 
 import { SkillBridgePreloader } from "./components/Preloader/SkillBridgePreloader";
@@ -25,6 +26,8 @@ import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
+import { GithubCallbackPage } from "./pages/GithubCallbackPage";
+import { LinkedinCallbackPage } from "./pages/LinkedinCallbackPage";
 import { FormationsPage } from "./pages/FormationsPage";
 import { FormationDetailPage } from "./pages/FormationDetailPage";
 import { ProfilePage } from "./pages/ProfilePage";
@@ -56,6 +59,10 @@ import { SupportPage as AdminSupportPage } from "./pages/admin/SupportPage";
 function App() {
   const [showPreloader, setShowPreloader] = useState(() => shouldShowPreloader());
   const [fadingOut, setFadingOut] = useState(false);
+
+  useEffect(() => {
+    initFacebookSDK();
+  }, []);
 
   useEffect(() => {
     if (!showPreloader) return;
@@ -99,6 +106,8 @@ function App() {
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                  <Route path="/auth/github/callback" element={<GithubCallbackPage />} />
+                  <Route path="/auth/linkedin/callback" element={<LinkedinCallbackPage />} />
                   <Route path="/centres/:id" element={<CenterProfilePage />} />
 
                   <Route element={<ProtectedRoute allowedRoles={["apprenant"]} />}>

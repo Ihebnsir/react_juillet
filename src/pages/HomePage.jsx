@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { formationsService } from "../services/formationsService";
 import { FormationCard } from "../components/Cards/FormationCard";
-import { FiSearch, FiArrowRight, FiCheckCircle, FiShield, FiGlobe } from "react-icons/fi";
+import { FiArrowRight, FiCheckCircle, FiShield, FiGlobe } from "react-icons/fi";
 import Carousel from "../components/UI/Carousel";
+import AnimatedSearchBar from "../components/UI/AnimatedSearchBar";
 import CompetencesParDomaine from '../components/home/CompetencesParDomaine';
 import { mockFormations } from '../data/mockFormations';
 import { mockTemoignages } from '../data/mockTemoignages';
@@ -14,13 +15,26 @@ import { getStats, getTemoignages } from '../services/contenuAccueilService';
 export const HomePage = () => {
 
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [trendingFormations, setTrendingFormations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [recherche, setRecherche] = useState("");
   const [stats, setStats] = useState(getStats());
   const [temoignages, setTemoignages] = useState(getTemoignages());
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
    useEffect(() => {
+    // Detect reduced motion preference
+    setPrefersReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    
+    // Detect mobile
+    setIsMobile(window.innerWidth < 768);
+    
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    
     const loadFormations = async () => {
       try {
         const trending = await formationsService.getTrending(4);
@@ -33,11 +47,13 @@ export const HomePage = () => {
     loadFormations();
     setStats(getStats());
     setTemoignages(getTemoignages());
+    
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // La recherche sera gérée via le routing vers /formations
+    navigate(`/formations?q=${encodeURIComponent(recherche)}`);
   };
 
   return (
@@ -48,19 +64,44 @@ export const HomePage = () => {
         <div className="absolute bottom-[-220px] left-[40%] h-[520px] w-[520px] rounded-full bg-sunset-400/15 blur-3xl" />
       </div>
 
-      <section className="relative overflow-hidden py-14 sm:py-20 lg:py-24">
-        <img src="/images/hero-bg.svg" alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/75 to-slate-950/45" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(26,184,153,0.35),transparent_45%)]" />
+      <section className="relative overflow-hidden rounded-3xl min-h-[600px] flex items-center">
+        {!prefersReducedMotion && !isMobile && (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster="/images/hero-fallback.jpg"
+            onLoadedData={() => setVideoLoaded(true)}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+              videoLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <source src="/videos/hero-education.mp4" type="video/mp4" />
+          </video>
+        )}
 
-        <div className="relative z-10 mx-auto max-w-7xl px-4 text-white sm:px-6 lg:px-8">
+        {/* Sur mobile ou si animations réduites : juste l'image, pas de vidéo */}
+        {(prefersReducedMotion || isMobile) && (
+          <img
+            src="/images/hero-fallback.jpg"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
+
+        {/* Voile sombre pour la lisibilité du texte */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/70 to-slate-950/40" />
+
+        {/* Contenu du hero existant */}
+        <div className="relative z-10 px-8 py-20 max-w-2xl">
           <div className="max-w-2xl rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-sm sm:p-10 lg:p-12">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium backdrop-blur-sm">
               <span className="text-lg">🎓</span>
               <span>{t("home.heroBadge")}</span>
             </div>
 
-            <h1 className="mb-4 font-display text-4xl font-extrabold leading-tight md:text-6xl">
+            <h1 className="mb-4 font-display text-4xl font-extrabold leading-tight md:text-6xl text-white">
               {t("home.heroTitleLine1")}
               <br />
               <span className="text-brand-400">{t("home.heroTitleLine2")}</span>
@@ -89,26 +130,12 @@ export const HomePage = () => {
       </section>
 
       <div className="relative z-20 -mt-6 mx-4 md:-mt-8 md:mx-16">
-        <form
+        <AnimatedSearchBar
+          value={recherche}
+          onChange={(e) => setRecherche(e.target.value)}
           onSubmit={handleSearch}
-          className="rounded-2xl border border-slate-200/70 bg-white/95 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.15)] backdrop-blur dark:border-slate-700/50 dark:bg-slate-900/95"
-        >
-          <div className="flex flex-col gap-3 md:flex-row">
-            <div className="relative flex-1">
-              <FiSearch className="absolute start-3 top-3 text-slate-500" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={t("home.searchPlaceholder")}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 ps-10 pe-4 text-slate-900 outline-none placeholder:text-slate-500 focus:border-brand-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-              />
-            </div>
-            <Link to={`/formations?search=${searchTerm}`} className="btn-primary inline-flex items-center justify-center">
-              {t("common.search")}
-            </Link>
-          </div>
-        </form>
+          placeholder={t("home.searchPlaceholder")}
+        />
       </div>
 
       <section className="relative z-10 mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">

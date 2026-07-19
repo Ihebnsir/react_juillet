@@ -127,6 +127,7 @@
     "signingIn": "Connexion...",
     "successToast": "Connexion réussie ! Redirection en cours...",
     "errorToast": "Identifiants invalides. Vérifiez votre email et mot de passe.",
+    "googleError": "Échec de la connexion Google.",
     "showPassword": "Afficher le mot de passe",
     "hidePassword": "Masquer le mot de passe",
     "heroTitle": "Boostez votre carrière avec SkillBridge",

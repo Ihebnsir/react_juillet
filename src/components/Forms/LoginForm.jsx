@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../../context/AuthContext";
+import { loginWithFacebook } from "../../services/facebookAuth";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { FiMail, FiLock, FiEye, FiEyeOff, FiLoader } from "react-icons/fi";
-import { FaGoogle, FaGithub, FaFacebookF, FaLinkedinIn } from "react-icons/fa";
+import { FaGithub, FaFacebookF, FaLinkedinIn } from "react-icons/fa";
+import { GoogleLogin } from "@react-oauth/google";
+import jwtDecode from "jwt-decode";
 import { ToastMessage } from "../UI/ToastMessage";
 
 export const LoginForm = () => {
   const rememberedEmail = localStorage.getItem("skillbridge_remembered_email") || "";
-  const { login } = useAuth();
+  const { login, loginViaProvider } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
@@ -32,11 +35,102 @@ export const LoginForm = () => {
 
   const handleToastClose = () => setToast({ type: "", message: "" });
 
-  const handleSocialLogin = (provider) => {
-    setToast({
-      type: "success",
-      message: t("login.providerSoonAvailable", { provider }),
-    });
+  const handleSocialLogin = async (provider) => {
+    try {
+      if (provider === "facebook") {
+        setLoading(true);
+        setError("");
+        handleToastClose();
+
+        const fbUser = await loginWithFacebook();
+        const user = await loginViaProvider({
+          email: fbUser.email,
+          nom: fbUser.name,
+          avatar: fbUser.picture?.data?.url,
+          provider: "facebook",
+        });
+
+        setToast({ type: "success", message: t("login.successToast") });
+        const roleRedirect =
+          user.role === "admin"
+            ? "/admin"
+            : user.role === "centre"
+            ? "/centre"
+            : "/dashboard";
+
+        setTimeout(() => navigate(roleRedirect, { replace: true }), 700);
+        return;
+      }
+
+      if (provider === "github") {
+        const clientId = process.env.REACT_APP_GITHUB_CLIENT_ID;
+        const redirectUri = `${window.location.origin}/auth/github/callback`;
+        window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
+          redirectUri
+        )}&scope=user:email`;
+        return;
+      }
+
+      if (provider === "linkedin") {
+        const clientId = process.env.REACT_APP_LINKEDIN_CLIENT_ID;
+        const redirectUri = `${window.location.origin}/auth/linkedin/callback`;
+        window.location.href = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(
+          redirectUri
+        )}&scope=r_liteprofile%20r_emailaddress`;
+        return;
+      }
+
+      setToast({
+        type: "success",
+        message: t("login.providerSoonAvailable", { provider }),
+      });
+    } catch (err) {
+      const message = err?.message || t("login.errorToast") || "Échec de la connexion sociale";
+      setError(message);
+      setToast({ type: "error", message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    setError("");
+    handleToastClose();
+
+    if (!credentialResponse?.credential) {
+      const message = t("login.googleError") || "Échec de la connexion Google";
+      setError(message);
+      setToast({ type: "error", message });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const decoded = jwtDecode(credentialResponse.credential);
+      const user = await login({
+        viaGoogle: true,
+        email: decoded.email,
+        nom: decoded.name,
+        avatar: decoded.picture,
+      });
+
+      setToast({ type: "success", message: t("login.successToast") });
+      const roleRedirect =
+        user.role === "admin"
+          ? "/admin"
+          : user.role === "centre"
+          ? "/centre"
+          : "/dashboard";
+
+      setTimeout(() => navigate(roleRedirect, { replace: true }), 700);
+    } catch (err) {
+      const message = t("login.errorToast") || "Échec de la connexion Google";
+      setError(message);
+      setToast({ type: "error", message });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onSubmit = async (data) => {
@@ -89,17 +183,32 @@ export const LoginForm = () => {
           </div>
         )}
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 mb-4">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => {
+              const message = t("login.googleError") || "Échec de la connexion Google";
+              setError(message);
+              setToast({ type: "error", message });
+            }}
+            theme="outline"
+            size="large"
+            width="100%"
+            text="continue_with"
+            locale="fr"
+          />
+        </div>
+
+        <div className="grid grid-cols-3 gap-3 mb-6">
           {[
-            { label: t("login.google"), icon: FaGoogle },
-            { label: t("login.github"), icon: FaGithub },
-            { label: t("login.facebook"), icon: FaFacebookF },
-            { label: t("login.linkedin"), icon: FaLinkedinIn },
-          ].map(({ label, icon: Icon }) => (
+            { label: t("login.github"), icon: FaGithub, provider: "github" },
+            { label: t("login.facebook"), icon: FaFacebookF, provider: "facebook" },
+            { label: t("login.linkedin"), icon: FaLinkedinIn, provider: "linkedin" },
+          ].map(({ label, icon: Icon, provider }) => (
             <button
               type="button"
               key={label}
-              onClick={() => handleSocialLogin(label)}
+              onClick={() => handleSocialLogin(provider)}
               className="flex items-center justify-center gap-2 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-teal-300 hover:bg-white"
               aria-label={label}
             >
