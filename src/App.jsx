@@ -19,6 +19,7 @@ import {
   markPreloaderShown,
   shouldShowPreloader,
 } from "./components/Preloader/skillBridgePreloaderSingleton";
+import { Chatbot } from "./components/Chatbot";
 
 
 // Pages
@@ -52,6 +53,7 @@ import { UtilisateursPage } from "./pages/admin/UtilisateursPage";
 import { LitigesPage } from "./pages/admin/LitigesPage";
 import { StatistiquesPage } from "./pages/admin/StatistiquesPage";
 import { ContenuAccueilPage } from "./pages/admin/ContenuAccueilPage";
+import { ContactAdminPage } from "./pages/admin/ContactAdminPage";
 import { MessageriePage as ApprenantMessageriePage } from "./pages/apprenant/MessageriePage";
 import { MessageriePage as CentreMessageriePage } from "./pages/centre/MessageriePage";
 import { SupportPage as AdminSupportPage } from "./pages/admin/SupportPage";
@@ -146,6 +148,7 @@ function App() {
                       <Route path="/admin/litiges" element={<LitigesPage />} />
                       <Route path="/admin/statistiques" element={<StatistiquesPage />} />
                       <Route path="/admin/contenu-accueil" element={<ContenuAccueilPage />} />
+                      <Route path="/admin/contact" element={<ContactAdminPage />} />
                     </Route>
                   </Route>
 
@@ -159,6 +162,7 @@ function App() {
                   />
                 </Routes>
               </main>
+              <Chatbot />
               <Footer />
             </div>
           </ReservationProvider>

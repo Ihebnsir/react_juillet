@@ -1,10 +1,43 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useFavorites } from "../../context/FavoritesContext";
 import { useTheme } from "../../context/ThemeContext";
 import { useTranslation } from "react-i18next";
-import { FiMenu, FiX, FiLogOut, FiBook, FiUser, FiMoon, FiSun } from "react-icons/fi";
+import { FiMenu, FiX, FiLogOut, FiBook, FiUser, FiMoon, FiSun, FiGrid } from "react-icons/fi";
 import { useState } from "react";
+
+/**
+ * Returns the correct dashboard path based on the user's role.
+ * @param {object} user - The authenticated user object
+ * @returns {string} The dashboard path
+ */
+const getDashboardPath = (user) => {
+  if (!user?.role) return "/";
+  switch (user.role) {
+    case "admin":
+      return "/admin";
+    case "centre":
+      return "/centre";
+    case "apprenant":
+    case "learner":
+      return "/dashboard";
+    default:
+      return "/";
+  }
+};
+
+/**
+ * Checks if the current pathname corresponds to the user's dashboard.
+ * @param {string} pathname - The current URL path
+ * @param {object} user - The authenticated user object
+ * @returns {boolean} True if user is on their dashboard
+ */
+const isOnDashboard = (pathname, user) => {
+  if (!user?.role) return false;
+  const dashboardPath = getDashboardPath(user);
+  // Match exact path or sub-paths (e.g., /admin/users is still in admin dashboard)
+  return pathname.startsWith(dashboardPath);
+};
 
 export const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -12,10 +45,13 @@ export const Navbar = () => {
   const { theme, setTheme } = useTheme();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const isLearner = user?.role === 'apprenant' || user?.role === 'learner';
   const isCentreUser = user?.role === 'centre';
   const langActive = i18n.language;
+  const dashboardPath = isAuthenticated ? getDashboardPath(user) : "/";
+  const onDashboard = isOnDashboard(location.pathname, user);
 
   const handleLogout = () => {
     logout();
@@ -24,6 +60,11 @@ export const Navbar = () => {
 
   const changeLanguage = (lang) => {
     i18n.changeLanguage(lang);
+  };
+
+  const handleDashboardClick = () => {
+    setIsOpen(false);
+    navigate(dashboardPath);
   };
 
   return (
@@ -71,19 +112,41 @@ export const Navbar = () => {
           <div className="ml-8 flex items-center gap-2 sm:gap-3">
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
-                <div className="hidden items-center gap-2 sm:flex">
+                {/* "Tableau de bord" button - visible on desktop */}
+                <Link
+                  to={dashboardPath}
+                  className={`hidden items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 sm:inline-flex ${
+                    onDashboard
+                      ? "bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-md"
+                      : "border border-brand-200 text-brand-700 hover:bg-brand-50 hover:-translate-y-0.5 dark:border-brand-700 dark:text-brand-300 dark:hover:bg-brand-900/30"
+                  }`}
+                >
+                  <FiGrid size={16} className="text-current" />
+                  {t('nav.dashboard')}
+                </Link>
+
+                {/* Profile avatar + username — clickable → dashboard */}
+                <Link
+                  to={dashboardPath}
+                  className="flex items-center gap-2 rounded-lg transition hover:bg-slate-100 dark:hover:bg-slate-800 px-2 py-1"
+                  title={t('nav.dashboard')}
+                >
                   {user?.avatar ? (
-                    <img src={user.avatar} alt={user?.name ?? 'Avatar'} className="h-8 w-8 rounded-full" />
+                    <img src={user.avatar} alt={user?.name ?? 'Avatar'} className="h-8 w-8 rounded-full object-cover" />
                   ) : (
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-gray-700 dark:bg-slate-700 dark:text-slate-200">
                       <FiUser size={16} className="text-current" />
                     </div>
                   )}
-                  <span className="text-sm font-medium text-gray-700 dark:text-slate-200">{user?.name}</span>
-                </div>
+                  <span className="hidden text-sm font-medium text-gray-700 dark:text-slate-200 sm:inline">{user?.name}</span>
+                </Link>
+
+                {/* Profile link */}
                 <Link to="/profil" className="text-gray-700 transition hover:text-teal-600 dark:text-slate-200">
                   <FiUser size={20} className="text-current" />
                 </Link>
+
+                {/* Logout */}
                 <button onClick={handleLogout} className="flex items-center gap-2 text-red-600 transition hover:text-red-700">
                   <FiLogOut size={20} className="text-current" />
                   <span className="hidden sm:inline">{t('nav.logout')}</span>
@@ -125,20 +188,49 @@ export const Navbar = () => {
 
         {isOpen && (
           <div className="space-y-3 border-t pt-4 pb-4 md:hidden">
-            <Link to="/" className="block text-gray-700 transition hover:text-teal-600" onClick={() => setIsOpen(false)}>{t('nav.home')}</Link>
-            <Link to="/formations" className="block text-gray-700 transition hover:text-teal-600" onClick={() => setIsOpen(false)}>{t('nav.formations')}</Link>
-            <Link to="/centres" className="block text-gray-700 transition hover:text-teal-600" onClick={() => setIsOpen(false)}>{t('nav.centres')}</Link>
-            <Link to="/a-propos" className="block text-gray-700 transition hover:text-teal-600" onClick={() => setIsOpen(false)}>{t('nav.about')}</Link>
-            <Link to="/temoignages" className="block text-gray-700 transition hover:text-teal-600" onClick={() => setIsOpen(false)}>{t('nav.testimonials')}</Link>
-            <Link to="/contact" className="block text-gray-700 transition hover:text-teal-600" onClick={() => setIsOpen(false)}>{t('nav.contact')}</Link>
-            {isAuthenticated && isLearner && (
-              <>
-                <Link to="/favoris" className="block text-gray-700 transition hover:text-teal-600" onClick={() => setIsOpen(false)}>{t('nav.favorites')} ({favoriteCount})</Link>
-                <Link to="/reservations" className="block text-gray-700 transition hover:text-teal-600" onClick={() => setIsOpen(false)}>{t('nav.reservations')}</Link>
-              </>
+            {/* Dashboard link — always first when authenticated */}
+            {isAuthenticated && (
+              <Link
+                to={dashboardPath}
+                className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                  onDashboard
+                    ? "bg-gradient-to-r from-brand-500 to-brand-600 text-white"
+                    : "text-gray-700 hover:text-teal-600 dark:text-slate-200"
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                <FiGrid size={18} className="text-current" />
+                {t('nav.dashboard')}
+              </Link>
             )}
-            {isAuthenticated && isCentreUser && (
-              <Link to="/centre/offres" className="block text-gray-700 transition hover:text-teal-600" onClick={() => setIsOpen(false)}>Mes offres</Link>
+
+            <Link to="/" className="block text-gray-700 transition hover:text-teal-600 dark:text-slate-200" onClick={() => setIsOpen(false)}>{t('nav.home')}</Link>
+            <Link to="/formations" className="block text-gray-700 transition hover:text-teal-600 dark:text-slate-200" onClick={() => setIsOpen(false)}>{t('nav.formations')}</Link>
+            <Link to="/centres" className="block text-gray-700 transition hover:text-teal-600 dark:text-slate-200" onClick={() => setIsOpen(false)}>{t('nav.centres')}</Link>
+            <Link to="/a-propos" className="block text-gray-700 transition hover:text-teal-600 dark:text-slate-200" onClick={() => setIsOpen(false)}>{t('nav.about')}</Link>
+            <Link to="/temoignages" className="block text-gray-700 transition hover:text-teal-600 dark:text-slate-200" onClick={() => setIsOpen(false)}>{t('nav.testimonials')}</Link>
+            <Link to="/contact" className="block text-gray-700 transition hover:text-teal-600 dark:text-slate-200" onClick={() => setIsOpen(false)}>{t('nav.contact')}</Link>
+
+            {/* Profile, favorites, reservations for authenticated users */}
+            {isAuthenticated && (
+              <>
+                <hr className="border-slate-200 dark:border-slate-700" />
+                <Link to="/profil" className="flex items-center gap-2 text-gray-700 transition hover:text-teal-600 dark:text-slate-200" onClick={() => setIsOpen(false)}>
+                  <FiUser size={18} /> {t('nav.profile')}
+                </Link>
+                {isLearner && (
+                  <>
+                    <Link to="/favoris" className="block text-gray-700 transition hover:text-teal-600 dark:text-slate-200" onClick={() => setIsOpen(false)}>{t('nav.favorites')} ({favoriteCount})</Link>
+                    <Link to="/reservations" className="block text-gray-700 transition hover:text-teal-600 dark:text-slate-200" onClick={() => setIsOpen(false)}>{t('nav.reservations')}</Link>
+                  </>
+                )}
+                {isCentreUser && (
+                  <Link to="/centre/offres" className="block text-gray-700 transition hover:text-teal-600 dark:text-slate-200" onClick={() => setIsOpen(false)}>Mes offres</Link>
+                )}
+                <button onClick={handleLogout} className="flex items-center gap-2 text-red-600 transition hover:text-red-700">
+                  <FiLogOut size={18} /> {t('nav.logout')}
+                </button>
+              </>
             )}
           </div>
         )}
@@ -146,3 +238,4 @@ export const Navbar = () => {
     </nav>
   );
 };
+

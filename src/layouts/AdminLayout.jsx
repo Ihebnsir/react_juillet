@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiBarChart2, FiShield, FiUsers, FiAlertTriangle, FiHome, FiMenu, FiX } from 'react-icons/fi';
+import { FiBarChart2, FiShield, FiUsers, FiAlertTriangle, FiHome, FiMenu, FiX, FiMail } from 'react-icons/fi';
 
 const links = [
   { to: '/admin', label: 'Tableau de bord', icon: FiBarChart2 },
@@ -12,6 +12,7 @@ const links = [
   { to: '/admin/litiges', label: 'Litiges', icon: FiAlertTriangle },
   { to: '/admin/statistiques', label: 'Statistiques', icon: FiBarChart2 },
   { to: '/admin/contenu-accueil', label: 'Contenu accueil', icon: FiHome },
+  { to: '/admin/contact', label: 'Contact', icon: FiMail },
 ];
 
 const getInitialCollapsed = () => {

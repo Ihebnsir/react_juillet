@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { formationsService } from "../services/formationsService";
+import heroVideo from "../assets/videos/hero-education.mp4";
 import { FormationCard } from "../components/Cards/FormationCard";
 import { FiArrowRight, FiCheckCircle, FiShield, FiGlobe } from "react-icons/fi";
 import Carousel from "../components/UI/Carousel";
@@ -77,7 +78,7 @@ export const HomePage = () => {
               videoLoaded ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            <source src="/videos/hero-education.mp4" type="video/mp4" />
+            <source src={heroVideo} type="video/mp4" />
           </video>
         )}
 
