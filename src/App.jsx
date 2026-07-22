@@ -56,6 +56,7 @@ import { ContenuAccueilPage } from "./pages/admin/ContenuAccueilPage";
 import { ContactAdminPage } from "./pages/admin/ContactAdminPage";
 import { MessageriePage as ApprenantMessageriePage } from "./pages/apprenant/MessageriePage";
 import { MessageriePage as CentreMessageriePage } from "./pages/centre/MessageriePage";
+import CentreCalendarPage from "./pages/centre/CentreCalendarPage";
 import { SupportPage as AdminSupportPage } from "./pages/admin/SupportPage";
 
 function App() {
@@ -131,6 +132,7 @@ function App() {
                       <Route path="/centre/offres" element={<MesOffresPage />} />
                       <Route path="/centre/offres/nouvelle" element={<NouvelleOffrePage />} />
                       <Route path="/centre/messagerie" element={<CentreMessageriePage />} />
+                      <Route path="/centre/calendar" element={<CentreCalendarPage />} />
                       <Route path="/centre/offres/:id/modifier" element={<NouvelleOffrePage />} />
                       <Route path="/centre/offres/:id" element={<DetailOffrePage />} />
                       <Route path="/centre/reservations" element={<ReservationsRecuesPage />} />

@@ -3,21 +3,35 @@ import { motion } from 'framer-motion';
 import { mockCentres } from '../../data/mockCentres';
 import { mockFormations } from '../../data/mockFormations';
 import { mockReservations } from '../../data/mockReservations';
-import { AnimatedStatCard } from '../../components/dashboard/AnimatedStatCard';
-import { DataChart } from '../../components/dashboard/DataChart';
-import { EmptyState } from '../../components/dashboard/EmptyState';
-import { FiBookOpen, FiCalendar, FiTrendingUp, FiStar, FiCheckCircle, FiClock, FiShield, FiXCircle } from 'react-icons/fi';
+import { FiBookOpen, FiCalendar, FiStar, FiUserPlus, FiPackage, FiCheckCircle, FiMessageCircle, FiClock, FiShield, FiXCircle } from 'react-icons/fi';
+import DashboardHero from '../../components/centre/DashboardHero';
+import KPICard from '../../components/centre/KPICard';
+import QuickActions from '../../components/centre/QuickActions';
+import AnalyticsSection from '../../components/centre/AnalyticsSection';
+import TopFormations from '../../components/centre/TopFormations';
+import RecentActivity from '../../components/centre/RecentActivity';
+import NotificationCenter from '../../components/centre/NotificationCenter';
+import MessagesPreview from '../../components/centre/MessagesPreview';
+import ProfileProgress from '../../components/centre/ProfileProgress';
+import CalendarCard from '../../components/centre/CalendarCard';
 
 export const DashboardPage = () => {
   const centre = mockCentres[0];
-  const reservations = mockReservations.filter((reservation) => reservation.formationId === 'form-1' || reservation.formationId === 'form-2');
-  const data = [
+  const centreFormationIds = mockFormations.filter((f) => f.centreId === centre.id).map((f) => f.id);
+  const reservations = mockReservations.filter((reservation) => centreFormationIds.includes(reservation.formationId));
+  const studentsCount = Array.from(new Set(reservations.map((r) => r.learnerId))).length || 0;
+  const monthlyData = [
     { name: 'Jan', value: 2 },
     { name: 'Fév', value: 4 },
     { name: 'Mar', value: 3 },
     { name: 'Avr', value: 5 },
     { name: 'Mai', value: 6 },
     { name: 'Jui', value: 8 },
+  ];
+  const donutData = [
+    { name: 'Confirmé', value: 42 },
+    { name: 'En attente', value: 18 },
+    { name: 'Annulé', value: 6 },
   ];
 
   const statutConfig = {
@@ -39,44 +53,36 @@ export const DashboardPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className={`relative overflow-hidden rounded-3xl p-8 text-white ${centre.verifie ? 'bg-gradient-to-br from-brand-600 to-brand-800' : 'bg-gradient-to-br from-sunset-600 to-sunset-700'}`}>
-        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
-        <div className="relative z-10">
-          <p className="mb-1 text-sm font-medium uppercase tracking-wide text-white/80">Centre de formation</p>
-          <h1 className="text-2xl font-display font-bold md:text-3xl">{centre.name}</h1>
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-white/15 px-3 py-1 text-sm font-medium">{centre.verifie ? 'Centre vérifié' : 'En attente de vérification'}</span>
-            <StatutBadge statut={centre.verifie ? 'verifie' : 'en_attente'} />
-          </div>
-        </div>
-      </div>
+      <DashboardHero centre={{ ...centre, students: 342, courses: mockFormations.filter(f => f.centreId === centre.id).length }} />
 
       <div className="grid gap-4 md:grid-cols-4">
-        <AnimatedStatCard icon={FiBookOpen} value={mockFormations.filter((item) => item.centreId === 'centre-1').length} label="Formations publiées" tone="brand" delay={0.04} />
-        <AnimatedStatCard icon={FiCalendar} value={reservations.length} label="Réservations en cours" tone="accent" delay={0.1} />
-        <AnimatedStatCard icon={FiTrendingUp} value="78" label="Taux de remplissage" tone="emerald" delay={0.16} />
-        <AnimatedStatCard icon={FiStar} value={centre.noteMoyenne.toFixed(1)} label="Note moyenne" tone="sunset" delay={0.22} />
+        <KPICard icon={FiBookOpen} title="Formations publiées" value={mockFormations.filter((item) => item.centreId === centre.id).length} subtitle="Total" />
+        <KPICard icon={FiCalendar} title="Réservations" value={reservations.length} subtitle="Actives" />
+        <KPICard icon={FiUserPlus} title="Étudiants" value={studentsCount} subtitle="Inscrits" />
+        <KPICard icon={FiStar} title="Note moyenne" value={centre.noteMoyenne.toFixed(1)} subtitle="Basé sur avis" />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_0.9fr]">
-        <DataChart data={data} dataKey="value" label="Réservations par mois" />
-        <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Dernières réservations reçues</h2>
-          {reservations.length > 0 ? (
-            <ul className="mt-4 space-y-3 text-sm text-gray-600 dark:text-slate-300">
-              {reservations.map((reservation, index) => (
-                <motion.li
-                  key={reservation.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-700"
-                >
-                  {reservation.status} — {reservation.date}
-                </motion.li>
-              ))}
-            </ul>
-          ) : <EmptyState title="Aucune réservation" description="Vos réservations apparaîtront ici dès qu’elles seront reçues." />}
+      <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
+        <div className="space-y-6">
+          <QuickActions />
+          <AnalyticsSection monthlyData={monthlyData} donutData={donutData} />
+          <TopFormations formations={mockFormations.filter(f => f.centreId === centre.id).slice(0,6)} />
+          <ProfileProgress percent={72} tasks={[{id:1,label:'Télécharger le logo',done:true},{id:2,label:'Ajouter description',done:false},{id:3,label:'Ajouter formateurs',done:false}]} />
+        </div>
+
+        <div className="space-y-6">
+          <RecentActivity items={[
+            { id: 'a1', icon: FiUserPlus, title: 'Nouvel apprenant inscrit', time: '2h' , tone: 'bg-emerald-500'},
+            { id: 'a2', icon: FiPackage, title: 'Formation publiée: React Avancé', time: '1j' , tone: 'bg-sky-500'},
+            { id: 'a3', icon: FiCheckCircle, title: 'Réservation confirmée', time: '3j' , tone: 'bg-emerald-500'},
+            { id: 'a4', icon: FiMessageCircle, title: 'Message reçu de Youssef', time: '5j' , tone: 'bg-slate-400'},
+          ]} />
+
+          <NotificationCenter notifications={[{id:'n1',title:'Nouvelle réservation',time:'Il y a 2h',unread:true},{id:'n2',title:'Nouveau avis',time:'Il y a 1j'}]} />
+
+          <CalendarCard events={[{id:1,title:'Session React',date:'2026-08-05',time:'10:00'},{id:2,title:'Webinaire SEO',date:'2026-08-12',time:'14:00'}]} />
+
+          <MessagesPreview messages={[{id:'m1',name:'Sana',preview:'Bonjour, je souhaite...',time:'1h',unread:1},{id:'m2',name:'Khaled',preview:'Merci pour la formation',time:'3j'}]} />
         </div>
       </div>
     </div>

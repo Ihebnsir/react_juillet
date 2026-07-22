@@ -9,7 +9,8 @@ const links = [
   { to: '/centre/offres', label: 'Mes offres', icon: FiBookOpen },
   { to: '/centre/offres/nouvelle', label: 'Publier une offre', icon: FiPlusCircle },
   { to: '/centre/reservations', label: 'Réservations', icon: FiCalendar },
-  { to: '/centre/messages', label: 'Messagerie', icon: FiMessageSquare },
+  { to: '/centre/calendar', label: 'Calendrier', icon: FiCalendar },
+  { to: '/centre/messagerie', label: 'Messagerie', icon: FiMessageSquare },
   { to: '/centre/verification', label: 'Vérification', icon: FiShield },
   { to: '/profil', label: 'Profil', icon: FiUser },
 ];
