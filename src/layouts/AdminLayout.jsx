@@ -2,17 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiBarChart2, FiShield, FiUsers, FiAlertTriangle, FiHome, FiMenu, FiX, FiMail } from 'react-icons/fi';
+import { FiBarChart2, FiShield, FiUsers, FiAlertTriangle, FiHome, FiMenu, FiX, FiMail, FiSettings, FiFileText, FiMessageSquare } from 'react-icons/fi';
 
 const links = [
-  { to: '/admin', label: 'Tableau de bord', icon: FiBarChart2 },
-  { to: '/admin/moderation', label: 'Modération', icon: FiShield },
-  { to: '/admin/centres-en-attente', label: 'Centres en attente', icon: FiUsers },
+  { to: '/admin', label: 'Dashboard', icon: FiBarChart2 },
+  { to: '/admin/moderation', label: 'Validation', icon: FiShield },
+  { to: '/admin/centres-en-attente', label: 'Centres', icon: FiUsers },
   { to: '/admin/utilisateurs', label: 'Utilisateurs', icon: FiUsers },
-  { to: '/admin/litiges', label: 'Litiges', icon: FiAlertTriangle },
-  { to: '/admin/statistiques', label: 'Statistiques', icon: FiBarChart2 },
-  { to: '/admin/contenu-accueil', label: 'Contenu accueil', icon: FiHome },
-  { to: '/admin/contact', label: 'Contact', icon: FiMail },
+  { to: '/admin/litiges', label: 'Signalements', icon: FiAlertTriangle },
+  { to: '/admin/statistiques', label: 'Analytics', icon: FiBarChart2 },
+  { to: '/admin/contenu-accueil', label: 'Contenu', icon: FiFileText },
+  { to: '/admin/contact', label: 'Messages', icon: FiMessageSquare },
+  { to: '/admin/settings', label: 'Settings', icon: FiSettings },
 ];
 
 const getInitialCollapsed = () => {

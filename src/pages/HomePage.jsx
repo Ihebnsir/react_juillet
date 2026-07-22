@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -91,53 +91,68 @@ export const HomePage = () => {
           />
         )}
 
-        {/* Voile sombre pour la lisibilité du texte */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/70 to-slate-950/40" />
+        {/* Strong dark overlay + radial gradient for contrast */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/85 to-slate-950/60" />
+        <div className="absolute inset-0 -z-10 pointer-events-none">
+          <div className="absolute right-[-8%] top-1/2 h-[700px] w-[700px] -translate-y-1/2 rounded-full bg-gradient-to-br from-transparent via-black/40 to-black/60 opacity-60 blur-3xl" />
+        </div>
 
-        {/* Contenu du hero existant */}
-        <div className="relative z-10 px-8 py-20 max-w-2xl">
-          <div className="max-w-2xl rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-sm sm:p-10 lg:p-12">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium backdrop-blur-sm">
-              <span className="text-lg">🎓</span>
-              <span>{t("home.heroBadge")}</span>
+        {/* New two-column hero layout */}
+        <div className="relative z-10 w-full">
+          <div className="mx-auto grid max-w-[1400px] grid-cols-1 items-center gap-8 px-8 py-20 lg:grid-cols-12">
+            {/* Left column (45%) */}
+            <div className="lg:col-span-6 xl:col-span-5">
+              <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-sm sm:p-10 lg:p-12 max-w-xl">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium backdrop-blur-sm">
+                  <span className="text-lg">🎓</span>
+                  <span>{t("home.heroBadge")}</span>
+                </div>
+
+                <h1 className="mb-4 font-display text-4xl font-extrabold leading-tight md:text-5xl text-white">
+                  {t("home.heroTitleLine1")}
+                  <br />
+                  <span className="text-brand-400">{t("home.heroTitleLine2")}</span>
+                </h1>
+
+                <p className="mb-6 max-w-xl text-lg leading-relaxed text-slate-300">
+                  {t("home.heroSubtitle")}
+                </p>
+
+                <div className="mb-6 flex flex-wrap gap-4">
+                  <Link to="/formations" className="btn-primary inline-flex items-center gap-2">
+                    {t("home.heroPrimaryCta")} <FiArrowRight />
+                  </Link>
+                  <Link to="/register" className="inline-flex items-center justify-center rounded-xl border-2 border-white/30 px-6 py-3 font-semibold text-white transition hover:bg-white/10">
+                    {t("home.heroSecondaryCta")}
+                  </Link>
+                </div>
+
+                <div className="mb-6">
+                  <AnimatedSearchBar
+                    value={recherche}
+                    onChange={(e) => setRecherche(e.target.value)}
+                    onSubmit={handleSearch}
+                    placeholder={t("home.searchPlaceholder")}
+                  />
+                </div>
+
+                <div className="flex flex-wrap gap-6 text-sm text-slate-300">
+                  <span className="flex items-center gap-2"><FiCheckCircle className="text-brand-400" /> {t("home.heroTrust1")}</span>
+                  <span className="flex items-center gap-2"><FiShield className="text-brand-400" /> {t("home.heroTrust2")}</span>
+                  <span className="flex items-center gap-2"><FiGlobe className="text-brand-400" /> {t("home.heroTrust3")}</span>
+                </div>
+              </div>
             </div>
 
-            <h1 className="mb-4 font-display text-4xl font-extrabold leading-tight md:text-6xl text-white">
-              {t("home.heroTitleLine1")}
-              <br />
-              <span className="text-brand-400">{t("home.heroTitleLine2")}</span>
-            </h1>
-
-            <p className="mb-8 max-w-xl text-lg leading-relaxed text-slate-300">
-              {t("home.heroSubtitle")}
-            </p>
-
-            <div className="mb-8 flex flex-wrap gap-4">
-              <Link to="/formations" className="btn-primary inline-flex items-center gap-2">
-                {t("home.heroPrimaryCta")} <FiArrowRight />
-              </Link>
-              <Link to="/register" className="inline-flex items-center justify-center rounded-xl border-2 border-white/30 px-6 py-3 font-semibold text-white transition hover:bg-white/10">
-                {t("home.heroSecondaryCta")}
-              </Link>
-            </div>
-
-            <div className="flex flex-wrap gap-6 text-sm text-slate-300">
-              <span className="flex items-center gap-2"><FiCheckCircle className="text-brand-400" /> {t("home.heroTrust1")}</span>
-              <span className="flex items-center gap-2"><FiShield className="text-brand-400" /> {t("home.heroTrust2")}</span>
-              <span className="flex items-center gap-2"><FiGlobe className="text-brand-400" /> {t("home.heroTrust3")}</span>
+            {/* No right preview — single centered left content */}
+            <div className="lg:col-span-12 flex items-center justify-center">
+              <div className="w-full max-w-3xl">
+                {/* content remains in the left container above; this ensures horizontal centering and balanced layout */}
+              </div>
             </div>
           </div>
         </div>
       </section>
-
-      <div className="relative z-20 -mt-6 mx-4 md:-mt-8 md:mx-16">
-        <AnimatedSearchBar
-          value={recherche}
-          onChange={(e) => setRecherche(e.target.value)}
-          onSubmit={handleSearch}
-          placeholder={t("home.searchPlaceholder")}
-        />
-      </div>
 
       <section className="relative z-10 mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="sb-surface rounded-3xl px-6 py-5">
