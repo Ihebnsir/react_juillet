@@ -61,6 +61,7 @@ import { MessageriePage as ApprenantMessageriePage } from "./pages/apprenant/Mes
 import { MessageriePage as CentreMessageriePage } from "./pages/centre/MessageriePage";
 import CentreCalendarPage from "./pages/centre/CentreCalendarPage";
 import { SupportPage as AdminSupportPage } from "./pages/admin/SupportPage";
+import VerifierCertificatPage from "./pages/VerifierCertificatPage";
 
 function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) {
   const location = useLocation();
@@ -91,7 +92,6 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
       <main className="flex-grow">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/formations" element={<FormationsPage />} />
           <Route path="/centres" element={<CentresPage />} />
           <Route path="/a-propos" element={<AboutPage />} />
           <Route path="/temoignages" element={<TestimonialsPage />} />
@@ -103,6 +103,7 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
           <Route path="/auth/github/callback" element={<GithubCallbackPage />} />
           <Route path="/auth/linkedin/callback" element={<LinkedinCallbackPage />} />
           <Route path="/centres/:id" element={<CenterProfilePage />} />
+          <Route path="/verifier-certificat/:id" element={<VerifierCertificatPage />} />
 
           <Route element={<ProtectedRoute allowedRoles={["apprenant"]} />}>
             <Route element={<ApprenantLayout />}>
@@ -116,6 +117,7 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
               <Route path="/mes-avis" element={<MesAvisPage />} />
               <Route path="/parametres" element={<ParametresPage />} />
               <Route path="/messagerie" element={<ApprenantMessageriePage />} />
+              <Route path="/profil" element={<ProfilePage />} />
               <Route path="/support" element={<AdminSupportPage />} />
             </Route>
           </Route>
@@ -148,14 +150,6 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
             </Route>
           </Route>
 
-          <Route
-            path="/profil"
-            element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            }
-          />
         </Routes>
       </main>
       {!shouldUseAppShell && <Chatbot />}
