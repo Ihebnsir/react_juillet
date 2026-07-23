@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import { FavoritesProvider } from "./context/FavoritesContext";
 import { ReservationProvider } from "./context/ReservationContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -40,6 +40,9 @@ import { DashboardPage as ApprenantDashboardPage } from "./pages/apprenant/Dashb
 import { MesReservationsPage } from "./pages/apprenant/MesReservationsPage";
 import { MesFavorisPage } from "./pages/apprenant/MesFavorisPage";
 import { MesCertificationsPage } from "./pages/apprenant/MesCertificationsPage";
+import { RecommandationsPage } from "./pages/apprenant/RecommandationsPage";
+import { MesAvisPage } from "./pages/apprenant/MesAvisPage";
+import { ParametresPage } from "./pages/apprenant/ParametresPage";
 import { DashboardPage as CentreDashboardPage } from "./pages/centre/DashboardPage";
 import { MesOffresPage } from "./pages/centre/MesOffresPage";
 import { NouvelleOffrePage } from "./pages/centre/NouvelleOffrePage";
@@ -58,6 +61,108 @@ import { MessageriePage as ApprenantMessageriePage } from "./pages/apprenant/Mes
 import { MessageriePage as CentreMessageriePage } from "./pages/centre/MessageriePage";
 import CentreCalendarPage from "./pages/centre/CentreCalendarPage";
 import { SupportPage as AdminSupportPage } from "./pages/admin/SupportPage";
+
+function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) {
+  const location = useLocation();
+  const { user, isAuthenticated } = useAuth();
+
+  const isProtectedAppRoute = [
+    '/dashboard',
+    '/reservations',
+    '/favoris',
+    '/messagerie',
+    '/certifications',
+    '/profil',
+    '/recommandations',
+    '/mes-avis',
+    '/parametres',
+    '/support',
+    '/centre',
+    '/admin',
+  ].some((prefix) => location.pathname === prefix || location.pathname.startsWith(`${prefix}/`));
+
+  const isApprenantFormationsRoute = location.pathname === '/formations' || location.pathname.startsWith('/formations/');
+  const shouldUseAppShell = isAuthenticated && (isProtectedAppRoute || (isApprenantFormationsRoute && (user?.role === 'apprenant' || user?.role === 'learner')));
+
+  return (
+    <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900 transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100">
+      {showPreloader && <SkillBridgePreloader fadingOut={fadingOut} />}
+      {!shouldUseAppShell && <Navbar />}
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/formations" element={<FormationsPage />} />
+          <Route path="/centres" element={<CentresPage />} />
+          <Route path="/a-propos" element={<AboutPage />} />
+          <Route path="/temoignages" element={<TestimonialsPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/auth/github/callback" element={<GithubCallbackPage />} />
+          <Route path="/auth/linkedin/callback" element={<LinkedinCallbackPage />} />
+          <Route path="/centres/:id" element={<CenterProfilePage />} />
+
+          <Route element={<ProtectedRoute allowedRoles={["apprenant"]} />}>
+            <Route element={<ApprenantLayout />}>
+              <Route path="/dashboard" element={<ApprenantDashboardPage />} />
+              <Route path="/formations" element={<FormationsPage />} />
+              <Route path="/formations/:id" element={<FormationDetailPage />} />
+              <Route path="/reservations" element={<MesReservationsPage />} />
+              <Route path="/favoris" element={<MesFavorisPage />} />
+              <Route path="/certifications" element={<MesCertificationsPage />} />
+              <Route path="/recommandations" element={<RecommandationsPage />} />
+              <Route path="/mes-avis" element={<MesAvisPage />} />
+              <Route path="/parametres" element={<ParametresPage />} />
+              <Route path="/messagerie" element={<ApprenantMessageriePage />} />
+              <Route path="/support" element={<AdminSupportPage />} />
+            </Route>
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={["centre"]} />}>
+            <Route element={<CentreLayout />}>
+              <Route path="/centre" element={<CentreDashboardPage />} />
+              <Route path="/centre/offres" element={<MesOffresPage />} />
+              <Route path="/centre/offres/nouvelle" element={<NouvelleOffrePage />} />
+              <Route path="/centre/messagerie" element={<CentreMessageriePage />} />
+              <Route path="/centre/calendar" element={<CentreCalendarPage />} />
+              <Route path="/centre/offres/:id/modifier" element={<NouvelleOffrePage />} />
+              <Route path="/centre/offres/:id" element={<DetailOffrePage />} />
+              <Route path="/centre/reservations" element={<ReservationsRecuesPage />} />
+              <Route path="/centre/verification" element={<StatutVerificationPage />} />
+            </Route>
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+            <Route element={<AdminLayout />}>
+              <Route path="/admin" element={<AdminDashboardPage />} />
+              <Route path="/admin/support" element={<AdminSupportPage />} />
+              <Route path="/admin/moderation" element={<ModerationPage />} />
+              <Route path="/admin/centres-en-attente" element={<CentresEnAttentePage />} />
+              <Route path="/admin/utilisateurs" element={<UtilisateursPage />} />
+              <Route path="/admin/litiges" element={<LitigesPage />} />
+              <Route path="/admin/statistiques" element={<StatistiquesPage />} />
+              <Route path="/admin/contenu-accueil" element={<ContenuAccueilPage />} />
+              <Route path="/admin/contact" element={<ContactAdminPage />} />
+            </Route>
+          </Route>
+
+          <Route
+            path="/profil"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </main>
+      {!shouldUseAppShell && <Chatbot />}
+      {!shouldUseAppShell && <Footer />}
+    </div>
+  );
+}
 
 function App() {
   const [showPreloader, setShowPreloader] = useState(() => shouldShowPreloader());
@@ -87,89 +192,21 @@ function App() {
     };
   }, [showPreloader]);
 
-
   return (
     <Router>
       <ThemeProvider>
-      <AuthProvider>
-        <FavoritesProvider>
-          <ReservationProvider>
-            <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 transition-colors duration-300">
-              {showPreloader && <SkillBridgePreloader fadingOut={fadingOut} />}
-              <Navbar />
-              <main className="flex-grow">
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/formations" element={<FormationsPage />} />
-                  <Route path="/centres" element={<CentresPage />} />
-                  <Route path="/a-propos" element={<AboutPage />} />
-                  <Route path="/temoignages" element={<TestimonialsPage />} />
-                  <Route path="/contact" element={<ContactPage />} />
-
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
-                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                  <Route path="/auth/github/callback" element={<GithubCallbackPage />} />
-                  <Route path="/auth/linkedin/callback" element={<LinkedinCallbackPage />} />
-                  <Route path="/centres/:id" element={<CenterProfilePage />} />
-
-                  <Route element={<ProtectedRoute allowedRoles={["apprenant"]} />}>
-                    <Route element={<ApprenantLayout />}>
-                      <Route path="/dashboard" element={<ApprenantDashboardPage />} />
-                      <Route path="/formations" element={<FormationsPage />} />
-                      <Route path="/formations/:id" element={<FormationDetailPage />} />
-                      <Route path="/reservations" element={<MesReservationsPage />} />
-                      <Route path="/favoris" element={<MesFavorisPage />} />
-                      <Route path="/certifications" element={<MesCertificationsPage />} />
-                      <Route path="/messagerie" element={<ApprenantMessageriePage />} />
-                      <Route path="/support" element={<AdminSupportPage />} />
-                    </Route>
-                  </Route>
-
-                  <Route element={<ProtectedRoute allowedRoles={["centre"]} />}>
-                    <Route element={<CentreLayout />}>
-                      <Route path="/centre" element={<CentreDashboardPage />} />
-                      <Route path="/centre/offres" element={<MesOffresPage />} />
-                      <Route path="/centre/offres/nouvelle" element={<NouvelleOffrePage />} />
-                      <Route path="/centre/messagerie" element={<CentreMessageriePage />} />
-                      <Route path="/centre/calendar" element={<CentreCalendarPage />} />
-                      <Route path="/centre/offres/:id/modifier" element={<NouvelleOffrePage />} />
-                      <Route path="/centre/offres/:id" element={<DetailOffrePage />} />
-                      <Route path="/centre/reservations" element={<ReservationsRecuesPage />} />
-                      <Route path="/centre/verification" element={<StatutVerificationPage />} />
-                    </Route>
-                  </Route>
-
-                  <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-                    <Route element={<AdminLayout />}>
-                      <Route path="/admin" element={<AdminDashboardPage />} />
-                      <Route path="/admin/support" element={<AdminSupportPage />} />
-                      <Route path="/admin/moderation" element={<ModerationPage />} />
-                      <Route path="/admin/centres-en-attente" element={<CentresEnAttentePage />} />
-                      <Route path="/admin/utilisateurs" element={<UtilisateursPage />} />
-                      <Route path="/admin/litiges" element={<LitigesPage />} />
-                      <Route path="/admin/statistiques" element={<StatistiquesPage />} />
-                      <Route path="/admin/contenu-accueil" element={<ContenuAccueilPage />} />
-                      <Route path="/admin/contact" element={<ContactAdminPage />} />
-                    </Route>
-                  </Route>
-
-                  <Route
-                    path="/profil"
-                    element={
-                      <ProtectedRoute>
-                        <ProfilePage />
-                      </ProtectedRoute>
-                    }
-                  />
-                </Routes>
-              </main>
-              <Chatbot />
-              <Footer />
-            </div>
-          </ReservationProvider>
-        </FavoritesProvider>
-      </AuthProvider>
+        <AuthProvider>
+          <FavoritesProvider>
+            <ReservationProvider>
+              <AppShell
+                showPreloader={showPreloader}
+                fadingOut={fadingOut}
+                setShowPreloader={setShowPreloader}
+                setFadingOut={setFadingOut}
+              />
+            </ReservationProvider>
+          </FavoritesProvider>
+        </AuthProvider>
       </ThemeProvider>
     </Router>
   );

@@ -4,7 +4,7 @@ import { getContactInfo, updateContactInfo } from '../../services/contactService
 import { FiSave, FiCheck, FiAlertCircle, FiRefreshCw } from 'react-icons/fi';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_REGEX = /^[\d\s\+\-\(\)]+$/;
+const PHONE_REGEX = /^[\d\s+().-]+$/;
 
 const initialErrors = {
   phone: '',

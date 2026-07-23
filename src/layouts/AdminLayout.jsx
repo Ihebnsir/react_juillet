@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiBarChart2, FiShield, FiUsers, FiAlertTriangle, FiHome, FiMenu, FiX, FiMail, FiSettings, FiFileText, FiMessageSquare } from 'react-icons/fi';
+import { FiBarChart2, FiShield, FiUsers, FiAlertTriangle, FiX, FiSettings, FiFileText, FiMessageSquare } from 'react-icons/fi';
+import { AppTopbar } from '../components/Layout/AppTopbar';
 
 const links = [
   { to: '/admin', label: 'Dashboard', icon: FiBarChart2 },
@@ -96,19 +97,7 @@ export const AdminLayout = () => {
         </aside>
 
         <div className="flex-1">
-          <header className="border-b border-slate-200 bg-white/80 px-4 py-4 backdrop-blur dark:border-slate-700 dark:bg-slate-800/80 lg:px-6">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <button className="rounded-lg p-2 text-gray-700 transition hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-700" onClick={handleMenuClick} aria-label="Ouvrir le menu">
-                  {mobileOpen ? <FiX size={20} /> : <FiMenu size={20} />}
-                </button>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-slate-400">Panneau</p>
-                  <h1 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{user?.name || 'Admin'}</h1>
-                </div>
-              </div>
-            </div>
-          </header>
+          <AppTopbar onMenuToggle={handleMenuClick} mobileOpen={mobileOpen} />
           <main className="p-4 lg:p-6">
             <Outlet />
           </main>

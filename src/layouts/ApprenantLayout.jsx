@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiHome, FiBookOpen, FiCalendar, FiHeart, FiMessageCircle, FiAward, FiUser, FiMenu, FiX, FiHelpCircle } from 'react-icons/fi';
+import { FiHome, FiBookOpen, FiCalendar, FiHeart, FiMessageCircle, FiAward, FiUser, FiX, FiTrendingUp, FiStar, FiSettings } from 'react-icons/fi';
 import { messagingService } from '../services/messagingService';
+import { AppTopbar, FloatingActionButton } from '../components/Layout/AppTopbar';
 
 const links = [
   { to: '/dashboard', label: 'Tableau de bord', icon: FiHome },
@@ -13,6 +14,9 @@ const links = [
   { to: '/messagerie', label: 'Messages', icon: FiMessageCircle },
   { to: '/certifications', label: 'Certifications', icon: FiAward },
   { to: '/profil', label: 'Profil', icon: FiUser },
+  { to: '/recommandations', label: 'Recommandations', icon: FiTrendingUp },
+  { to: '/mes-avis', label: 'Mes avis', icon: FiStar },
+  { to: '/parametres', label: 'Paramètres', icon: FiSettings },
 ];
 
 const getInitialCollapsed = () => {
@@ -22,7 +26,6 @@ const getInitialCollapsed = () => {
 
 export const ApprenantLayout = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(getInitialCollapsed);
   const isRTL = typeof document !== 'undefined' ? document.documentElement.dir === 'rtl' : false;
@@ -36,10 +39,6 @@ export const ApprenantLayout = () => {
       window.localStorage.setItem('sidebar_collapsed', String(collapsed));
     }
   }, [collapsed]);
-
-  const handleSupportOpen = () => {
-    navigate('/support');
-  };
 
   const handleMenuClick = () => {
     if (typeof window !== 'undefined' && window.innerWidth >= 768) {
@@ -108,36 +107,11 @@ export const ApprenantLayout = () => {
         </aside>
 
         <div className="flex-1">
-          <header className="border-b border-slate-200 bg-white/80 px-4 py-4 backdrop-blur dark:border-slate-700 dark:bg-slate-800/80 lg:px-6">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <button className="rounded-lg p-2 text-gray-700 transition hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-700" onClick={handleMenuClick} aria-label="Ouvrir le menu">
-                  {mobileOpen ? <FiX size={20} /> : <FiMenu size={20} />}
-                </button>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-slate-400">Bienvenue</p>
-                  <h1 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{user?.name || 'Apprenant'}</h1>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button onClick={() => navigate('/messagerie')} className="relative rounded-full border border-slate-200 p-2 text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700">
-                  <FiMessageCircle size={18} />
-                  {unreadCount > 0 ? <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-semibold text-white">{unreadCount}</span> : null}
-                </button>
-                <button onClick={handleSupportOpen} className="rounded-full border border-slate-200 p-2 text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700">
-                  <FiHelpCircle size={18} />
-                </button>
-              </div>
-            </div>
-          </header>
+          <AppTopbar onMenuToggle={handleMenuClick} mobileOpen={mobileOpen} />
           <main className="p-4 lg:p-6">
             <Outlet />
           </main>
-          <button onClick={handleSupportOpen} className="fixed bottom-4 right-4 z-40 flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-500 to-brand-600 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:shadow-xl">
-            <FiHelpCircle size={18} />
-            Aide & support
-          </button>
+          <FloatingActionButton />
         </div>
       </div>
     </div>

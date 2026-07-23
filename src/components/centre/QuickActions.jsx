@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiPlusCircle, FiCalendar, FiMessageSquare, FiShield } from 'react-icons/fi';
+import { FiCalendar, FiMessageSquare, FiShield } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 
 const Action = ({ icon: Icon, label, onClick }) => (

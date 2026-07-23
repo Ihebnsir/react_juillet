@@ -62,11 +62,6 @@ export const Navbar = () => {
     i18n.changeLanguage(lang);
   };
 
-  const handleDashboardClick = () => {
-    setIsOpen(false);
-    navigate(dashboardPath);
-  };
-
   return (
     <nav className="sticky top-0 z-50 border-b border-slate-200/60 bg-white/80 backdrop-blur dark:border-slate-700/60 dark:bg-slate-900/70">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

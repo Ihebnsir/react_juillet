@@ -1,5 +1,4 @@
 import React from 'react';
-import { FiUserPlus, FiPackage, FiCheckCircle, FiMessageCircle } from 'react-icons/fi';
 
 const ActivityItem = ({ icon: Icon, title, time, tone }) => (
   <div className="flex items-start gap-3">

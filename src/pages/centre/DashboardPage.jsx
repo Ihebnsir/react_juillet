@@ -1,9 +1,8 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { mockCentres } from '../../data/mockCentres';
 import { mockFormations } from '../../data/mockFormations';
 import { mockReservations } from '../../data/mockReservations';
-import { FiBookOpen, FiCalendar, FiStar, FiUserPlus, FiPackage, FiCheckCircle, FiMessageCircle, FiClock, FiShield, FiXCircle } from 'react-icons/fi';
+import { FiBookOpen, FiCalendar, FiStar, FiUserPlus, FiPackage, FiCheckCircle, FiMessageCircle } from 'react-icons/fi';
 import DashboardHero from '../../components/centre/DashboardHero';
 import KPICard from '../../components/centre/KPICard';
 import QuickActions from '../../components/centre/QuickActions';
@@ -33,23 +32,6 @@ export const DashboardPage = () => {
     { name: 'En attente', value: 18 },
     { name: 'Annulé', value: 6 },
   ];
-
-  const statutConfig = {
-    active: { color: 'brand', icon: FiCheckCircle, label: 'Active' },
-    en_attente: { color: 'sunset', icon: FiClock, label: 'En attente' },
-    verifie: { color: 'brand', icon: FiShield, label: 'Vérifié' },
-    rejete: { color: 'red', icon: FiXCircle, label: 'Rejeté' },
-  };
-
-  const StatutBadge = ({ statut }) => {
-    const config = statutConfig[statut] || statutConfig.en_attente;
-    const Icon = config.icon;
-    return (
-      <span className={`badge inline-flex items-center gap-1.5 bg-${config.color}-500/15 text-${config.color}-600 dark:text-${config.color}-400`}>
-        <Icon size={13} /> {config.label}
-      </span>
-    );
-  };
 
   return (
     <div className="space-y-6">

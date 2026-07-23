@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FiFacebook, FiTwitter, FiLinkedin, FiMail, FiInstagram } from "react-icons/fi";
+import { FiFacebook, FiTwitter, FiLinkedin, FiInstagram } from "react-icons/fi";
 import { getContactInfo } from "../../services/contactService";
 
 export const Footer = () => {
