@@ -76,10 +76,7 @@ export const DashboardPage = () => {
         </div>
 
         <div className="space-y-6">
-          <NotificationCenter notifications={[
-            { id: 'n1', title: 'Nouvelle réservation', time: 'Il y a 2h', unread: true },
-            { id: 'n2', title: 'Nouveau avis', time: 'Il y a 1j' },
-          ]} />
+          <NotificationCenter />
 
           <CalendarCard events={[
             { id: 1, title: 'Session React', date: '2026-08-05', time: '10:00' },

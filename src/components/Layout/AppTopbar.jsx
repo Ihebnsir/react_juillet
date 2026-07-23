@@ -1,11 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
-import { FiBell, FiSearch, FiHome, FiBookOpen, FiCalendar, FiAward, FiMessageCircle, FiMenu, FiX, FiHelpCircle, FiCpu, FiSun, FiMoon, FiUser, FiLogOut, FiSettings } from 'react-icons/fi';
+import { FiBell, FiSearch, FiHome, FiBookOpen, FiCalendar, FiAward, FiMessageCircle, FiMenu, FiX, FiHelpCircle, FiCpu, FiSun, FiMoon, FiUser, FiLogOut, FiSettings, FiUsers, FiUserCheck, FiBriefcase, FiFileText } from 'react-icons/fi';
 import { useNotifications } from '../../context/NotificationContext';
+import { motion } from 'framer-motion';
 
 const breadcrumbItems = [
   { path: '/dashboard', label: 'Tableau de bord' },
@@ -148,14 +149,210 @@ export function NotificationsBell() {
 
 function GlobalSearchModal({ open, onClose, raccourcis }) {
   const navigate = useNavigate();
+  const [query, setQuery] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [results, setResults] = useState([]);
+  const inputRef = useRef(null);
+
+  // Importer les données mock pour la recherche
+  const getSearchData = useMemo(() => () => {
+    try {
+      const { mockFormations } = require('../../data/mockFormations');
+      const { mockStudents } = require('../../data/mockStudents');
+      const { mockTrainers } = require('../../data/mockTrainers');
+      const { mockDocuments } = require('../../data/mockDocuments');
+      const { mockUsers } = require('../../data/mockUsers');
+      const { mockPartnerCompanies } = require('../../data/mockPartnerCompanies');
+      return { mockFormations, mockStudents, mockTrainers, mockDocuments, mockUsers, mockPartnerCompanies };
+    } catch {
+      return { mockFormations: [], mockStudents: [], mockTrainers: [], mockDocuments: [], mockUsers: [], mockPartnerCompanies: [] };
+    }
+  }, []);
+
+  // Catégories de recherche
+  const searchCategories = useMemo(() => [
+    {
+      id: 'pages',
+      label: 'Pages',
+      icon: FiHome,
+      color: 'text-sky-400',
+      bgColor: 'bg-sky-500/10',
+      items: raccourcis,
+      search: (q, items) => items.filter(item => item.label.toLowerCase().includes(q.toLowerCase())),
+    },
+    {
+      id: 'formations',
+      label: 'Formations',
+      icon: FiBookOpen,
+      color: 'text-emerald-400',
+      bgColor: 'bg-emerald-500/10',
+      getItems: () => getSearchData().mockFormations || [],
+      search: (q, items) => items.filter(f => 
+        f.title?.toLowerCase().includes(q.toLowerCase()) || 
+        f.category?.toLowerCase().includes(q.toLowerCase())
+      ),
+      getLabel: (item) => item.title,
+      getSubLabel: (item) => item.category || '',
+      getPath: (item) => `/formations/${item.id}`,
+    },
+    {
+      id: 'students',
+      label: 'Étudiants',
+      icon: FiUsers,
+      color: 'text-violet-400',
+      bgColor: 'bg-violet-500/10',
+      getItems: () => getSearchData().mockStudents || [],
+      search: (q, items) => items.filter(s => 
+        s.name?.toLowerCase().includes(q.toLowerCase()) || 
+        s.email?.toLowerCase().includes(q.toLowerCase())
+      ),
+      getLabel: (item) => item.name,
+      getSubLabel: (item) => item.email || '',
+      getPath: () => '/centre/etudiants',
+    },
+    {
+      id: 'trainers',
+      label: 'Formateurs',
+      icon: FiUserCheck,
+      color: 'text-amber-400',
+      bgColor: 'bg-amber-500/10',
+      getItems: () => getSearchData().mockTrainers || [],
+      search: (q, items) => items.filter(t => 
+        t.name?.toLowerCase().includes(q.toLowerCase()) || 
+        t.speciality?.toLowerCase().includes(q.toLowerCase())
+      ),
+      getLabel: (item) => item.name,
+      getSubLabel: (item) => item.speciality || '',
+      getPath: () => '/centre/formateurs',
+    },
+    {
+      id: 'companies',
+      label: 'Entreprises',
+      icon: FiBriefcase,
+      color: 'text-rose-400',
+      bgColor: 'bg-rose-500/10',
+      getItems: () => getSearchData().mockPartnerCompanies || [],
+      search: (q, items) => items.filter(c => 
+        c.name?.toLowerCase().includes(q.toLowerCase()) || 
+        c.sector?.toLowerCase().includes(q.toLowerCase())
+      ),
+      getLabel: (item) => item.name,
+      getSubLabel: (item) => item.sector || '',
+      getPath: () => '/centre/entreprises-partenaires',
+    },
+    {
+      id: 'documents',
+      label: 'Documents',
+      icon: FiFileText,
+      color: 'text-cyan-400',
+      bgColor: 'bg-cyan-500/10',
+      getItems: () => getSearchData().mockDocuments || [],
+      search: (q, items) => items.filter(d => 
+        d.name?.toLowerCase().includes(q.toLowerCase()) || 
+        d.type?.toLowerCase().includes(q.toLowerCase())
+      ),
+      getLabel: (item) => item.name,
+      getSubLabel: (item) => item.type || '',
+      getPath: () => '/centre/documents',
+    },
+    {
+      id: 'settings',
+      label: 'Paramètres',
+      icon: FiSettings,
+      color: 'text-slate-400',
+      bgColor: 'bg-slate-500/10',
+      getItems: () => getSearchData().mockUsers || [],
+      search: (q, items) => items.filter(u => 
+        u.name?.toLowerCase().includes(q.toLowerCase()) || 
+        u.email?.toLowerCase().includes(q.toLowerCase()) || 
+        u.role?.toLowerCase().includes(q.toLowerCase())
+      ),
+      getLabel: (item) => item.name,
+      getSubLabel: (item) => item.email || item.role || '',
+      getPath: () => '/settings',
+    },
+  ], [raccourcis, getSearchData]);
+
+  // Calculer les résultats groupés
+  const groupedResults = useMemo(() => {
+    if (!query || query.trim().length < 1) return [];
+
+    const q = query.trim().toLowerCase();
+    const groups = [];
+
+    searchCategories.forEach(category => {
+      let items = category.items || (category.getItems ? category.getItems() : []);
+      const matched = category.search(q, items);
+      if (matched.length > 0) {
+        groups.push({
+          ...category,
+          results: matched.slice(0, 5), // max 5 par catégorie
+        });
+      }
+    });
+
+    return groups;
+  }, [query, searchCategories]);
+
+  // Liste plate de tous les résultats pour la navigation clavier
+  const flatResults = useMemo(() => {
+    const flat = [];
+    groupedResults.forEach(group => {
+      group.results.forEach(item => {
+        flat.push({ ...item, _categoryId: group.id, _categoryLabel: group.label, _getPath: group.getPath, _groupColor: group.color });
+      });
+    });
+    return flat;
+  }, [groupedResults]);
+
+  // Highlight text function
+  const highlightText = (text, searchQuery) => {
+    if (!text || !searchQuery.trim()) return text;
+    const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+    return parts.map((part, i) => 
+      regex.test(part) ? <mark key={i} className="bg-brand-500/30 text-white rounded-sm px-0.5">{part}</mark> : part
+    );
+  };
+
+  // Navigation clavier
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex(prev => Math.min(prev + 1, flatResults.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex(prev => Math.max(prev - 1, 0));
+    } else if (e.key === 'Enter' && flatResults[selectedIndex]) {
+      e.preventDefault();
+      const item = flatResults[selectedIndex];
+      const path = item._getPath ? item._getPath(item) : item.path;
+      if (path) {
+        navigate(path);
+        onClose();
+      }
+    } else if (e.key === 'Escape') {
+      onClose();
+    }
+  };
+
+  // Reset index when results change
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [query]);
+
+  // Focus input when modal opens
+  useEffect(() => {
+    if (open && inputRef.current) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open) return undefined;
-
     const handleEscape = (event) => {
       if (event.key === 'Escape') onClose();
     };
-
     document.addEventListener('keydown', handleEscape);
     document.body.style.overflow = 'hidden';
     return () => {
@@ -166,30 +363,151 @@ function GlobalSearchModal({ open, onClose, raccourcis }) {
 
   if (!open) return null;
 
+  const hasResults = flatResults.length > 0;
+
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-start justify-center bg-black/60 px-4 pt-24 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 shadow-2xl" onClick={(event) => event.stopPropagation()}>
-        <input autoFocus placeholder="Aller à..." className="w-full border-b border-slate-700 bg-transparent px-4 py-3 text-sm text-white outline-none" />
-        <div className="max-h-80 overflow-y-auto">
-          {raccourcis.map((raccourci) => {
-            const Icon = raccourci.icon;
-            return (
-              <button
-                key={raccourci.path}
-                type="button"
-                onClick={() => {
-                  navigate(raccourci.path);
-                  onClose();
-                }}
-                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-white transition hover:bg-white/5"
-              >
-                <Icon size={16} /> {raccourci.label}
-              </button>
-            );
-          })}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-start justify-center bg-black/60 px-4 pt-24 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: -20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 shadow-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="relative">
+          <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+          <input
+            ref={inputRef}
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Rechercher formations, étudiants, formateurs..."
+            className="w-full border-b border-slate-700 bg-transparent px-4 py-4 pl-10 text-sm text-white outline-none placeholder-slate-500"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
+            >
+              <FiX size={16} />
+            </button>
+          )}
         </div>
-      </div>
-    </div>,
+
+        <div className="max-h-96 overflow-y-auto">
+          {!query && (
+            <div className="p-4">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Pages rapides</p>
+              {raccourcis.map((raccourci) => {
+                const Icon = raccourci.icon;
+                return (
+                  <button
+                    key={raccourci.path}
+                    type="button"
+                    onClick={() => {
+                      navigate(raccourci.path);
+                      onClose();
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-300 transition hover:bg-white/5"
+                  >
+                    <Icon size={16} className="text-slate-400" />
+                    <span>{raccourci.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {query && !hasResults && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col items-center justify-center py-12 px-4"
+            >
+              <FiSearch size={32} className="mb-3 text-slate-600" />
+              <p className="text-sm font-medium text-slate-400">Aucun résultat trouvé</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Aucune correspondance pour « {query} »
+              </p>
+            </motion.div>
+          )}
+
+          {query && hasResults && (
+            <div className="p-2">
+              {groupedResults.map((group) => (
+                <div key={group.id} className="mb-2">
+                  <div className="flex items-center gap-2 px-3 py-2">
+                    <group.icon size={14} className={group.color} />
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">{group.label}</span>
+                    <span className="text-[10px] text-slate-600">({group.results.length})</span>
+                  </div>
+                  {group.results.map((item) => {
+                    const flatIndex = flatResults.indexOf(item);
+                    const isSelected = flatIndex === selectedIndex;
+                    const label = group.getLabel ? group.getLabel(item) : item.label;
+                    const subLabel = group.getSubLabel ? group.getSubLabel(item) : '';
+                    const path = group.getPath ? group.getPath(item) : item.path;
+
+                    return (
+                      <motion.button
+                        key={item.id || `${group.id}-${flatIndex}`}
+                        type="button"
+                        onClick={() => {
+                          if (path) {
+                            navigate(path);
+                            onClose();
+                          }
+                        }}
+                        onMouseEnter={() => setSelectedIndex(flatIndex)}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.15, delay: flatIndex * 0.03 }}
+                        className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm transition-all duration-150 ${
+                          isSelected
+                            ? 'bg-brand-500/15 text-white'
+                            : 'text-slate-300 hover:bg-white/5'
+                        }`}
+                      >
+                        <div className={`rounded-lg p-2 ${group.bgColor || 'bg-slate-700/50'} shrink-0`}>
+                          <group.icon size={14} className={group.color} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate font-medium">{highlightText(label, query)}</p>
+                          {subLabel && (
+                            <p className="truncate text-xs text-slate-500">{highlightText(subLabel, query)}</p>
+                          )}
+                        </div>
+                        {isSelected && (
+                          <span className="shrink-0 text-[10px] text-brand-400">Entrée ↵</span>
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {query && hasResults && (
+            <div className="sticky bottom-0 border-t border-slate-700/50 bg-slate-800 px-4 py-2">
+              <div className="flex items-center gap-4 text-[11px] text-slate-500">
+                <span><kbd className="rounded bg-slate-700 px-1.5 py-0.5 text-[10px]">↑↓</kbd> Naviguer</span>
+                <span><kbd className="rounded bg-slate-700 px-1.5 py-0.5 text-[10px]">↵</kbd> Ouvrir</span>
+                <span><kbd className="rounded bg-slate-700 px-1.5 py-0.5 text-[10px]">Esc</kbd> Fermer</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>,
     document.body
   );
 }

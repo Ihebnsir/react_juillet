@@ -83,7 +83,7 @@ export const ApprenantLayout = () => {
 
       <div className="flex min-h-screen">
         <aside className={`fixed ${isRTL ? 'right-0' : 'left-0'} z-40 flex h-screen w-64 flex-col border-r border-white/60 bg-white/90 p-4 shadow-xl backdrop-blur transition-all duration-300 dark:border-slate-700 dark:bg-slate-800/90 md:sticky md:top-0 md:h-screen md:shadow-none md:p-6 ${mobileOpen ? 'translate-x-0' : isRTL ? 'translate-x-full' : '-translate-x-full'} md:translate-x-0 ${collapsed ? 'md:w-16 md:p-3' : 'md:w-72'}`}>
-          <div className={`mb-6 flex items-center justify-between ${collapsed ? 'md:justify-center' : ''}`}>
+          <div className={`shrink-0 mb-6 flex items-center justify-between ${collapsed ? 'md:justify-center' : ''}`}>
             <div className={`${collapsed ? 'md:hidden' : ''}`}>
               <p className="text-sm font-semibold uppercase tracking-wide text-teal-600">SkillBridge</p>
               <h2 className="mt-2 text-xl font-semibold text-gray-900 dark:text-slate-100">Espace apprenant</h2>
@@ -94,7 +94,7 @@ export const ApprenantLayout = () => {
             </button>
           </div>
 
-          <nav className="space-y-4">
+          <nav className="flex-1 overflow-y-auto space-y-4">
             {sections.map((section) => (
               <div key={section.title} className="space-y-2">
                 {!collapsed ? (
@@ -133,7 +133,7 @@ export const ApprenantLayout = () => {
             ))}
           </nav>
 
-          <div className={`mt-auto rounded-2xl bg-brand-500/10 p-4 text-sm text-brand-700 dark:bg-brand-900/20 dark:text-brand-200 ${collapsed ? 'md:hidden' : ''}`}>
+          <div className={`shrink-0 mt-auto rounded-2xl bg-brand-500/10 p-4 text-sm text-brand-700 dark:bg-brand-900/20 dark:text-brand-200 ${collapsed ? 'md:hidden' : ''}`}>
             <p className="font-semibold">{user?.name || 'Apprenant'}</p>
             <p>Apprenant actif</p>
           </div>

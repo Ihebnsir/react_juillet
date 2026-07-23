@@ -49,8 +49,18 @@ export const ActivityHistoryPage = () => {
       </div>
 
       <div className="space-y-4">
+        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          {filteredActivities.length === 0
+            ? 'Aucune activité trouvée'
+            : `${filteredActivities.length} activité${filteredActivities.length > 1 ? 's' : ''} trouvée${filteredActivities.length > 1 ? 's' : ''}`
+          }
+        </p>
         {filteredActivities.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">Aucune activité trouvée.</div>
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 p-12 text-center dark:border-slate-700">
+            <FiClock size={36} className="mb-3 text-slate-300 dark:text-slate-600" />
+            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Aucune activité trouvée</p>
+            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">Essayez de modifier vos filtres ou vos termes de recherche.</p>
+          </div>
         ) : (
           <div className="relative border-l border-slate-200 pl-5 dark:border-slate-700">
             {filteredActivities.map((item) => (

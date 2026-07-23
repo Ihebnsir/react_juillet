@@ -1,29 +1,30 @@
-# Audit SkillBridge - TODO
+# TODO - Corrections Espace Centre
 
-## Phase 1 ✅ - Navigation & Boutons (COMPLETE)
-- [x] 1.1 Audit des routes `/parametres`, `/settings`, `/notifications`
-- [x] 1.2 Suppression route `/parametres` dupliquée dans App.jsx + redirection via Navigate
-- [x] 1.3 Corrections AppTopbar breadcrumb (dynamique selon rôle: apprenant/centre/admin)
-- [x] 1.4 Ajout liens Notifications + Settings dans Navbar mobile
-- [x] 1.5 Ajout badges notification dynamiques dans sidebars (Apprenant, Centre, Admin)
-- [x] 1.6 Correction icônes dupliquées (Formateurs: FiUsers→FiUserCheck, Notifications: FiBell)
-- [x] 1.7 Ajout Support dans sidebar Admin, amélioration libellés (Validation→Modération, Signalements→Litiges)
+## Partie 1 : Notifications
+- [x] 1.1 Refactoriser `NotificationCenter.jsx` → utiliser `useNotifications()` du contexte
+- [x] 1.2 Supprimer le fichier dupliqué `src/components/UI/NotificationsPage.jsx`
+- [x] 1.3 Mettre à jour `CentreLayout.jsx` : déplacer Notifications dans section "Compte"
+- [x] 1.4 Mettre à jour `DashboardPage.jsx` (NotificationCenter sans props)
+- [x] 1.5 Vérifier la synchronisation Topbar ↔ Sidebar ↔ Page ↔ Dashboard
+  - 1 seul NotificationProvider dans App.jsx✓
+  - NotificationCenter utilise useNotifications()✓
+  - AppTopbar utilise useNotifications()✓
+  - CentreLayout/AdminLayout/ApprenantLayout utilisent useNotifications()✓
+  - NotificationsPage utilise useNotifications()✓
+  - Aucun état local concurrent✓
+  - Aucun NotificationContext secondaire✓
+  - Aucune duplication de données✓
 
-## Phase 2 ✅ - CentreProfilePage (COMPLETE)
-- [x] 2.1 Header avec cover image, logo, badge vérifié
-- [x] 2.2 Section infos avec formulaire éditable (description, coordonnées, réseaux sociaux)
-- [x] 2.3 Upload logo simulé avec preview (FileReader + sélection fichier)
-- [x] 2.4 Galerie (upload/ajout/suppression), certifications, réseaux sociaux éditables
-- [x] 2.5 Animations (framer-motion), barre de complétude, hover effects
+## Partie 2 : Recherche globale
+- [x] 2.1 Créer la logique de recherche dans `GlobalSearchModal`
+- [x] 2.2 Ajouter les résultats groupés par catégorie
+- [x] 2.3 Navigation clavier (↑↓ Entrée Échap)
+- [x] 2.4 Animations et feedback visuel
+- [x] 2.5 Highlight du texte recherché
 
-## Phase 3 ✅ - UX/UI Global (COMPLETE)
-- [x] 3.1 SettingsPage modernisation complète (cards, icônes, sections, animations)
-- [x] 3.2 Admin QuickActions correction (tous les boutons ont des handlers fonctionnels)
-- [x] 3.3 Hover states + active:scale partout (sidebars, boutons, liens)
-- [x] 3.4 Design system cohérent sur toutes les pages auditées
-
-## Phase 4 - Animations & Final
-- [ ] 4.1 Transitions changement de page
-- [ ] 4.2 Loading spinner dynamique
-- [ ] 4.3 Rapport final d'audit
-
+## Partie 3 : Vérifications
+- [x] 3.1 Vérifier la compilation (build réussi)
+- [ ] 3.2 Tester les 3 rôles (Centre, Apprenant, Admin) — recommandé test manuel
+- [ ] 3.3 Vérifier toutes les routes — recommandé test manuel
+- [x] 3.4 Vérifier qu'aucun import n'est cassé
+- [x] 3.5 Rapport final

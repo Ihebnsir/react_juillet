@@ -29,7 +29,6 @@ const sections = [
   {
     title: 'Communication',
     items: [
-      { to: '/notifications', label: 'Notifications', icon: FiBell },
       { to: '/centre/messagerie', label: 'Messages', icon: FiMessageSquare },
     ],
   },
@@ -45,6 +44,7 @@ const sections = [
     title: 'Compte',
     items: [
       { to: '/settings', label: 'Paramètres', icon: FiSettings },
+      { to: '/notifications', label: 'Notifications', icon: FiBell },
       { to: '/centre/calendrier', label: 'Calendrier', icon: FiCalendar },
       { to: '/centre/certificats', label: 'Certificats', icon: FiAward },
       { to: '/centre/paiements', label: 'Paiements', icon: FiDollarSign },
@@ -89,7 +89,7 @@ export const CentreLayout = () => {
 
       <div className="flex min-h-screen">
         <aside className={`fixed ${isRTL ? 'right-0' : 'left-0'} z-40 flex h-screen w-64 flex-col border-r border-white/60 bg-white/90 p-4 shadow-xl backdrop-blur transition-all duration-300 dark:border-slate-700 dark:bg-slate-800/90 md:sticky md:top-0 md:h-screen md:shadow-none md:p-6 ${mobileOpen ? 'translate-x-0' : isRTL ? 'translate-x-full' : '-translate-x-full'} md:translate-x-0 ${collapsed ? 'md:w-16 md:p-3' : 'md:w-72'}`}>
-          <div className={`mb-6 flex items-center justify-between ${collapsed ? 'md:justify-center' : ''}`}>
+          <div className={`shrink-0 mb-6 flex items-center justify-between ${collapsed ? 'md:justify-center' : ''}`}>
             <div className={`${collapsed ? 'md:hidden' : ''}`}>
               <p className="text-sm font-semibold uppercase tracking-wide text-teal-600">SkillBridge</p>
               <h2 className="mt-2 text-xl font-semibold text-gray-900 dark:text-slate-100">Espace centre</h2>
@@ -99,7 +99,7 @@ export const CentreLayout = () => {
               <FiX size={18} />
             </button>
           </div>
-          <nav className="space-y-4">
+          <nav className="flex-1 overflow-y-auto space-y-4">
             {sections.map((section) => (
               <div key={section.title} className="space-y-2">
                 {!collapsed ? (
@@ -134,7 +134,7 @@ export const CentreLayout = () => {
               </div>
             ))}
           </nav>
-          <div className={`mt-auto rounded-2xl bg-sunset-500/10 p-4 text-sm text-sunset-700 dark:bg-sunset-900/20 dark:text-sunset-200 ${collapsed ? 'md:hidden' : ''}`}>
+          <div className={`shrink-0 mt-auto rounded-2xl bg-sunset-500/10 p-4 text-sm text-sunset-700 dark:bg-sunset-900/20 dark:text-sunset-200 ${collapsed ? 'md:hidden' : ''}`}>
             <p className="font-semibold">{user?.name || 'Centre'}</p>
             <p>Centre de formation</p>
           </div>
