@@ -4,13 +4,35 @@ import { useNavigate } from 'react-router-dom';
 
 export const DashboardHero = ({ centre }) => {
   const navigate = useNavigate();
+  const initials = (centre?.name || 'Centre')
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  const handleLogoError = (event) => {
+    event.currentTarget.onerror = null;
+    event.currentTarget.style.display = 'none';
+    event.currentTarget.parentElement?.querySelector('[data-logo-fallback]')?.classList.remove('hidden');
+  };
 
   return (
     <div className="relative overflow-hidden rounded-3xl p-6 md:p-8 bg-gradient-to-br from-slate-50 via-white to-white/60 dark:from-slate-800 dark:via-slate-900 dark:to-slate-900 shadow-md">
       <div className="flex items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="h-20 w-20 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 p-1 shadow-lg">
-            <img src={centre.logo || '/images/default-centre.png'} alt="logo" className="h-full w-full rounded-md object-cover" />
+          <div className="relative h-20 w-20 overflow-hidden rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 p-1 shadow-lg">
+            {centre?.logo ? (
+              <img
+                src={centre.logo}
+                alt={centre.name || 'logo'}
+                onError={handleLogoError}
+                className="h-full w-full rounded-md object-cover"
+              />
+            ) : null}
+            <div data-logo-fallback className={`${centre?.logo ? 'hidden' : 'flex'} h-full w-full items-center justify-center rounded-md bg-white text-lg font-bold text-brand-700 dark:bg-slate-900 dark:text-brand-200`}>
+              {initials}
+            </div>
           </div>
           <div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{centre.name}</h3>

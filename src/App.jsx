@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { FavoritesProvider } from "./context/FavoritesContext";
 import { ReservationProvider } from "./context/ReservationContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { NotificationProvider } from "./context/NotificationContext";
+import { ActivityProvider } from "./context/ActivityContext";
+import { TrashProvider } from "./context/TrashContext";
 import { Navbar } from "./components/Layout/Navbar";
 import { Footer } from "./components/Layout/Footer";
 import { ProtectedRoute } from "./components/Layout/ProtectedRoute";
@@ -43,12 +46,23 @@ import { MesCertificationsPage } from "./pages/apprenant/MesCertificationsPage";
 import { RecommandationsPage } from "./pages/apprenant/RecommandationsPage";
 import { MesAvisPage } from "./pages/apprenant/MesAvisPage";
 import { ParametresPage } from "./pages/apprenant/ParametresPage";
+import { SettingsPage } from "./pages/SettingsPage";
 import { DashboardPage as CentreDashboardPage } from "./pages/centre/DashboardPage";
 import { MesOffresPage } from "./pages/centre/MesOffresPage";
 import { NouvelleOffrePage } from "./pages/centre/NouvelleOffrePage";
 import { DetailOffrePage } from "./pages/centre/DetailOffrePage";
 import { ReservationsRecuesPage } from "./pages/centre/ReservationsRecuesPage";
 import { StatutVerificationPage } from "./pages/centre/StatutVerificationPage";
+import { SessionsPage } from "./pages/centre/SessionsPage";
+import { EtudiantsPage } from "./pages/centre/EtudiantsPage";
+import { CertificatsPage } from "./pages/centre/CertificatsPage";
+import { PaiementsPage } from "./pages/centre/PaiementsPage";
+import { DocumentsPage } from "./pages/centre/DocumentsPage";
+import { StatisticsPage } from "./pages/centre/StatisticsPage";
+import { CentreProfilePage } from "./pages/centre/CentreProfilePage";
+import { ActivityHistoryPage } from "./pages/centre/ActivityHistoryPage";
+import { TrashPage } from "./pages/centre/TrashPage";
+import { NotificationsPage } from "./pages/NotificationsPage";
 import { DashboardPage as AdminDashboardPage } from "./pages/admin/DashboardPage";
 import { ModerationPage } from "./pages/admin/ModerationPage";
 import { CentresEnAttentePage } from "./pages/admin/CentresEnAttentePage";
@@ -62,6 +76,8 @@ import { MessageriePage as CentreMessageriePage } from "./pages/centre/Messageri
 import CentreCalendarPage from "./pages/centre/CentreCalendarPage";
 import { SupportPage as AdminSupportPage } from "./pages/admin/SupportPage";
 import VerifierCertificatPage from "./pages/VerifierCertificatPage";
+import { FormateursPage } from "./pages/centre/FormateursPage";
+import { EntreprisesPartenairesPage } from "./pages/centre/EntreprisesPartenairesPage";
 
 function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) {
   const location = useLocation();
@@ -77,7 +93,11 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
     '/recommandations',
     '/mes-avis',
     '/parametres',
+    '/settings',
     '/support',
+    '/notifications',
+    '/activity-history',
+    '/trash',
     '/centre',
     '/admin',
   ].some((prefix) => location.pathname === prefix || location.pathname.startsWith(`${prefix}/`));
@@ -118,6 +138,9 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
               <Route path="/parametres" element={<ParametresPage />} />
               <Route path="/messagerie" element={<ApprenantMessageriePage />} />
               <Route path="/profil" element={<ProfilePage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/parametres" element={<Navigate to="/settings" replace />} />
               <Route path="/support" element={<AdminSupportPage />} />
             </Route>
           </Route>
@@ -125,9 +148,24 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
           <Route element={<ProtectedRoute allowedRoles={["centre"]} />}>
             <Route element={<CentreLayout />}>
               <Route path="/centre" element={<CentreDashboardPage />} />
+              <Route path="/centre/formations" element={<MesOffresPage />} />
               <Route path="/centre/offres" element={<MesOffresPage />} />
               <Route path="/centre/offres/nouvelle" element={<NouvelleOffrePage />} />
+              <Route path="/centre/sessions" element={<SessionsPage />} />
+              <Route path="/centre/etudiants" element={<EtudiantsPage />} />
+              <Route path="/centre/formateurs" element={<FormateursPage />} />
+              <Route path="/centre/entreprises-partenaires" element={<EntreprisesPartenairesPage />} />
+              <Route path="/centre/calendrier" element={<CentreCalendarPage />} />
+              <Route path="/centre/certificats" element={<CertificatsPage />} />
+              <Route path="/centre/paiements" element={<PaiementsPage />} />
+              <Route path="/centre/documents" element={<DocumentsPage />} />
               <Route path="/centre/messagerie" element={<CentreMessageriePage />} />
+              <Route path="/centre/statistiques" element={<StatisticsPage />} />
+              <Route path="/centre/profile" element={<CentreProfilePage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/activity-history" element={<ActivityHistoryPage />} />
+              <Route path="/trash" element={<TrashPage />} />
               <Route path="/centre/calendar" element={<CentreCalendarPage />} />
               <Route path="/centre/offres/:id/modifier" element={<NouvelleOffrePage />} />
               <Route path="/centre/offres/:id" element={<DetailOffrePage />} />
@@ -147,6 +185,8 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
               <Route path="/admin/statistiques" element={<StatistiquesPage />} />
               <Route path="/admin/contenu-accueil" element={<ContenuAccueilPage />} />
               <Route path="/admin/contact" element={<ContactAdminPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Route>
 
@@ -190,16 +230,22 @@ function App() {
     <Router>
       <ThemeProvider>
         <AuthProvider>
-          <FavoritesProvider>
-            <ReservationProvider>
-              <AppShell
-                showPreloader={showPreloader}
-                fadingOut={fadingOut}
-                setShowPreloader={setShowPreloader}
-                setFadingOut={setFadingOut}
-              />
-            </ReservationProvider>
-          </FavoritesProvider>
+          <NotificationProvider>
+            <ActivityProvider>
+              <TrashProvider>
+                <FavoritesProvider>
+                  <ReservationProvider>
+                    <AppShell
+                      showPreloader={showPreloader}
+                      fadingOut={fadingOut}
+                      setShowPreloader={setShowPreloader}
+                      setFadingOut={setFadingOut}
+                    />
+                  </ReservationProvider>
+                </FavoritesProvider>
+              </TrashProvider>
+            </ActivityProvider>
+          </NotificationProvider>
         </AuthProvider>
       </ThemeProvider>
     </Router>

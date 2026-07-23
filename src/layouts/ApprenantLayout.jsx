@@ -2,21 +2,43 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiHome, FiBookOpen, FiCalendar, FiHeart, FiMessageCircle, FiAward, FiUser, FiX, FiTrendingUp, FiStar, FiSettings } from 'react-icons/fi';
+import { useNotifications } from '../context/NotificationContext';
+import { FiHome, FiBookOpen, FiCalendar, FiHeart, FiMessageCircle, FiAward, FiUser, FiX, FiTrendingUp, FiStar, FiSettings, FiBell } from 'react-icons/fi';
 import { messagingService } from '../services/messagingService';
 import { AppTopbar, FloatingActionButton } from '../components/Layout/AppTopbar';
 
-const links = [
-  { to: '/dashboard', label: 'Tableau de bord', icon: FiHome },
-  { to: '/formations', label: 'Formations', icon: FiBookOpen },
-  { to: '/reservations', label: 'Réservations', icon: FiCalendar },
-  { to: '/favoris', label: 'Favoris', icon: FiHeart },
-  { to: '/messagerie', label: 'Messages', icon: FiMessageCircle },
-  { to: '/certifications', label: 'Certifications', icon: FiAward },
-  { to: '/profil', label: 'Profil', icon: FiUser },
-  { to: '/recommandations', label: 'Recommandations', icon: FiTrendingUp },
-  { to: '/mes-avis', label: 'Mes avis', icon: FiStar },
-  { to: '/parametres', label: 'Paramètres', icon: FiSettings },
+const sections = [
+  {
+    title: 'Dashboard',
+    items: [
+      { to: '/dashboard', label: 'Tableau de bord', icon: FiHome },
+      { to: '/formations', label: 'Formations', icon: FiBookOpen },
+      { to: '/reservations', label: 'Réservations', icon: FiCalendar },
+    ],
+  },
+  {
+    title: 'Communication',
+    items: [
+      { to: '/notifications', label: 'Notifications', icon: FiBell },
+      { to: '/messagerie', label: 'Messages', icon: FiMessageCircle },
+    ],
+  },
+  {
+    title: 'Compte',
+    items: [
+      { to: '/profil', label: 'Profil', icon: FiUser },
+      { to: '/settings', label: 'Paramètres', icon: FiSettings },
+    ],
+  },
+  {
+    title: 'Apprentissage',
+    items: [
+      { to: '/favoris', label: 'Favoris', icon: FiHeart },
+      { to: '/certifications', label: 'Certifications', icon: FiAward },
+      { to: '/recommandations', label: 'Recommandations', icon: FiTrendingUp },
+      { to: '/mes-avis', label: 'Mes avis', icon: FiStar },
+    ],
+  },
 ];
 
 const getInitialCollapsed = () => {
@@ -26,6 +48,7 @@ const getInitialCollapsed = () => {
 
 export const ApprenantLayout = () => {
   const { user } = useAuth();
+  const { unreadCount: notificationUnreadCount } = useNotifications();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(getInitialCollapsed);
   const isRTL = typeof document !== 'undefined' ? document.documentElement.dir === 'rtl' : false;
@@ -71,32 +94,42 @@ export const ApprenantLayout = () => {
             </button>
           </div>
 
-          <nav className="space-y-2">
-            {links.map(({ to, label, icon: Icon }) => (
-              <NavLink
-                key={to}
-                to={to}
-                onClick={closeMobileMenu}
-                title={collapsed ? label : undefined}
-                className={({ isActive }) => `relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${collapsed ? 'md:justify-center md:px-2' : ''} ${isActive ? 'text-white' : 'text-slate-500 hover:bg-white/5 hover:text-slate-200 dark:text-slate-300 dark:hover:text-slate-100'}`}
-              >
-                {({ isActive }) => (
-                  <>
-                    {isActive ? (
-                      <motion.div
-                        layoutId="sidebar-active"
-                        className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600"
-                        transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                      />
-                    ) : null}
-                    <Icon size={18} />
-                    <span className={`${collapsed ? 'md:hidden' : ''}`}>{label}</span>
-                    {to === '/messagerie' && unreadCount > 0 ? (
-                      <span className={`ml-auto rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-semibold text-white ${collapsed ? 'md:hidden' : ''}`}>{unreadCount}</span>
-                    ) : null}
-                  </>
-                )}
-              </NavLink>
+          <nav className="space-y-4">
+            {sections.map((section) => (
+              <div key={section.title} className="space-y-2">
+                {!collapsed ? (
+                  <p className="px-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-slate-500">{section.title}</p>
+                ) : null}
+                {section.items.map(({ to, label, icon: Icon }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    onClick={closeMobileMenu}
+                    title={collapsed ? label : undefined}
+                    className={({ isActive }) => `group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.98] ${collapsed ? 'md:justify-center md:px-2' : ''} ${isActive ? 'text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-brand-700 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-brand-200'}`}
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {isActive ? (
+                          <motion.div
+                            layoutId="sidebar-active"
+                            className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600"
+                            transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                          />
+                        ) : null}
+                        <Icon size={18} className="transition group-hover:scale-110" />
+                        <span className={`${collapsed ? 'md:hidden' : ''} flex-1`}>{label}</span>
+                        {to === '/messagerie' && unreadCount > 0 ? (
+                          <span className={`ml-auto rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-semibold text-white ${collapsed ? 'md:hidden' : ''}`}>{unreadCount}</span>
+                        ) : null}
+                        {to === '/notifications' && notificationUnreadCount > 0 ? (
+                          <span className={`ml-auto rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white ${collapsed ? 'md:hidden' : ''}`}>{notificationUnreadCount}</span>
+                        ) : null}
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </div>
             ))}
           </nav>
 

@@ -2,18 +2,54 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiGrid, FiBookOpen, FiPlusCircle, FiCalendar, FiMessageSquare, FiShield, FiUser, FiX } from 'react-icons/fi';
+import { useNotifications } from '../context/NotificationContext';
+import { FiGrid, FiBookOpen, FiCalendar, FiMessageSquare, FiX, FiUsers, FiBriefcase, FiLayers, FiClipboard, FiFileText, FiDollarSign, FiSettings, FiAward, FiBell, FiClock, FiTrash2, FiUserCheck } from 'react-icons/fi';
 import { AppTopbar } from '../components/Layout/AppTopbar';
 
-const links = [
-  { to: '/centre', label: 'Tableau de bord', icon: FiGrid },
-  { to: '/centre/offres', label: 'Mes offres', icon: FiBookOpen },
-  { to: '/centre/offres/nouvelle', label: 'Publier une offre', icon: FiPlusCircle },
-  { to: '/centre/reservations', label: 'Réservations', icon: FiCalendar },
-  { to: '/centre/calendar', label: 'Calendrier', icon: FiCalendar },
-  { to: '/centre/messagerie', label: 'Messagerie', icon: FiMessageSquare },
-  { to: '/centre/verification', label: 'Vérification', icon: FiShield },
-  { to: '/profil', label: 'Profil', icon: FiUser },
+const sections = [
+  {
+    title: 'Dashboard',
+    items: [
+      { to: '/centre', label: 'Dashboard', icon: FiGrid },
+      { to: '/centre/profile', label: 'Profil centre', icon: FiSettings },
+    ],
+  },
+  {
+    title: 'Gestion',
+    items: [
+      { to: '/centre/formations', label: 'Formations', icon: FiBookOpen },
+      { to: '/centre/sessions', label: 'Sessions', icon: FiLayers },
+      { to: '/centre/reservations', label: 'Réservations', icon: FiCalendar },
+      { to: '/centre/etudiants', label: 'Étudiants', icon: FiUsers },
+      { to: '/centre/formateurs', label: 'Formateurs', icon: FiUserCheck },
+      { to: '/centre/entreprises-partenaires', label: 'Entreprises', icon: FiBriefcase },
+      { to: '/centre/documents', label: 'Documents', icon: FiFileText },
+    ],
+  },
+  {
+    title: 'Communication',
+    items: [
+      { to: '/notifications', label: 'Notifications', icon: FiBell },
+      { to: '/centre/messagerie', label: 'Messages', icon: FiMessageSquare },
+    ],
+  },
+  {
+    title: 'Analyse',
+    items: [
+      { to: '/centre/statistiques', label: 'Statistiques', icon: FiClipboard },
+      { to: '/activity-history', label: 'Historique', icon: FiClock },
+      { to: '/trash', label: 'Corbeille', icon: FiTrash2 },
+    ],
+  },
+  {
+    title: 'Compte',
+    items: [
+      { to: '/settings', label: 'Paramètres', icon: FiSettings },
+      { to: '/centre/calendrier', label: 'Calendrier', icon: FiCalendar },
+      { to: '/centre/certificats', label: 'Certificats', icon: FiAward },
+      { to: '/centre/paiements', label: 'Paiements', icon: FiDollarSign },
+    ],
+  },
 ];
 
 const getInitialCollapsed = () => {
@@ -23,6 +59,7 @@ const getInitialCollapsed = () => {
 
 export const CentreLayout = () => {
   const { user } = useAuth();
+  const { unreadCount } = useNotifications();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(getInitialCollapsed);
   const isRTL = typeof document !== 'undefined' ? document.documentElement.dir === 'rtl' : false;
@@ -62,29 +99,39 @@ export const CentreLayout = () => {
               <FiX size={18} />
             </button>
           </div>
-          <nav className="space-y-2">
-            {links.map(({ to, label, icon: Icon }) => (
-              <NavLink
-                key={to}
-                to={to}
-                onClick={closeMobileMenu}
-                title={collapsed ? label : undefined}
-                className={({ isActive }) => `relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${collapsed ? 'md:justify-center md:px-2' : ''} ${isActive ? 'text-white' : 'text-slate-500 hover:bg-white/5 hover:text-slate-200 dark:text-slate-300 dark:hover:text-slate-100'}`}
-              >
-                {({ isActive }) => (
-                  <>
-                    {isActive ? (
-                      <motion.div
-                        layoutId="sidebar-active"
-                        className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600"
-                        transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                      />
-                    ) : null}
-                    <Icon size={18} />
-                    <span className={`${collapsed ? 'md:hidden' : ''}`}>{label}</span>
-                  </>
-                )}
-              </NavLink>
+          <nav className="space-y-4">
+            {sections.map((section) => (
+              <div key={section.title} className="space-y-2">
+                {!collapsed ? (
+                  <p className="px-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-slate-500">{section.title}</p>
+                ) : null}
+                {section.items.map(({ to, label, icon: Icon }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    onClick={closeMobileMenu}
+                    title={collapsed ? label : undefined}
+                    className={({ isActive }) => `group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.98] ${collapsed ? 'md:justify-center md:px-2' : ''} ${isActive ? 'text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-brand-700 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-brand-200'}`}
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {isActive ? (
+                          <motion.div
+                            layoutId="sidebar-active"
+                            className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600"
+                            transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                          />
+                        ) : null}
+                        <Icon size={18} className="transition group-hover:scale-110" />
+                        <span className={`${collapsed ? 'md:hidden' : ''} flex-1`}>{label}</span>
+                        {to === '/notifications' && unreadCount > 0 ? (
+                          <span className={`ml-auto rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white ${collapsed ? 'md:hidden' : ''}`}>{unreadCount}</span>
+                        ) : null}
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </div>
             ))}
           </nav>
           <div className={`mt-auto rounded-2xl bg-sunset-500/10 p-4 text-sm text-sunset-700 dark:bg-sunset-900/20 dark:text-sunset-200 ${collapsed ? 'md:hidden' : ''}`}>

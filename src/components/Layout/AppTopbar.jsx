@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { FiBell, FiSearch, FiHome, FiBookOpen, FiCalendar, FiAward, FiMessageCircle, FiMenu, FiX, FiHelpCircle, FiCpu, FiSun, FiMoon, FiUser, FiLogOut, FiSettings } from 'react-icons/fi';
-import { mockNotifications } from '../../data/mockNotifications';
+import { useNotifications } from '../../context/NotificationContext';
 
 const breadcrumbItems = [
   { path: '/dashboard', label: 'Tableau de bord' },
@@ -13,8 +13,10 @@ const breadcrumbItems = [
   { path: '/reservations', label: 'Réservations' },
   { path: '/favoris', label: 'Favoris' },
   { path: '/messagerie', label: 'Messages' },
+  { path: '/notifications', label: 'Notifications' },
   { path: '/certifications', label: 'Certifications' },
   { path: '/profil', label: 'Profil' },
+  { path: '/settings', label: 'Paramètres' },
   { path: '/centre', label: 'Tableau de bord' },
   { path: '/admin', label: 'Tableau de bord' },
 ];
@@ -31,11 +33,34 @@ function formatRelativeDate(dateValue) {
 
 export function Breadcrumb() {
   const location = useLocation();
+  const { user } = useAuth();
   const currentItem = breadcrumbItems.find((item) => location.pathname === item.path || location.pathname.startsWith(`${item.path}/`));
+
+  const getEspaceLabel = () => {
+    if (!user) return 'SkillBridge';
+    switch (user.role) {
+      case 'admin': return 'Espace admin';
+      case 'centre': return 'Espace centre';
+      case 'apprenant':
+      case 'learner': return 'Espace apprenant';
+      default: return 'SkillBridge';
+    }
+  };
+
+  const getEspacePath = () => {
+    if (!user) return '/';
+    switch (user.role) {
+      case 'admin': return '/admin';
+      case 'centre': return '/centre';
+      case 'apprenant':
+      case 'learner': return '/dashboard';
+      default: return '/';
+    }
+  };
 
   return (
     <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-      <Link to="/dashboard" className="transition hover:text-brand-600 dark:hover:text-brand-300">Espace apprenant</Link>
+      <Link to={getEspacePath()} className="transition hover:text-brand-600 dark:hover:text-brand-300">{getEspaceLabel()}</Link>
       {currentItem ? <><span className="mx-1">/</span><span className="font-medium text-slate-800 dark:text-white">{currentItem.label}</span></> : null}
     </nav>
   );
@@ -43,24 +68,15 @@ export function Breadcrumb() {
 
 export function NotificationsBell() {
   const { user } = useAuth();
+  const { notifications, markAsRead, unreadCount } = useNotifications();
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
   const buttonRef = useRef(null);
   const [position, setPosition] = useState({ top: 0, right: 0 });
 
-  useEffect(() => {
-    if (!user?.id) {
-      setNotifications([]);
-      return;
-    }
-
-    setNotifications(mockNotifications.filter((notification) => notification.userId === user.id));
-  }, [user?.id]);
-
-  const nonLues = notifications.filter((notification) => !notification.lu).length;
+  const visibleNotifications = notifications.filter((notification) => notification.userId === (user?.id || 1));
 
   const handleRead = (id) => {
-    setNotifications((current) => current.map((notification) => notification.id === id ? { ...notification, lu: true } : notification));
+    markAsRead(id);
   };
 
   const handleToggle = () => {
@@ -97,9 +113,9 @@ export function NotificationsBell() {
         aria-label="Notifications"
       >
         <FiBell size={18} />
-        {nonLues > 0 ? (
+        {unreadCount > 0 ? (
           <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-            {nonLues}
+            {unreadCount}
           </span>
         ) : null}
       </button>
@@ -111,15 +127,15 @@ export function NotificationsBell() {
         >
           <div className="border-b border-slate-700 px-3 py-3 font-semibold text-white">Notifications</div>
           <div className="max-h-80 overflow-y-auto">
-            {notifications.length > 0 ? notifications.map((notification) => (
+            {visibleNotifications.length > 0 ? visibleNotifications.map((notification) => (
               <button
                 key={notification.id}
                 type="button"
                 onClick={() => handleRead(notification.id)}
                 className={`block w-full border-b border-slate-700/50 px-3 py-3 text-left text-sm ${!notification.lu ? 'bg-brand-500/5' : ''}`}
               >
-                <p className="text-slate-200">{notification.texte}</p>
-                <p className="mt-1 text-xs text-slate-500">{formatRelativeDate(notification.date)}</p>
+                <p className="text-slate-200">{notification.title || notification.message}</p>
+                <p className="mt-1 text-xs text-slate-500">{formatRelativeDate(notification.createdAt || notification.date)}</p>
               </button>
             )) : <p className="px-3 py-4 text-sm text-slate-400">Aucune notification pour le moment.</p>}
           </div>
@@ -280,23 +296,32 @@ function UserMenu({ user, onLogout }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [open]);
 
+  const closeAndRun = (callback) => {
+    setOpen(false);
+    callback?.();
+  };
+
   return (
     <div ref={buttonRef}>
-      <button onClick={handleToggle} className="flex items-center gap-2 rounded-full border border-slate-200 px-2 py-1.5 text-sm text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700">
+      <button type="button" onClick={handleToggle} className="flex items-center gap-2 rounded-full border border-slate-200 px-2 py-1.5 text-sm text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700">
         {user?.avatar ? <img src={user.avatar} alt={user?.name ?? 'Avatar'} className="h-8 w-8 rounded-full object-cover" /> : <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-gray-700 dark:bg-slate-700 dark:text-slate-200"><FiUser size={16} /></div>}
         <span className="hidden sm:inline">{user?.nom || user?.name || 'Utilisateur'}</span>
       </button>
 
       {open && createPortal(
-        <div className="fixed z-[100] w-56 overflow-hidden rounded-xl border border-slate-700 bg-slate-800 shadow-2xl" style={{ top: position.top, right: position.right }}>
-          <button onClick={() => { navigate('/profil'); setOpen(false); }} className="flex w-full items-center gap-2.5 px-4 py-3 text-left text-sm text-slate-200 hover:bg-white/5">
+        <div
+          className="fixed z-[100] w-56 overflow-hidden rounded-xl border border-slate-700 bg-slate-800 shadow-2xl"
+          style={{ top: position.top, right: position.right }}
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <button type="button" onClick={() => closeAndRun(() => navigate('/profil'))} className="flex w-full items-center gap-2.5 px-4 py-3 text-left text-sm text-slate-200 hover:bg-white/5">
             <FiUser size={15} /> Profil
           </button>
-          <button onClick={() => { navigate('/parametres'); setOpen(false); }} className="flex w-full items-center gap-2.5 px-4 py-3 text-left text-sm text-slate-200 hover:bg-white/5">
+          <button type="button" onClick={() => closeAndRun(() => navigate('/settings'))} className="flex w-full items-center gap-2.5 px-4 py-3 text-left text-sm text-slate-200 hover:bg-white/5">
             <FiSettings size={15} /> Paramètres
           </button>
           <div className="border-t border-slate-700" />
-          <button onClick={() => { onLogout(); setOpen(false); }} className="flex w-full items-center gap-2.5 px-4 py-3 text-left text-sm text-red-400 hover:bg-white/5">
+          <button type="button" onClick={() => closeAndRun(() => onLogout?.())} className="flex w-full items-center gap-2.5 px-4 py-3 text-left text-sm text-red-400 hover:bg-white/5">
             <FiLogOut size={15} /> Déconnexion
           </button>
         </div>,
@@ -318,7 +343,7 @@ export function AppTopbar({ onMenuToggle, mobileOpen }) {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate('/login', { replace: true });
   };
 
   return (

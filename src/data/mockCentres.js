@@ -3,6 +3,7 @@ export const mockCentres = [
     id: 'centre-1',
     name: 'Tech Academy Tunis',
     ville: 'Tunis',
+    logo: 'https://api.dicebear.com/7.x/icons/svg?seed=TechAcademy',
     // Source de vérité
     statutVerification: 'verifie',
     dateDemande: '2026-05-12',
@@ -20,6 +21,7 @@ export const mockCentres = [
     id: 'centre-2',
     name: 'Digital Design Institute',
     ville: 'Sfax',
+    logo: 'https://api.dicebear.com/7.x/icons/svg?seed=DigitalDesign',
     // Source de vérité
     statutVerification: 'non_soumis',
     dateDemande: null,
@@ -37,6 +39,7 @@ export const mockCentres = [
     id: 'centre-3',
     name: 'Business Skills Center',
     ville: 'Kasserine',
+    logo: 'https://api.dicebear.com/7.x/icons/svg?seed=BusinessSkills',
     // Source de vérité
     statutVerification: 'en_attente',
     dateDemande: '2026-06-10',
@@ -55,6 +58,7 @@ export const mockCentres = [
     id: 'centre-4',
     name: 'Centre Nord Academy',
     ville: 'Ariana',
+    logo: 'https://api.dicebear.com/7.x/icons/svg?seed=CentreNord',
     statutVerification: 'rejete',
     dateDemande: '2026-05-20',
     dateValidation: null,

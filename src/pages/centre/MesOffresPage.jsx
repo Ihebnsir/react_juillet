@@ -4,11 +4,15 @@ import { useAuth } from "../../context/AuthContext";
 import { formationsService } from "../../services/formationsService";
 import { reservationsService } from "../../services/reservationsService";
 import { useReservations } from "../../context/ReservationContext";
+import { useTrash } from "../../context/TrashContext";
+import { useActivityLog } from "../../context/ActivityContext";
 import { OffreCard } from "../../components/centre/OffreCard";
 import { ToastMessage } from "../../components/UI/ToastMessage";
 
 export const MesOffresPage = () => {
   const { user } = useAuth();
+  const { softDelete } = useTrash();
+  const { recordActivity } = useActivityLog();
   const { getReservationsParFormation } = useReservations();
   const location = useLocation();
   const navigate = useNavigate();
@@ -56,8 +60,20 @@ export const MesOffresPage = () => {
         setToast({ type: "error", message: "Impossible de supprimer une offre avec des réservations actives." });
         return;
       }
+      const formationToDelete = formations.find((formation) => formation.id === formationId);
+      softDelete({
+        type: 'formation',
+        item: formationToDelete,
+        deletedBy: user?.name || 'Système',
+      });
       await formationsService.delete(formationId);
       await loadFormations();
+      recordActivity({
+        user: user?.name || 'Système',
+        action: 'Formation supprimée',
+        type: 'formation',
+        details: `${formationToDelete?.title || 'Formation'} déplacée vers la corbeille.`,
+      });
       setToast({ type: "success", message: "Offre supprimée avec succès." });
     } catch (error) {
       setToast({ type: "error", message: "Erreur lors de la suppression de l'offre." });

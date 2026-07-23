@@ -213,6 +213,12 @@ export const Navbar = () => {
                 <Link to="/profil" className="flex items-center gap-2 text-gray-700 transition hover:text-teal-600 dark:text-slate-200" onClick={() => setIsOpen(false)}>
                   <FiUser size={18} /> {t('nav.profile')}
                 </Link>
+                <Link to="/notifications" className="flex items-center gap-2 text-gray-700 transition hover:text-teal-600 dark:text-slate-200" onClick={() => setIsOpen(false)}>
+                  🔔 Notifications
+                </Link>
+                <Link to="/settings" className="flex items-center gap-2 text-gray-700 transition hover:text-teal-600 dark:text-slate-200" onClick={() => setIsOpen(false)}>
+                  ⚙️ Paramètres
+                </Link>
                 {isLearner && (
                   <>
                     <Link to="/favoris" className="block text-gray-700 transition hover:text-teal-600 dark:text-slate-200" onClick={() => setIsOpen(false)}>{t('nav.favorites')} ({favoriteCount})</Link>
