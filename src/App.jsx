@@ -84,14 +84,6 @@ function SharedRouteLayout() {
   return <ApprenantLayout />;
 }
 
-/** Logger de débogage pour tracer les changements de route */
-function RouteLogger() {
-  const location = useLocation();
-  const { user } = useAuth();
-  console.log('📍 [ROUTE] pathname:', location.pathname, '| role:', user?.role, '| authenticated:', !!user);
-  return null;
-}
-
 function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) {
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();

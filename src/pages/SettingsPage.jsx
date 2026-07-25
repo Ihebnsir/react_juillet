@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FiBell, FiGlobe, FiMoon, FiShield, FiChevronRight, FiMail, FiMessageCircle, FiSmartphone, FiUsers, FiEye, FiLock, FiCalendar } from 'react-icons/fi';
+import { FiBell, FiGlobe, FiMoon, FiShield, FiChevronRight, FiMail, FiSmartphone, FiUsers, FiEye, FiLock, FiCalendar } from 'react-icons/fi';
 
 function ToggleRow({ label, description, icon: Icon, defaultChecked = false }) {
   const [checked, setChecked] = useState(defaultChecked);
@@ -192,4 +192,3 @@ export const SettingsPage = () => (
 );
 
 export default SettingsPage;
-

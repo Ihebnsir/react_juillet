@@ -70,12 +70,6 @@ export const CentreProfilePage = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleRemoveLogo = () => {
-    setLogoPreview('https://api.dicebear.com/7.x/icons/svg?seed=TechAcademy');
-    setMessage({ type: 'info', text: 'Logo réinitialisé.' });
-    setTimeout(() => setMessage(null), 3000);
-  };
-
   const handleGalleryUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -411,4 +405,3 @@ export const CentreProfilePage = () => {
 };
 
 export default CentreProfilePage;
-

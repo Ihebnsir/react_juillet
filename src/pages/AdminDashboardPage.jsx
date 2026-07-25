@@ -4,9 +4,8 @@ import {
   FiUsers,
   FiBook,
   FiCheckCircle,
-  FiTrendingUp,
 } from "react-icons/fi";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 export const AdminDashboardPage = () => {
   const [stats, setStats] = useState(null);
