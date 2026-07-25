@@ -74,7 +74,8 @@ export function NotificationsBell() {
   const buttonRef = useRef(null);
   const [position, setPosition] = useState({ top: 0, right: 0 });
 
-  const visibleNotifications = notifications.filter((notification) => notification.userId === (user?.id || 1));
+  // Le filtrage par rôle est déjà géré dans NotificationContext
+  const visibleNotifications = notifications;
 
   const handleRead = (id) => {
     markAsRead(id);

@@ -45,4 +45,34 @@ export const getRecommandationsForUser = (userId) => {
     }));
 };
 
-export const getMesAvisForUser = (userId) => mockAvis.filter((avis) => avis.apprenantId === userId);
+const AVIS_STORAGE_KEY = 'skillbridge_avis';
+
+// Initialiser depuis localStorage si des données existent
+const getInitialAvis = () => {
+  if (typeof window === 'undefined') return mockAvis;
+  try {
+    const stored = window.localStorage.getItem(AVIS_STORAGE_KEY);
+    if (!stored) return mockAvis;
+    const parsed = JSON.parse(stored);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    return mockAvis;
+  } catch {
+    return mockAvis;
+  }
+};
+
+// État mutable des avis (synchronisé avec localStorage)
+let avisData = getInitialAvis();
+
+export const getMesAvisForUser = (userId) => avisData.filter((avis) => avis.apprenantId === userId);
+
+export const updateAvis = async (id, { note, commentaire }) => {
+  const index = avisData.findIndex((a) => a.id === id);
+  if (index !== -1) {
+    avisData[index] = { ...avisData[index], note, commentaire };
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(AVIS_STORAGE_KEY, JSON.stringify(avisData));
+    }
+  }
+  return avisData[index];
+};

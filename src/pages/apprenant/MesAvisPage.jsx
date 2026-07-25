@@ -1,16 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FiStar, FiInbox } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
-import { getMesAvisForUser } from '../../services/apprenantExperienceService';
+import { getMesAvisForUser, updateAvis } from '../../services/apprenantExperienceService';
+import ModifierAvisModal from '../../components/avis/ModifierAvisModal';
+import { ToastMessage } from '../../components/UI/ToastMessage';
 
 export const MesAvisPage = () => {
   const { user } = useAuth();
-  const avis = getMesAvisForUser(user?.id || 1);
+  const [avisList, setAvisList] = useState(() => getMesAvisForUser(user?.id || 1));
+  const [avisEnEdition, setAvisEnEdition] = useState(null);
+  const [toast, setToast] = useState({ type: '', message: '' });
+
+  const handleSave = async (id, { note, commentaire }) => {
+    await updateAvis(id, { note, commentaire });
+    setAvisList((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, note, commentaire } : a))
+    );
+    setToast({ type: 'success', message: 'Avis mis à jour avec succès' });
+  };
 
   return (
     <div>
       <h1 className="mb-6 text-2xl font-display font-bold text-slate-900 dark:text-slate-100">Mes avis</h1>
-      {avis.length === 0 ? (
+
+      {toast.message && (
+        <ToastMessage
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast({ type: '', message: '' })}
+        />
+      )}
+
+      {avisList.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 p-10 text-center dark:border-slate-700 dark:bg-slate-900/40">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-300">
             <FiInbox size={24} />
@@ -20,7 +41,7 @@ export const MesAvisPage = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {avis.map((item) => (
+          {avisList.map((item) => (
             <div key={item.id} className="card flex flex-col justify-between gap-4 p-5 md:flex-row md:items-start">
               <div>
                 <p className="font-semibold text-slate-900 dark:text-slate-100">{item.formationTitre}</p>
@@ -31,10 +52,18 @@ export const MesAvisPage = () => {
                 </div>
                 <p className="text-sm text-slate-500 dark:text-slate-400">{item.commentaire}</p>
               </div>
-              <button className="btn-secondary text-sm">Modifier</button>
+              <button onClick={() => setAvisEnEdition(item)} className="btn-secondary text-sm">Modifier</button>
             </div>
           ))}
         </div>
+      )}
+
+      {avisEnEdition && (
+        <ModifierAvisModal
+          avis={avisEnEdition}
+          onClose={() => setAvisEnEdition(null)}
+          onSave={handleSave}
+        />
       )}
     </div>
   );

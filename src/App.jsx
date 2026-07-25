@@ -16,16 +16,9 @@ import { CentreLayout } from "./layouts/CentreLayout";
 import { AdminLayout } from "./layouts/AdminLayout";
 import { initFacebookSDK } from "./services/facebookAuth";
 import "./i18n";
-
 import { SkillBridgePreloader } from "./components/Preloader/SkillBridgePreloader";
-import {
-  markPreloaderShown,
-  shouldShowPreloader,
-} from "./components/Preloader/skillBridgePreloaderSingleton";
+import { markPreloaderShown, shouldShowPreloader } from "./components/Preloader/skillBridgePreloaderSingleton";
 import { Chatbot } from "./components/Chatbot";
-
-
-// Pages
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -79,6 +72,26 @@ import VerifierCertificatPage from "./pages/VerifierCertificatPage";
 import { FormateursPage } from "./pages/centre/FormateursPage";
 import { EntreprisesPartenairesPage } from "./pages/centre/EntreprisesPartenairesPage";
 
+/**
+ * Wrapper qui rend le layout approprié selon le rôle de l'utilisateur.
+ * Permet de partager des routes communes (notifications, settings) entre tous les rôles.
+ */
+function SharedRouteLayout() {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role === 'admin') return <AdminLayout />;
+  if (user.role === 'centre') return <CentreLayout />;
+  return <ApprenantLayout />;
+}
+
+/** Logger de débogage pour tracer les changements de route */
+function RouteLogger() {
+  const location = useLocation();
+  const { user } = useAuth();
+  console.log('📍 [ROUTE] pathname:', location.pathname, '| role:', user?.role, '| authenticated:', !!user);
+  return null;
+}
+
 function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) {
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
@@ -125,6 +138,17 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
           <Route path="/centres/:id" element={<CenterProfilePage />} />
           <Route path="/verifier-certificat/:id" element={<VerifierCertificatPage />} />
 
+          {/**
+           * Routes partagées (notifications, settings) – définies AVANT les groupes
+           * spécifiques pour éviter l'interception par le mauvais ProtectedRoute.
+           */}
+          <Route element={<ProtectedRoute allowedRoles={["apprenant","centre","admin"]} />}>
+            <Route element={<SharedRouteLayout />}>
+              <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+            </Route>
+          </Route>
+
           <Route element={<ProtectedRoute allowedRoles={["apprenant"]} />}>
             <Route element={<ApprenantLayout />}>
               <Route path="/dashboard" element={<ApprenantDashboardPage />} />
@@ -138,8 +162,6 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
               <Route path="/parametres" element={<ParametresPage />} />
               <Route path="/messagerie" element={<ApprenantMessageriePage />} />
               <Route path="/profil" element={<ProfilePage />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
               <Route path="/parametres" element={<Navigate to="/settings" replace />} />
               <Route path="/support" element={<AdminSupportPage />} />
             </Route>
@@ -162,8 +184,6 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
               <Route path="/centre/messagerie" element={<CentreMessageriePage />} />
               <Route path="/centre/statistiques" element={<StatisticsPage />} />
               <Route path="/centre/profile" element={<CentreProfilePage />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
               <Route path="/activity-history" element={<ActivityHistoryPage />} />
               <Route path="/trash" element={<TrashPage />} />
               <Route path="/centre/calendar" element={<CentreCalendarPage />} />
@@ -185,8 +205,6 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
               <Route path="/admin/statistiques" element={<StatistiquesPage />} />
               <Route path="/admin/contenu-accueil" element={<ContenuAccueilPage />} />
               <Route path="/admin/contact" element={<ContactAdminPage />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Route>
 
