@@ -68,7 +68,6 @@ export function Breadcrumb() {
 }
 
 export function NotificationsBell() {
-  const { user } = useAuth();
   const { notifications, markAsRead, unreadCount } = useNotifications();
   const [open, setOpen] = useState(false);
   const buttonRef = useRef(null);
@@ -152,7 +151,6 @@ function GlobalSearchModal({ open, onClose, raccourcis }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [results, setResults] = useState([]);
   const inputRef = useRef(null);
 
   // Importer les données mock pour la recherche
