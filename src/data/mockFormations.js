@@ -1,3 +1,7 @@
+// ⚠️ Cette formation est DUPLIQUÉE dans src/data/mockData.js (MOCK_FORMATIONS).
+// Les champs id, title, image, categorie doivent être synchronisés entre les deux fichiers.
+// Quand vous modifiez un champ ici, vérifiez l'entrée correspondante dans mockData.js.
+
 export const mockFormations = [
   {
     id: 'form-1',

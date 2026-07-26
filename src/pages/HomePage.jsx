@@ -5,11 +5,12 @@ import { useTranslation } from "react-i18next";
 import { formationsService } from "../services/formationsService";
 import heroVideo from "../assets/videos/hero-education.mp4";
 import { FormationCard } from "../components/Cards/FormationCard";
-import { FiArrowRight, FiCheckCircle, FiShield, FiGlobe } from "react-icons/fi";
+import { FiArrowRight, FiCheckCircle, FiShield, FiGlobe, FiGrid, FiClock } from "react-icons/fi";
 import Carousel from "../components/UI/Carousel";
 import AnimatedSearchBar from "../components/UI/AnimatedSearchBar";
 import CompetencesParDomaine from '../components/home/CompetencesParDomaine';
 import { mockFormations } from '../data/mockFormations';
+import { mockCentres } from '../data/mockCentres';
 import { mockTemoignages } from '../data/mockTemoignages';
 import { getStats, getTemoignages } from '../services/contenuAccueilService';
 
@@ -57,6 +58,13 @@ export const HomePage = () => {
     navigate(`/formations?q=${encodeURIComponent(recherche)}`);
   };
 
+  const commentCaMarcheEtapes = [
+    { numero: '01', titre: 'Recherchez', description: 'Filtrez par domaine, ville ou budget parmi des centaines de formations.' },
+    { numero: '02', titre: 'Réservez', description: 'Choisissez votre centre vérifié et réservez votre place en quelques clics.' },
+    { numero: '03', titre: 'Formez-vous', description: 'Suivez votre progression et échangez avec votre centre.' },
+    { numero: '04', titre: 'Certifiez-vous', description: 'Obtenez votre attestation vérifiable avec QR code.' },
+  ];
+
   return (
     <main className="relative overflow-hidden sb-page">
       <div className="pointer-events-none absolute inset-0 -z-10">
@@ -65,6 +73,7 @@ export const HomePage = () => {
         <div className="absolute bottom-[-220px] left-[40%] h-[520px] w-[520px] rounded-full bg-sunset-400/15 blur-3xl" />
       </div>
 
+      {/* 1. Hero — inchangé */}
       <section className="relative overflow-hidden rounded-3xl min-h-[600px] flex items-center">
         {!prefersReducedMotion && !isMobile && (
           <video
@@ -154,6 +163,19 @@ export const HomePage = () => {
         </div>
       </section>
 
+      {/* 2. Bandeau "Ils nous font confiance" (logos partenaires) */}
+      <section className="py-8 border-y border-slate-800 mx-auto max-w-7xl mt-10 px-4 sm:px-6 lg:px-8">
+        <p className="text-center text-xs uppercase tracking-wide text-slate-500 mb-4">
+          Ils forment déjà avec SkillBridge
+        </p>
+        <div className="flex items-center justify-center gap-10 flex-wrap opacity-60 select-none pointer-events-none">
+          {mockCentres.slice(0, 5).map((c) => (
+            <img key={c.id} src={c.logo} alt={c.nom || c.name} className="h-8 grayscale" />
+          ))}
+        </div>
+      </section>
+
+      {/* 3. Stats globales */}
       <section className="relative z-10 mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="sb-surface rounded-3xl px-6 py-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -174,78 +196,28 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* Trending formations */}
-      {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600" />
+      {/* 4. Comment ça marche */}
+      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-10 text-slate-900 dark:text-white">
+          Comment ça marche
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {commentCaMarcheEtapes.map((e) => (
+            <div key={e.numero} className="text-center">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center text-white font-bold text-lg">
+                {e.numero}
+              </div>
+              <h3 className="font-semibold mb-2 text-slate-900 dark:text-slate-100">{e.titre}</h3>
+              <p className="text-sm text-slate-400">{e.description}</p>
+            </div>
+          ))}
         </div>
-      ) : (
-        <>
-          <CompetencesParDomaine formations={mockFormations} />
+      </section>
 
-          <section className="py-12 px-6 md:px-10 max-w-7xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-display font-bold mb-8 text-slate-900 dark:text-white">
-              Pourquoi choisir SkillBridge ?
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-              {temoignages.length > 0 ? temoignages.slice(0, 4).map((t) => (
-                <div key={t.id} className="card">
-                  <div className="mb-4 flex items-center gap-3">
-                    <img src={t.avatar || '/images/avatars/avatar1.jpg'} alt={t.nom} className="h-11 w-11 rounded-full object-cover" />
-                    <div>
-                      <p className="font-semibold text-slate-900 dark:text-slate-100">{t.nom}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{t.role}</p>
-                    </div>
-                  </div>
-                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">“{t.citation}”</p>
-                </div>
-              )) : mockTemoignages.slice(0, 4).map((t) => (
-                <div key={t.id} className="card">
-                  <div className="mb-4 flex items-center gap-3">
-                    <img src={t.avatar} alt={t.nom} className="h-11 w-11 rounded-full object-cover" />
-                    <div>
-                      <p className="font-semibold text-slate-900 dark:text-slate-100">{t.nom}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{t.role}</p>
-                    </div>
-                  </div>
-                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">“{t.citation}”</p>
-                </div>
-              ))}
-            </div>
-          </section>
+      {/* 5. Compétences par domaine */}
+      <CompetencesParDomaine formations={mockFormations} />
 
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-8">
-              <div>
-                <h2 className="sb-h2 text-slate-900 dark:text-white">{t("home.trendingTitle")}</h2>
-                <p className="mt-2 sb-p">
-                  Les formations les plus réservées en ce moment — choisissez votre prochain apprentissage.
-                </p>
-              </div>
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className="badge-soft">Nouveautés</span>
-                <span className="badge-soft">Populaires</span>
-                <Link
-                  to="/formations"
-                  className="btn-outline inline-flex items-center gap-2 justify-center px-5 py-2 rounded-xl border-brand-200"
-                >
-                  {t("common.viewAll")} <FiArrowRight />
-                </Link>
-              </div>
-            </div>
-
-            <Carousel itemsPerPage={4}>
-              {trendingFormations.map((formation, idx) => (
-                <div key={formation.id} className="animate-[fadeInUp_0.55s_ease-out_both]" style={{ animationDelay: `${idx * 60}ms` }}>
-                  <FormationCard formation={formation} />
-                </div>
-              ))}
-            </Carousel>
-          </section>
-        </>
-      )}
-
-      {/* Benefits (asymmetric, designed composition) */}
+      {/* 6. Ce qui nous distingue (ancien "Pourquoi choisir SkillBridge?" renommé) */}
       <section className="sb-page py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 items-start">
@@ -256,7 +228,7 @@ export const HomePage = () => {
 
               <div className="flex items-center justify-between gap-6 flex-wrap">
                 <div>
-                  <h2 className="sb-h2 text-slate-900 dark:text-white">Pourquoi choisir SkillBridge?</h2>
+                  <h2 className="sb-h2 text-slate-900 dark:text-white">Ce qui nous distingue</h2>
                   <p className="mt-3 sb-p text-slate-600 dark:text-slate-300">
                     Une expérience EdTech premium : trouvez, réservez et évoluez — en toute confiance.
                   </p>
@@ -270,7 +242,9 @@ export const HomePage = () => {
 
               <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="rounded-2xl border border-slate-200/70 bg-white/70 dark:bg-slate-900/30 p-5">
-                  <p className="text-xs uppercase tracking-wide text-slate-500">Catologue</p>
+                  <div className="w-11 h-11 rounded-xl bg-brand-500/15 flex items-center justify-center mb-3">
+                    <FiGrid className="text-brand-500" size={20} />
+                  </div>
                   <p className="mt-2 font-extrabold text-slate-900 dark:text-slate-100 text-lg">Large Catalogue</p>
                   <p className="mt-2 sb-p text-slate-600 dark:text-slate-300">
                     Des centaines de formations dans divers domaines.
@@ -278,7 +252,9 @@ export const HomePage = () => {
                 </div>
 
                 <div className="rounded-2xl border border-slate-200/70 bg-white/70 dark:bg-slate-900/30 p-5">
-                  <p className="text-xs uppercase tracking-wide text-slate-500">Confiance</p>
+                  <div className="w-11 h-11 rounded-xl bg-brand-500/15 flex items-center justify-center mb-3">
+                    <FiShield className="text-brand-500" size={20} />
+                  </div>
                   <p className="mt-2 font-extrabold text-slate-900 dark:text-slate-100 text-lg">Centres Vérifiés</p>
                   <p className="mt-2 sb-p text-slate-600 dark:text-slate-300">
                     Tous nos centres sont vérifiés et approuvés.
@@ -286,7 +262,9 @@ export const HomePage = () => {
                 </div>
 
                 <div className="sm:col-span-2 rounded-2xl border border-brand-200/80 bg-gradient-to-r from-brand-500/10 to-accent-500/10 p-6">
-                  <p className="text-xs uppercase tracking-wide text-brand-700 dark:text-brand-200">Flexibilité</p>
+                  <div className="w-11 h-11 rounded-xl bg-brand-500/15 flex items-center justify-center mb-3">
+                    <FiClock className="text-brand-500" size={20} />
+                  </div>
                   <p className="mt-2 font-extrabold text-slate-900 dark:text-slate-100 text-lg">Flexibilité</p>
                   <p className="mt-2 sb-p text-slate-600 dark:text-slate-300">
                     Apprenez à votre rythme avec des parcours adaptables.
@@ -320,9 +298,77 @@ export const HomePage = () => {
         </div>
       </section>
 
+      {/* 7. Formations Tendances */}
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600" />
+        </div>
+      ) : (
+        <>
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-8">
+              <div>
+                <h2 className="sb-h2 text-slate-900 dark:text-white">{t("home.trendingTitle")}</h2>
+                <p className="mt-2 sb-p">
+                  Les formations les plus réservées en ce moment — choisissez votre prochain apprentissage.
+                </p>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="badge-soft">Nouveautés</span>
+                <span className="badge-soft">Populaires</span>
+                <Link
+                  to="/formations"
+                  className="btn-outline inline-flex items-center gap-2 justify-center px-5 py-2 rounded-xl border-brand-200"
+                >
+                  {t("common.viewAll")} <FiArrowRight />
+                </Link>
+              </div>
+            </div>
 
+            <Carousel itemsPerPage={4}>
+              {trendingFormations.map((formation, idx) => (
+                <div key={formation.id} className="animate-[fadeInUp_0.55s_ease-out_both]" style={{ animationDelay: `${idx * 60}ms` }}>
+                  <FormationCard formation={formation} />
+                </div>
+              ))}
+            </Carousel>
+          </section>
 
-      {/* Final CTA (premium landing conclusion) */}
+          {/* Pourquoi choisir SkillBridge ? (témoignages — titre conservé ici) */}
+          <section className="py-12 px-6 md:px-10 max-w-7xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-8 text-slate-900 dark:text-white">
+              Pourquoi choisir SkillBridge ?
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+              {temoignages.length > 0 ? temoignages.slice(0, 4).map((t) => (
+                <div key={t.id} className="card">
+                  <div className="mb-4 flex items-center gap-3">
+                    <img src={t.avatar || '/images/avatars/avatar1.jpg'} alt={t.nom} className="h-11 w-11 rounded-full object-cover" />
+                    <div>
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">{t.nom}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{t.role}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">“{t.citation}”</p>
+                </div>
+              )) : mockTemoignages.slice(0, 4).map((t) => (
+                <div key={t.id} className="card">
+                  <div className="mb-4 flex items-center gap-3">
+                    <img src={t.avatar} alt={t.nom} className="h-11 w-11 rounded-full object-cover" />
+                    <div>
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">{t.nom}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{t.role}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">“{t.citation}”</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </>
+      )}
+
+      {/* 8. CTA final (inchangé) */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-brand-700" />
         <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.8)_0%,transparent_60%)]" />

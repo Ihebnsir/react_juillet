@@ -1,4 +1,10 @@
 // Mock data for SkillBridge Platform
+//
+// ⚠️ Certaines formations sont DUPLIQUÉES dans src/data/mockFormations.js.
+// Les champs id, title, image, categorie doivent être synchronisés entre les deux fichiers.
+// mockFormations.js = source simplifiée pour les composants d'affichage public
+// mockData.js = source enrichie (centre, program, trending) pour formationsService
+// Voir les commentaires dans mockFormations.js pour la liste des formations concernées.
 
 export const MOCK_USERS = [
   {
@@ -146,8 +152,9 @@ export const MOCK_FORMATIONS = [
     maxPlaces: 30,
     availablePlaces: 12,
     startDate: "2024-08-15",
+    // ⚠️ Synchronisé avec mockFormations.js (form-1)
     image:
-      "https://images.unsplash.com/photo-1633356122544-f134324ef6db?w=400&h=250&fit=crop",
+      "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80",
     program: [
       "Hooks avancés (useReducer, useCallback)",
       "Context API et performances",

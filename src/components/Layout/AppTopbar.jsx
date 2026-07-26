@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { FiBell, FiSearch, FiHome, FiBookOpen, FiCalendar, FiAward, FiMessageCircle, FiMenu, FiX, FiHelpCircle, FiCpu, FiSun, FiMoon, FiUser, FiLogOut, FiSettings, FiUsers, FiUserCheck, FiBriefcase, FiFileText } from 'react-icons/fi';
 import { useNotifications } from '../../context/NotificationContext';
 import { motion } from 'framer-motion';
+import AssistantIAModal from '../app/AssistantIAModal';
 
 const breadcrumbItems = [
   { path: '/dashboard', label: 'Tableau de bord' },
@@ -550,17 +551,25 @@ export function GlobalSearchButton() {
 
 export function FloatingActionButton() {
   const [open, setOpen] = useState(false);
+  const [assistantOuvert, setAssistantOuvert] = useState(false);
   const navigate = useNavigate();
 
   const handleAssistant = () => {
     setOpen(false);
-    window.dispatchEvent(new CustomEvent('skillbridge:open-assistant'));
+    setAssistantOuvert(true);
   };
 
   const handleSupport = () => {
     setOpen(false);
     navigate('/support');
   };
+
+  // Écouter l'event au cas où il serait dispatché depuis ailleurs
+  useEffect(() => {
+    const listener = () => setAssistantOuvert(true);
+    window.addEventListener('skillbridge:open-assistant', listener);
+    return () => window.removeEventListener('skillbridge:open-assistant', listener);
+  }, []);
 
   return (
     <div className="fixed bottom-6 end-6 z-40">
@@ -581,6 +590,10 @@ export function FloatingActionButton() {
       >
         {open ? <FiX size={22} /> : <FiHelpCircle size={22} />}
       </button>
+
+      {assistantOuvert && (
+        <AssistantIAModal onClose={() => setAssistantOuvert(false)} />
+      )}
     </div>
   );
 }

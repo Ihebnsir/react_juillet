@@ -18,7 +18,7 @@ import { initFacebookSDK } from "./services/facebookAuth";
 import "./i18n";
 import { SkillBridgePreloader } from "./components/Preloader/SkillBridgePreloader";
 import { markPreloaderShown, shouldShowPreloader } from "./components/Preloader/skillBridgePreloaderSingleton";
-import { Chatbot } from "./components/Chatbot";
+import ChatPublicButton from "./components/public/ChatPublicButton";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -202,7 +202,7 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
 
         </Routes>
       </main>
-      {!shouldUseAppShell && <Chatbot />}
+      {!shouldUseAppShell && <ChatPublicButton />}
       {!shouldUseAppShell && <Footer />}
     </div>
   );
