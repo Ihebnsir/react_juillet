@@ -1,4 +1,5 @@
 import { mockReservations } from "../data/mockReservations";
+import { mockCertificates } from "../data/mockCertificates";
 import { formationsService } from "./formationsService";
 
 const STORAGE_KEY = "skillBridgeReservations";
@@ -97,9 +98,16 @@ export const reservationsService = {
     const all = hydrateDataset();
     const active = all.find((r) => r.id === reservationId);
     if (!active) return null;
-    const next = all.map((r) =>
-      r.id === reservationId ? { ...r, status: "confirmee" } : r
-    );
+    const now = new Date().toISOString().split('T')[0];
+    const next = all.map((r) => {
+      if (r.id !== reservationId) return r;
+      const historyEntry = { date: now, action: 'Réservation confirmée', icon: 'confirm' };
+      return {
+        ...r,
+        status: "confirmee",
+        history: [...(r.history || []), historyEntry],
+      };
+    });
     saveDataset(next);
     return next.find((r) => r.id === reservationId) || null;
   },
@@ -108,13 +116,75 @@ export const reservationsService = {
     const all = hydrateDataset();
     const active = all.find((r) => r.id === reservationId);
     if (!active) return null;
-    const next = all.map((r) =>
-      r.id === reservationId
-        ? { ...r, status: "annulee", cancellationReason: motif }
-        : r
-    );
+    const now = new Date().toISOString().split('T')[0];
+    const next = all.map((r) => {
+      if (r.id !== reservationId) return r;
+      const historyEntry = { date: now, action: 'Réservation annulée', icon: 'cancel' };
+      return {
+        ...r,
+        status: "annulee",
+        cancellationReason: motif,
+        history: [...(r.history || []), historyEntry],
+      };
+    });
     saveDataset(next);
     return next.find((r) => r.id === reservationId) || null;
+  },
+
+  payerReservation: async (reservationId) => {
+    const all = hydrateDataset();
+    const active = all.find((r) => r.id === reservationId);
+    if (!active) return null;
+    const now = new Date().toISOString().split('T')[0];
+    const txnId = `TXN-${Date.now()}`;
+    const next = all.map((r) => {
+      if (r.id !== reservationId) return r;
+      const historyEntries = [
+        { date: now, action: 'Paiement effectué', icon: 'payment' },
+        { date: now, action: 'Réservation confirmée', icon: 'confirm' },
+      ];
+      return {
+        ...r,
+        status: "confirmee",
+        paid: true,
+        paymentDate: now,
+        paymentMethod: 'Carte bancaire',
+        transactionId: txnId,
+        history: [...(r.history || []), ...historyEntries],
+      };
+    });
+    saveDataset(next);
+    return next.find((r) => r.id === reservationId) || null;
+  },
+
+  getCertificateForReservation: async (reservationId, userName) => {
+    const all = hydrateDataset();
+    const reservation = all.find((r) => r.id === reservationId);
+    if (!reservation) return null;
+
+    const formations = await formationsService.getAll();
+    const formation = formations.find((f) => f.id === reservation.formationId);
+
+    const certificate = mockCertificates.find(
+      (c) => c.formation === (formation?.title || reservation.formationId)
+    );
+
+    if (!certificate && formation) {
+      return {
+        id: `cert-${reservationId}`,
+        trainee: userName || 'Apprenant',
+        formation: formation.title,
+        formationCategory: formation.categorie || formation.domain || '',
+        centreName: formation.centre?.name || '',
+        issuedAt: new Date().toISOString().split('T')[0],
+        startDate: formation.startDate || '',
+        endDate: formation.endDate || '',
+        status: 'Émis',
+        downloadUrl: '#',
+      };
+    }
+
+    return certificate || null;
   },
 
   // Helper utile pour bloquer la suppression d'une offre

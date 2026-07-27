@@ -49,6 +49,29 @@ export const ReservationProvider = ({ children }) => {
     []
   );
 
+  const payerReservation = useCallback(
+    async (reservationId) => {
+      const updated = await reservationsService.payerReservation(reservationId);
+      await hydrate();
+      return updated;
+    },
+    []
+  );
+
+  const getUserReservations = useCallback(
+    (userId) => {
+      return reservations.filter((r) => String(r.learnerId) === String(userId));
+    },
+    [reservations]
+  );
+
+  const getCertificateForReservation = useCallback(
+    async (reservationId, userName) => {
+      return reservationsService.getCertificateForReservation(reservationId, userName);
+    },
+    []
+  );
+
   const value = useMemo(
     () => ({
       reservations,
@@ -56,6 +79,9 @@ export const ReservationProvider = ({ children }) => {
       getReservationsParCentre,
       confirmerReservation,
       annulerReservation,
+      payerReservation,
+      getUserReservations,
+      getCertificateForReservation,
     }),
     [
       reservations,
@@ -63,6 +89,9 @@ export const ReservationProvider = ({ children }) => {
       getReservationsParCentre,
       confirmerReservation,
       annulerReservation,
+      payerReservation,
+      getUserReservations,
+      getCertificateForReservation,
     ]
   );
 

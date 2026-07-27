@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FiStar, FiInbox } from 'react-icons/fi';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getMesAvisForUser, updateAvis } from '../../services/apprenantExperienceService';
 import ModifierAvisModal from '../../components/avis/ModifierAvisModal';
@@ -7,9 +8,19 @@ import { ToastMessage } from '../../components/UI/ToastMessage';
 
 export const MesAvisPage = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const formationIdParam = searchParams.get('formationId');
   const [avisList, setAvisList] = useState(() => getMesAvisForUser(user?.id || 1));
   const [avisEnEdition, setAvisEnEdition] = useState(null);
   const [toast, setToast] = useState({ type: '', message: '' });
+  const highlightRef = useRef(null);
+
+  // Scroll to highlighted formation when redirected from reservations
+  useEffect(() => {
+    if (formationIdParam && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [formationIdParam]);
 
   const handleSave = async (id, { note, commentaire }) => {
     await updateAvis(id, { note, commentaire });
