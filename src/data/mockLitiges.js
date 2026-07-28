@@ -204,3 +204,24 @@ const generateAIAnalysis = (categorie, priorite) => {
 
 export const mockLitiges = generateMockLitiges();
 
+export const LITIGES_STORAGE_KEY = 'skillbridge_admin_litiges';
+
+export const loadLitigesFromStorage = () => {
+  if (typeof window === 'undefined') return generateMockLitiges();
+  try {
+    const raw = window.localStorage.getItem(LITIGES_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : generateMockLitiges();
+  } catch (error) {
+    return generateMockLitiges();
+  }
+};
+
+export const saveLitigesToStorage = (litiges) => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(LITIGES_STORAGE_KEY, JSON.stringify(litiges));
+  } catch (error) {
+    // ignore write errors in private mode
+  }
+};
+
