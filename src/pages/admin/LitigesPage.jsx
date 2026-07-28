@@ -19,7 +19,7 @@ const ITEMS_PER_PAGE = 10;
 
 const STATUS_LABELS = {
   ouvert: 'Ouvert',
-  analyse: 'Analyse',
+  analyse: 'Analytics',
   attente_justificatifs: 'Attente justificatifs',
   en_cours: 'En cours',
   decision: 'Décision',
@@ -199,7 +199,7 @@ export const LitigesPage = () => {
       const updated = { ...l, ...updates, derniereMAJ: new Date().toISOString().split('T')[0] };
       if (updates.statut) {
         const actionLabels = {
-          ouvert: 'Ouverture', analyse: 'Prise en charge', attente_justificatifs: 'Demande de justificatifs',
+          ouvert: 'Ouverture', analyse: 'Prise en charge Analytics', attente_justificatifs: 'Demande de justificatifs',
           en_cours: 'En cours de résolution', decision: 'En attente de décision',
           resolu: 'Résolution', archive: 'Archivage',
         };
@@ -361,7 +361,7 @@ export const LitigesPage = () => {
       {/* ============================= */}
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-7">
         <StatCard icon={FiAlertTriangle} value={dashboardStats.ouverts} label="Ouverts" tone="amber" variation={`${dashboardStats.ouverts} en attente`} />
-        <StatCard icon={FiBarChart2} value={dashboardStats.analyse} label="En analyse" tone="blue" />
+        <StatCard icon={FiBarChart2} value={dashboardStats.analyse} label="En Analytics" tone="blue" />
         <StatCard icon={FiClock} value={dashboardStats.attente} label="En attente" tone="purple" />
         <StatCard icon={FiStar} value={dashboardStats.enCours} label="En cours" tone="orange" />
         <StatCard icon={FiCheckCircle} value={dashboardStats.resolus} label="Résolus" tone="green" />

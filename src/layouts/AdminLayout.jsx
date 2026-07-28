@@ -11,7 +11,7 @@ const sections = [
     title: 'Dashboard',
     items: [
       { to: '/admin', label: 'Dashboard', icon: FiBarChart2 },
-      { to: '/admin/statistiques', label: 'Analytics', icon: FiBarChart2 },
+      { to: '/admin/analytics', label: 'Analytics', icon: FiBarChart2 },
     ],
   },
   {
@@ -25,9 +25,11 @@ const sections = [
     ],
   },
   {
-    title: 'Communication',
+    title: 'Ops',
     items: [
-      { to: '/notifications', label: 'Notifications', icon: FiBell },
+      { to: '/admin/notifications', label: 'Notifications', icon: FiBell },
+      { to: '/admin/activity-log', label: 'Audit log', icon: FiFileText },
+      { to: '/admin/trash', label: 'Corbeille', icon: FiAlertTriangle },
       { to: '/admin/contact', label: 'Messages', icon: FiMessageSquare },
       { to: '/admin/support', label: 'Support', icon: FiMessageSquare },
     ],

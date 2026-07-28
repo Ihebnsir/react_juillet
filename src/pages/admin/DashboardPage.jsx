@@ -1,64 +1,122 @@
-import React from 'react';
-import AdminHeader from '../../components/admin/AdminHeader';
-import AdminStatGrid from '../../components/admin/AdminStatGrid';
-import QuickActions from '../../components/admin/QuickActions';
-import TopList from '../../components/admin/TopList';
-import { DataChart } from '../../components/dashboard/DataChart';
-import { mockUsers } from '../../data/mockUsers';
-import { mockCentres } from '../../data/mockCentres';
-import { mockFormations } from '../../data/mockFormations';
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { FiArrowRight, FiBell, FiBookOpen, FiCheckCircle, FiMapPin, FiUsers, FiZap } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 
-export const DashboardPage = () => {
-  const monthly = [
-    { name: 'Jan', value: 12 },
-    { name: 'Fév', value: 18 },
-    { name: 'Mar', value: 15 },
-    { name: 'Avr', value: 22 },
-    { name: 'Mai', value: 19 },
-    { name: 'Jui', value: 27 },
+import { useAdminDashboardData } from '../../hooks/useAdminDashboardData';
+import { useNotifications } from '../../context/NotificationContext';
+import AlertsCenter from '../../components/admin/AlertsCenter';
+import QuickActionsPanel from '../../components/admin/QuickActionsPanel';
+import ActivityTimeline from '../../components/admin/ActivityTimeline';
+import { getPlatformHealthLabel } from '../../utils/adminDashboardUtils';
+
+const DashboardSkeleton = () => (
+  <div className="space-y-6 pb-8">
+    <div className="h-40 animate-pulse rounded-3xl bg-slate-800/70" />
+    <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+      <div className="space-y-6">
+        <div className="h-60 animate-pulse rounded-3xl bg-slate-800/70" />
+        <div className="h-48 animate-pulse rounded-3xl bg-slate-800/70" />
+      </div>
+      <div className="space-y-6">
+        <div className="h-48 animate-pulse rounded-3xl bg-slate-800/70" />
+        <div className="h-48 animate-pulse rounded-3xl bg-slate-800/70" />
+      </div>
+    </div>
+  </div>
+);
+
+const OverviewCards = ({ data }) => {
+  const items = [
+    { label: 'Apprenants', value: data.totalUsers, icon: FiUsers, tone: 'text-brand-500' },
+    { label: 'Centres actifs', value: data.verifiedCentres, icon: FiMapPin, tone: 'text-sky-500' },
+    { label: 'Formations actives', value: data.totalFormations, icon: FiBookOpen, tone: 'text-violet-500' },
+    { label: 'Alertes', value: data.alerts.length, icon: FiBell, tone: 'text-amber-500' },
   ];
-
-  const stats = [
-    { label: 'Utilisateurs', value: mockUsers.length, delta: '+4% ce mois' },
-    { label: 'Centres', value: mockCentres.length, delta: '+1% ce mois' },
-    { label: 'Formations', value: mockFormations.length, delta: '-2% ce mois' },
-    { label: 'Réservations', value: 1245, delta: '+8% ce mois' },
-  ];
-
-  const topCentres = mockCentres.slice(0, 5).map(c => ({ name: c.name || c.id, meta: c.city, value: `${c.averageRating || 4.5}★` }));
-  const topFormations = mockFormations.slice(0, 5).map(f => ({ name: f.title, meta: f.category, value: `${f.progress || 0}%` }));
 
   return (
-    <div className="space-y-6">
-      <AdminHeader title="Control Center" subtitle="Vue d'ensemble et actions rapides" />
-
-      <AdminStatGrid stats={stats} />
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="rounded-2xl bg-white/5 p-6 shadow-md border border-white/6">
-            <h3 className="text-lg font-semibold text-white">Inscriptions — dernier trimestre</h3>
-            <div className="mt-4">
-              <DataChart data={monthly} dataKey="value" label="Inscriptions" />
-            </div>
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      {items.map((item) => (
+        <div key={item.label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-slate-500 dark:text-slate-400">{item.label}</p>
+            <item.icon className={item.tone} />
           </div>
+          <p className="mt-3 text-3xl font-semibold text-slate-900 dark:text-slate-100">{item.value}</p>
+        </div>
+      ))}
+    </div>
+  );
+};
 
-          <div className="rounded-2xl bg-white/5 p-6 shadow-md border border-white/6">
-            <h3 className="text-lg font-semibold text-white">Activité récente</h3>
-            <ul className="mt-3 space-y-2 text-sm text-slate-300">
-              <li>Nouvelle formation publiée: React Avancé</li>
-              <li>Centre validé: Web Academy</li>
-              <li>Signalement trié: Utilisateur X</li>
-            </ul>
+export const DashboardPage = () => {
+  const data = useAdminDashboardData();
+  const [loading, setLoading] = useState(true);
+  const healthLabel = getPlatformHealthLabel(data.globalScore);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setLoading(false), 250);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  if (loading) return <DashboardSkeleton />;
+
+  return (
+    <div className="space-y-6 pb-8">
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-600">Centre de pilotage</p>
+            <h1 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">Supervision quotidienne SkillBridge</h1>
+            <p className="mt-2 max-w-2xl text-sm text-slate-500 dark:text-slate-400">Vue simple et claire de la santé plateforme, des alertes et des actions prioritaires.</p>
           </div>
+          <div className="rounded-full bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">{healthLabel} • {data.globalScore}%</div>
+        </div>
+      </motion.div>
+
+      <OverviewCards data={data} />
+
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <div className="space-y-6">
+          <AlertsCenter alerts={data.alerts} />
+          <QuickActionsPanel />
+          <ActivityTimeline />
         </div>
 
-        <aside className="space-y-6">
-          <QuickActions />
-          <TopList title="Top centres" items={topCentres} />
-          <TopList title="Top formations" items={topFormations} />
-        </aside>
+        <div className="space-y-6">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <div className="flex items-center gap-2">
+              <FiZap className="text-amber-500" />
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Santé plateforme</h3>
+            </div>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">État général de la plateforme calculé à partir de l’activité, des centres et des signalements.</p>
+            <div className="mt-5 grid gap-3 text-sm text-slate-600 dark:text-slate-300">
+              <div className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-700/40">Utilisateurs actifs : <span className="font-semibold text-slate-900 dark:text-slate-100">{data.activeUsers}</span></div>
+              <div className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-700/40">Nouveaux inscrits ce mois : <span className="font-semibold text-slate-900 dark:text-slate-100">{data.newUsersThisMonth}</span></div>
+              <div className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-700/40">Centres à valider : <span className="font-semibold text-slate-900 dark:text-slate-100">{data.centersToVerify}</span></div>
+            </div>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <div className="flex items-center gap-2">
+              <FiBell className="text-brand-500" />
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Actions prioritaires</h3>
+            </div>
+            <ul className="mt-4 space-y-3 text-sm text-slate-600 dark:text-slate-300">
+              {data.alerts.slice(0, 3).map((alert) => (
+                <li key={alert.id} className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-700/40">{alert.message}</li>
+              ))}
+            </ul>
+            <button type="button" onClick={() => navigate('/admin/analytics')} className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand-600">
+              Ouvrir Analytics <FiArrowRight />
+            </button>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default DashboardPage;
+

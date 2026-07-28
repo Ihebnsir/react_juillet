@@ -33,7 +33,7 @@ const sections = [
     ],
   },
   {
-    title: 'Analyse',
+    title: 'Analytics',
     items: [
       { to: '/centre/statistiques', label: 'Statistiques', icon: FiClipboard },
       { to: '/activity-history', label: 'Historique', icon: FiClock },

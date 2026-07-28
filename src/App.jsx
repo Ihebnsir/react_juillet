@@ -57,13 +57,16 @@ import { ActivityHistoryPage } from "./pages/centre/ActivityHistoryPage";
 import { TrashPage } from "./pages/centre/TrashPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
 import { DashboardPage as AdminDashboardPage } from "./pages/admin/DashboardPage";
+import { AnalyticsPage } from "./pages/admin/AnalyticsPage";
 import { ModerationPage } from "./pages/admin/ModerationPage";
 import { CentresEnAttentePage } from "./pages/admin/CentresEnAttentePage";
 import { UtilisateursPage } from "./pages/admin/UtilisateursPage";
 import { LitigesPage } from "./pages/admin/LitigesPage";
-import { StatistiquesPage } from "./pages/admin/StatistiquesPage";
 import { ContenuAccueilPage } from "./pages/admin/ContenuAccueilPage";
 import { ContactAdminPage } from "./pages/admin/ContactAdminPage";
+import { AdminNotificationsPage } from "./pages/admin/AdminNotificationsPage";
+import { ActivityLogPage } from "./pages/admin/ActivityLogPage";
+import { AdminTrashPage } from "./pages/admin/AdminTrashPage";
 import { MessageriePage as ApprenantMessageriePage } from "./pages/apprenant/MessageriePage";
 import { MessageriePage as CentreMessageriePage } from "./pages/centre/MessageriePage";
 import CentreCalendarPage from "./pages/centre/CentreCalendarPage";
@@ -189,12 +192,16 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
             <Route element={<AdminLayout />}>
               <Route path="/admin" element={<AdminDashboardPage />} />
+              <Route path="/admin/analytics" element={<AnalyticsPage />} />
+              <Route path="/admin/statistiques" element={<AnalyticsPage />} />
               <Route path="/admin/support" element={<AdminSupportPage />} />
               <Route path="/admin/moderation" element={<ModerationPage />} />
               <Route path="/admin/centres-en-attente" element={<CentresEnAttentePage />} />
               <Route path="/admin/utilisateurs" element={<UtilisateursPage />} />
               <Route path="/admin/litiges" element={<LitigesPage />} />
-              <Route path="/admin/statistiques" element={<StatistiquesPage />} />
+              <Route path="/admin/notifications" element={<AdminNotificationsPage />} />
+              <Route path="/admin/activity-log" element={<ActivityLogPage />} />
+              <Route path="/admin/trash" element={<AdminTrashPage />} />
               <Route path="/admin/contenu-accueil" element={<ContenuAccueilPage />} />
               <Route path="/admin/contact" element={<ContactAdminPage />} />
             </Route>

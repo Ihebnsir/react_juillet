@@ -19,7 +19,7 @@ const TABS = [
 
 const STATUS_LABELS = {
   ouvert: 'Ouvert',
-  analyse: 'Analyse',
+  analyse: 'Analytics',
   attente_justificatifs: 'Attente justificatifs',
   en_cours: 'En cours',
   decision: 'Décision',
@@ -46,7 +46,7 @@ const priorityColors = {
 
 const WORKFLOW_STEPS = [
   { key: 'ouvert', label: 'Ouvert' },
-  { key: 'analyse', label: 'Analyse' },
+  { key: 'analyse', label: 'Analytics' },
   { key: 'attente_justificatifs', label: 'Attente' },
   { key: 'en_cours', label: 'En cours' },
   { key: 'decision', label: 'Décision' },
@@ -318,7 +318,7 @@ const [newNote, setNewNote] = useState('');
         <div className="rounded-xl border border-brand-200 dark:border-brand-800 bg-gradient-to-br from-brand-50 to-white dark:from-brand-950/30 dark:to-slate-800/50 p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-sm font-semibold text-brand-700 dark:text-brand-300 flex items-center gap-2">
-              <FiBarChart2 size={14} /> Analyse IA
+              <FiBarChart2 size={14} /> Analytics IA
             </h4>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
