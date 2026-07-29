@@ -1,28 +1,37 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { ModerationPage } from './ModerationPage';
 
 describe('ModerationPage', () => {
-  it('filters items, toggles the view and resolves selected items in bulk', () => {
-    render(<ModerationPage />);
+  it('supports filtering and the main moderation actions', () => {
+    window.localStorage.clear();
+    render(
+      <MemoryRouter>
+        <ModerationPage />
+      </MemoryRouter>
+    );
 
-    expect(screen.getByText(/Signalements en attente/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Centre de modération/i })).toBeInTheDocument();
 
-    fireEvent.change(screen.getByPlaceholderText(/Rechercher par mot-clé, ID ou auteur/i), {
-      target: { value: 'spam' },
+    fireEvent.change(screen.getByPlaceholderText(/Recherche globale/i), {
+      target: { value: 'fraude' },
     });
 
-    expect(screen.getAllByText(/Spam/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Fraude détectée/i).length).toBeGreaterThan(0);
 
-    fireEvent.click(screen.getByRole('button', { name: /tableau/i }));
-    expect(screen.getByText(/Auteur/i)).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole('button', { name: /Voir détail/i })[0]);
+    expect(screen.getByText(/Profil risque/i)).toBeInTheDocument();
 
-    const checkboxes = screen.getAllByRole('checkbox');
-    fireEvent.click(checkboxes[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: /Créer un litige/i })[1]);
+    expect(screen.getByText(/Litige créé/i)).toBeInTheDocument();
 
-    expect(screen.getByText(/Actions groupées/i)).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole('button', { name: /Suspendre compte/i })[0]);
+    expect(screen.getByText(/Compte de/i)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /Tout marquer comme résolu/i }));
+    fireEvent.click(screen.getAllByRole('button', { name: /Marquer traité/i })[0]);
+    expect(screen.getAllByText(/Alerte/i).length).toBeGreaterThan(0);
 
-    expect(screen.getAllByText(/Résolu/i).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getAllByRole('button', { name: /Ignorer/i })[0]);
+    expect(screen.getAllByText(/Alerte/i).length).toBeGreaterThan(0);
   });
 });

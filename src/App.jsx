@@ -56,7 +56,7 @@ import { CentreProfilePage } from "./pages/centre/CentreProfilePage";
 import { ActivityHistoryPage } from "./pages/centre/ActivityHistoryPage";
 import { TrashPage } from "./pages/centre/TrashPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
-import { DashboardPage as AdminDashboardPage } from "./pages/admin/DashboardPage";
+import AdminDashboardPage from "./pages/admin/DashboardPage";
 import { AnalyticsPage } from "./pages/admin/AnalyticsPage";
 import { ModerationPage } from "./pages/admin/ModerationPage";
 import { CentresEnAttentePage } from "./pages/admin/CentresEnAttentePage";

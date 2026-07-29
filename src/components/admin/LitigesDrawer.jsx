@@ -73,11 +73,15 @@ const InfoCard = ({ label, value, icon: Icon, badge, status, priority }) => {
   );
 };
 
-export const LitigesDrawer = ({ litige, onClose, onUpdate, litiges, setLitiges }) => {
-  const [activeTab, setActiveTab] = useState('infos');
+export const LitigesDrawer = ({ litige, onClose, onUpdate, litiges, setLitiges, initialTab = 'infos' }) => {
+  const [activeTab, setActiveTab] = useState(initialTab);
 const [newNote, setNewNote] = useState('');
   const [toast, setToast] = useState(null);
   const { addNotification } = useNotifications();
+
+  React.useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab, litige?.id]);
 
   if (!litige) return null;
 

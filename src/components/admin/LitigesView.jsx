@@ -1,6 +1,14 @@
 import React, { useMemo, useState } from 'react';
-import { AlertTriangle, Archive, CheckCircle2, Clock3, FileText, ShieldCheck, TrendingUp } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock3, ShieldCheck } from 'lucide-react';
 import { TicketManagerLayout } from './TicketManagerLayout';
+import { LitigesDrawer } from './LitigesDrawer';
+import { AdminPageShell } from './AdminPageShell';
+import { Badge } from '../UI/Badge';
+import { KpiCard } from '../UI/KpiCard';
+import { Panel } from '../UI/Panel';
+import { SectionHeader } from '../UI/SectionHeader';
+import { PriorityChip } from '../UI/PriorityChip';
+import { StatusChip } from '../UI/StatusChip';
 
 const initialLitiges = [
   {
@@ -38,18 +46,6 @@ const initialLitiges = [
   },
 ];
 
-const statusStyles = {
-  'En cours': 'border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900/40 dark:bg-sky-900/20 dark:text-sky-300',
-  'Attente justificatifs': 'border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-900/40 dark:bg-violet-900/20 dark:text-violet-300',
-  Résolu: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-900/20 dark:text-emerald-300',
-};
-
-const priorityStyles = {
-  Critique: 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/40 dark:bg-rose-900/20 dark:text-rose-300',
-  Moyen: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-300',
-  Faible: 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300',
-};
-
 export const LitigesView = () => {
   const [items, setItems] = useState(initialLitiges);
   const [search, setSearch] = useState('');
@@ -58,6 +54,8 @@ export const LitigesView = () => {
   const [selectedIds, setSelectedIds] = useState([]);
   const [viewMode, setViewMode] = useState('table');
   const [notice, setNotice] = useState('');
+  const [selectedLitige, setSelectedLitige] = useState(null);
+  const [drawerTab, setDrawerTab] = useState('infos');
 
   const filteredItems = useMemo(() => {
     const searchValue = search.toLowerCase();
@@ -90,6 +88,42 @@ export const LitigesView = () => {
     setNotice('Décision enregistrée.');
   };
 
+  const openLitigeDrawer = (litige, tab = 'infos') => {
+    setSelectedLitige(litige);
+    setDrawerTab(tab);
+  };
+
+  const closeLitigeDrawer = () => {
+    setSelectedLitige(null);
+    setDrawerTab('infos');
+  };
+
+  const exportCsv = () => {
+    const header = ['ID', 'Étudiant', 'Centre', 'Formation', 'Priorité', 'Statut', 'SLA'];
+    const rows = filteredItems.map((item) => [item.id, item.student, item.centre, item.formation, item.priority, item.status, item.sla]);
+    const content = [header.join(','), ...rows.map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(','))].join('\n');
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `litiges-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setNotice('Export CSV téléchargé.');
+  };
+
+  const exportPdf = () => {
+    const content = `%PDF-1.4\n1 0 obj<< /Type /Catalog /Pages 2 0 R >>endobj\n2 0 obj<< /Type /Pages /Kids [3 0 R] /Count 1 >>endobj\n3 0 obj<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>endobj\n4 0 obj<< /Length 44 >>stream\nBT /F1 18 Tf 72 720 (Litiges SkillBridge) Tj ET\nendstream\nendobj\n5 0 obj<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>endobj\nxref\n0 6\n0000000000 65535 f \n0000000010 00000 n \n0000000062 00000 n \n0000000119 00000 n \n0000000206 00000 n \n0000000300 00000 n \ntrailer<< /Size 6 /Root 1 0 R >>\nstartxref\n0\n%%EOF`;
+    const blob = new Blob([content], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `litiges-${new Date().toISOString().slice(0, 10)}.pdf`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setNotice('Export PDF téléchargé.');
+  };
+
   const bulkResolve = () => {
     setItems((prev) => prev.map((item) => (selectedIds.includes(item.id) ? { ...item, status: 'Résolu' } : item)));
     setSelectedIds([]);
@@ -97,8 +131,29 @@ export const LitigesView = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <AdminPageShell
+      eyebrow="Procédure"
+      title="Gestion des litiges"
+      subtitle="Console de suivi procédural et financier pour les dossiers étudiants, centres et formations."
+      badge="SLA actif"
+      className="space-y-6"
+    >
       {notice ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-900/20 dark:text-emerald-300">{notice}</div> : null}
+      <SectionHeader
+        eyebrow="Litiges"
+        title="Pilotage opérationnel des dossiers"
+        description="Résolvez rapidement les litiges avec une vue consolidée des priorités, des SLA et des parties prenantes."
+        actions={
+          <Badge label={`${metrics.urgent} critiques`} tone="danger" />
+        }
+      />
+      <Panel borderless>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <KpiCard label="Dossiers ouverts" value={metrics.pending} delta="Priorité aujourd’hui" icon={AlertTriangle} tone="amber" />
+          <KpiCard label="Urgents" value={metrics.urgent} delta="Critique" icon={ShieldCheck} tone="rose" />
+          <KpiCard label="SLA moyenne" value={metrics.response} delta="Réponse en" icon={Clock3} tone="sky" />
+        </div>
+      </Panel>
       <TicketManagerLayout
         title="Gestion des litiges"
         subtitle="Console de suivi procédural et financier pour les dossiers étudiants, centres et formations."
@@ -115,8 +170,8 @@ export const LitigesView = () => {
           { key: 'status', label: 'Statut', value: statusFilter, onChange: setStatusFilter, options: ['En cours', 'Attente justificatifs', 'Résolu'].map((value) => ({ value, label: value })) },
           { key: 'priority', label: 'Priorité', value: priorityFilter, onChange: setPriorityFilter, options: ['Critique', 'Moyen', 'Faible'].map((value) => ({ value, label: value })) },
         ]}
-        onExportCsv={() => setNotice('Export CSV des litiges prêt.')} 
-        onExportPdf={() => setNotice('Export PDF des litiges prêt.')}
+        onExportCsv={exportCsv}
+        onExportPdf={exportPdf}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         selectedCount={selectedIds.length}
@@ -149,14 +204,14 @@ export const LitigesView = () => {
                     <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">{item.student}</td>
                     <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">{item.centre}</td>
                     <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">{item.formation}</td>
-                    <td className="px-4 py-3"><span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${priorityStyles[item.priority]}`}>{item.priority}</span></td>
-                    <td className="px-4 py-3"><span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${statusStyles[item.status]}`}>{item.status}</span></td>
+                    <td className="px-4 py-3"><PriorityChip label={item.priority} tone={item.priority === 'Critique' ? 'critical' : item.priority === 'Moyen' ? 'medium' : 'low'} /></td>
+                    <td className="px-4 py-3"><StatusChip label={item.status} tone={item.status === 'Résolu' ? 'stable' : item.status === 'En cours' ? 'warning' : 'pending'} /></td>
                     <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">{item.sla}</td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-2">
-                        <button type="button" onClick={() => updateItem(item.id, { status: 'En cours' })} className="rounded-lg border border-slate-200 px-2 py-1 text-xs">Voir dossier</button>
-                        <button type="button" onClick={() => setNotice('Justificatifs consultés.')} className="rounded-lg border border-slate-200 px-2 py-1 text-xs">Justificatifs</button>
-                        <button type="button" onClick={() => updateItem(item.id, { status: 'Résolu' })} className="rounded-lg bg-emerald-600 px-2 py-1 text-xs text-white">Arbitrer</button>
+                        <button type="button" onClick={() => { openLitigeDrawer(item, 'infos'); setNotice(`Dossier ${item.id} ouvert.`); }} className="rounded-lg border border-slate-200 px-2 py-1 text-xs">Voir dossier</button>
+                        <button type="button" onClick={() => { openLitigeDrawer(item, 'documents'); setNotice('Justificatifs consultés.'); }} className="rounded-lg border border-slate-200 px-2 py-1 text-xs">Justificatifs</button>
+                        <button type="button" onClick={() => { openLitigeDrawer(item, 'decision'); setNotice(`Arbitrage ouvert pour ${item.id}.`); }} className="rounded-lg bg-emerald-600 px-2 py-1 text-xs text-white">Arbitrer</button>
                       </div>
                     </td>
                   </tr>
@@ -174,7 +229,7 @@ export const LitigesView = () => {
                     <h3 className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">{item.dossier}</h3>
                     <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{item.student} • {item.centre}</p>
                   </div>
-                  <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${priorityStyles[item.priority]}`}>{item.priority}</span>
+                  <PriorityChip label={item.priority} tone={item.priority === 'Critique' ? 'critical' : item.priority === 'Moyen' ? 'medium' : 'low'} />
                 </div>
                 <div className="mt-4 rounded-2xl bg-slate-50 p-3 text-sm text-slate-600 dark:bg-slate-700/50 dark:text-slate-300">
                   <div className="flex items-center justify-between"><span>Formation</span><span>{item.formation}</span></div>
@@ -182,15 +237,16 @@ export const LitigesView = () => {
                   <div className="flex items-center justify-between"><span>SLA</span><span>{item.sla}</span></div>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <button type="button" onClick={() => updateItem(item.id, { status: 'En cours' })} className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-200">Voir dossier</button>
-                  <button type="button" onClick={() => setNotice('Médiation ouverte.')} className="rounded-xl bg-brand-600 px-3 py-2 text-sm font-medium text-white">Médiation</button>
+                  <button type="button" onClick={() => { openLitigeDrawer(item, 'infos'); setNotice(`Dossier ${item.id} ouvert.`); }} className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-200">Voir dossier</button>
+                  <button type="button" onClick={() => { openLitigeDrawer(item, 'documents'); setNotice('Justificatifs consultés.'); }} className="rounded-xl bg-brand-600 px-3 py-2 text-sm font-medium text-white">Médiation</button>
                 </div>
               </div>
             ))}
           </div>
         )}
       </TicketManagerLayout>
-    </div>
+      <LitigesDrawer litige={selectedLitige} onClose={closeLitigeDrawer} onUpdate={updateItem} litiges={items} setLitiges={setItems} initialTab={drawerTab} />
+    </AdminPageShell>
   );
 };
 
