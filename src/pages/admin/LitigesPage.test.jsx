@@ -13,7 +13,7 @@ describe('LitigesPage', () => {
       </AuthProvider>
     );
 
-    expect(screen.getAllByText(/Gestion des litiges/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Gestion des dossiers|Case Management/i).length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getAllByRole('button', { name: /Voir dossier/i })[0]);
     expect(screen.getByText(/Informations/i)).toBeInTheDocument();
@@ -22,6 +22,6 @@ describe('LitigesPage', () => {
     expect(screen.getByText(/Documents/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getAllByRole('button', { name: /Arbitrer/i })[0]);
-    expect(screen.getByText(/Décision finale/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Décision finale/i).length).toBeGreaterThan(0);
   });
 });

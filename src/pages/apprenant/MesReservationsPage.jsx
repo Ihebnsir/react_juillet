@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
@@ -27,7 +27,6 @@ import {
   FiTarget,
   FiBarChart2,
   FiTrendingUp,
-  FiChevronDown,
   FiChevronUp,
   FiAward,
 } from "react-icons/fi";
@@ -910,13 +909,6 @@ export const MesReservationsPage = () => {
                                     {[...reservation.history]
                                       .sort((a, b) => new Date(b.date) - new Date(a.date))
                                       .map((entry, idx) => {
-                                        const iconMap = {
-                                          payment: "💳",
-                                          confirm: "✅",
-                                          create: "📋",
-                                          cancel: "❌",
-                                          completed: "🎓",
-                                        };
                                         return (
                                           <motion.div
                                             key={idx}

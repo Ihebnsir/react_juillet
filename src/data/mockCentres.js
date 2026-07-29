@@ -1,10 +1,3 @@
-const now = new Date();
-const day = (offset) => {
-  const d = new Date(now);
-  d.setDate(d.getDate() + offset);
-  return d.toISOString().split('T')[0];
-};
-
 export const mockCentres = [
   {
     id: 'centre-1',

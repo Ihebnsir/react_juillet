@@ -86,6 +86,10 @@ const [newNote, setNewNote] = useState('');
   if (!litige) return null;
 
   const currentStepIndex = WORKFLOW_STEPS.findIndex(s => s.key === litige.statut);
+  const documents = litige.documents || litige.piecesJointes || [];
+  const comments = litige.comments || litige.notesInternes || [];
+  const timeline = litige.timeline || litige.historique || [];
+  const conversationItems = litige.conversation || [];
 
   const showToast = (type, message) => {
     setToast({ type, message });
@@ -100,8 +104,15 @@ const [newNote, setNewNote] = useState('');
       auteur: 'Admin Principal',
       contenu: newNote,
     };
-    const updatedLitiges = litiges.map(l =>
-      l.id === litige.id ? { ...l, notesInternes: [...(l.notesInternes || []), newNoteObj] } : l
+    const updatedLitiges = litiges.map((l) =>
+      l.id === litige.id ? {
+        ...l,
+        notesInternes: [...(l.notesInternes || l.comments || []), newNoteObj],
+        comments: [...(l.comments || l.notesInternes || []), newNoteObj],
+        historique: [...(l.historique || l.timeline || []), { date: new Date().toISOString().split('T')[0], action: 'Note interne ajoutée', auteur: 'Admin Principal', details: newNote }],
+        timeline: [...(l.timeline || l.historique || []), { date: new Date().toISOString().split('T')[0], action: 'Note interne ajoutée', auteur: 'Admin Principal', details: newNote }],
+        updatedAt: new Date().toISOString().split('T')[0],
+      } : l
     );
     setLitiges(updatedLitiges);
     setNewNote('');
@@ -117,8 +128,15 @@ const [newNote, setNewNote] = useState('');
       date: new Date().toISOString().split('T')[0],
       taille: `${(Math.random() * 5 + 0.5).toFixed(1)} MB`,
     };
-    const updatedLitiges = litiges.map(l =>
-      l.id === litige.id ? { ...l, piecesJointes: [...(l.piecesJointes || []), newDoc] } : l
+    const updatedLitiges = litiges.map((l) =>
+      l.id === litige.id ? {
+        ...l,
+        piecesJointes: [...(l.piecesJointes || l.documents || []), newDoc],
+        documents: [...(l.documents || l.piecesJointes || []), newDoc],
+        historique: [...(l.historique || l.timeline || []), { date: new Date().toISOString().split('T')[0], action: 'Pièce jointe ajoutée', auteur: 'Admin Principal', details: 'Un document a été déposé dans le dossier.' }],
+        timeline: [...(l.timeline || l.historique || []), { date: new Date().toISOString().split('T')[0], action: 'Pièce jointe ajoutée', auteur: 'Admin Principal', details: 'Un document a été déposé dans le dossier.' }],
+        updatedAt: new Date().toISOString().split('T')[0],
+      } : l
     );
     setLitiges(updatedLitiges);
     addNotification({ role: 'admin', title: 'Document ajouté', message: `Document ajouté au dossier ${litige.numeroDossier}`, category: 'litiges' });
@@ -133,8 +151,14 @@ const [newNote, setNewNote] = useState('');
       date: new Date().toISOString().split('T')[0],
       time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
     };
-    const updatedLitiges = litiges.map(l =>
-      l.id === litige.id ? { ...l, conversation: [...(l.conversation || []), newMsg] } : l
+    const updatedLitiges = litiges.map((l) =>
+      l.id === litige.id ? {
+        ...l,
+        conversation: [...(l.conversation || []), newMsg],
+        historique: [...(l.historique || l.timeline || []), { date: new Date().toISOString().split('T')[0], action: 'Message envoyé', auteur: role === 'admin' ? 'Admin Principal' : role === 'centre' ? l.centre?.nom || l.centreLabel || 'Centre' : l.etudiant?.nom || l.requester || 'Étudiant', details: message }],
+        timeline: [...(l.timeline || l.historique || []), { date: new Date().toISOString().split('T')[0], action: 'Message envoyé', auteur: role === 'admin' ? 'Admin Principal' : role === 'centre' ? l.centre?.nom || l.centreLabel || 'Centre' : l.etudiant?.nom || l.requester || 'Étudiant', details: message }],
+        updatedAt: new Date().toISOString().split('T')[0],
+      } : l
     );
     setLitiges(updatedLitiges);
     const actionLabel = role === 'etudiant' ? 'Étudiant' : role === 'centre' ? 'Centre' : 'Admin';
@@ -143,8 +167,16 @@ const [newNote, setNewNote] = useState('');
   };
 
   const handleDecision = (decision) => {
-    const updatedLitiges = litiges.map(l =>
-      l.id === litige.id ? { ...l, decisionFinale: decision, statut: 'resolu' } : l
+    const updatedLitiges = litiges.map((l) =>
+      l.id === litige.id ? {
+        ...l,
+        decisionFinale: decision,
+        decision: decision,
+        statut: 'resolu',
+        statusKey: 'resolu',
+        status: 'Résolu',
+        updatedAt: new Date().toISOString().split('T')[0],
+      } : l
     );
     setLitiges(updatedLitiges);
     addNotification({ role: 'admin', title: 'Litige résolu', message: `Décision prise pour ${litige.numeroDossier}: ${decision.slice(0, 60)}...`, category: 'litiges' });
@@ -352,7 +384,7 @@ const [newNote, setNewNote] = useState('');
   const renderConversation = () => (
     <div className="space-y-4">
       <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-        {(litige.conversation || []).map((msg, idx) => (
+        {conversationItems.map((msg, idx) => (
           <div key={idx} className={`flex ${msg.role === 'admin' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[85%] rounded-xl p-3 ${
               msg.role === 'admin' ? 'bg-brand-500 text-white' :
@@ -368,7 +400,7 @@ const [newNote, setNewNote] = useState('');
             </div>
           </div>
         ))}
-        {(litige.conversation || []).length === 0 && (
+        {conversationItems.length === 0 && (
           <p className="text-center text-sm text-slate-400 dark:text-slate-500 py-8">Aucun message dans la conversation</p>
         )}
       </div>
@@ -396,7 +428,7 @@ const [newNote, setNewNote] = useState('');
 
   const renderDocuments = () => (
     <div className="space-y-3">
-      {(litige.piecesJointes || []).map((doc, idx) => (
+      {documents.map((doc, idx) => (
         <div key={doc.id || idx} className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-3">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
@@ -412,7 +444,7 @@ const [newNote, setNewNote] = useState('');
           </button>
         </div>
       ))}
-      {(litige.piecesJointes || []).length === 0 && (
+      {documents.length === 0 && (
         <p className="text-center text-sm text-slate-400 dark:text-slate-500 py-8">Aucun document joint</p>
       )}
       <button onClick={handleAddDocument} className="w-full flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 px-4 py-3 text-sm font-medium hover:border-brand-400 hover:text-brand-500 transition-colors">
@@ -424,7 +456,7 @@ const [newNote, setNewNote] = useState('');
   const renderHistorique = () => (
     <div className="space-y-0 relative">
       <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-slate-200 dark:bg-slate-700" />
-      {(litige.historique || []).map((event, idx) => (
+      {timeline.map((event, idx) => (
         <div key={idx} className="relative flex gap-4 pb-4">
           <div className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center z-10 ${
             event.action.includes('Résolu') || event.action.includes('Archiv') ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400' :
@@ -443,7 +475,7 @@ const [newNote, setNewNote] = useState('');
           </div>
         </div>
       ))}
-      {(litige.historique || []).length === 0 && (
+      {timeline.length === 0 && (
         <p className="text-center text-sm text-slate-400 dark:text-slate-500 py-8">Aucun historique</p>
       )}
     </div>
@@ -452,7 +484,7 @@ const [newNote, setNewNote] = useState('');
   const renderNotesInternes = () => (
     <div className="space-y-4">
       <div className="space-y-3">
-        {(litige.notesInternes || []).map((note, idx) => (
+        {comments.map((note, idx) => (
           <div key={note.id || idx} className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-3">
             <div className="flex items-center justify-between gap-2 mb-1.5">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{note.auteur}</span>
@@ -461,7 +493,7 @@ const [newNote, setNewNote] = useState('');
             <p className="text-sm text-slate-700 dark:text-slate-300">{note.contenu}</p>
           </div>
         ))}
-        {(litige.notesInternes || []).length === 0 && (
+        {comments.length === 0 && (
           <p className="text-center text-sm text-slate-400 dark:text-slate-500 py-8">Aucune note interne</p>
         )}
       </div>

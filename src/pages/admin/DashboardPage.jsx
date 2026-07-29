@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { FiAlertTriangle, FiArrowRight, FiBell, FiCalendar, FiCheckCircle, FiClock, FiFileText, FiFlag, FiHome, FiShield, FiUsers, FiBookOpen } from 'react-icons/fi';
+import { FiAlertTriangle, FiArrowRight, FiBell, FiHome, FiShield, FiUsers, FiBookOpen, FiFileText } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 
 import { useAdminDashboardData } from '../../hooks/useAdminDashboardData';

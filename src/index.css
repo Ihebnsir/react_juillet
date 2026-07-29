@@ -122,7 +122,11 @@ body {
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  @apply bg-light text-dark;
+  @apply bg-slate-50 text-slate-900;
+}
+
+input, select, textarea {
+  @apply text-slate-900 placeholder:text-slate-400;
 }
 
 

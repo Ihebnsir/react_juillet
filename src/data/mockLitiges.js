@@ -202,6 +202,68 @@ const generateAIAnalysis = (categorie, priorite) => {
   return analyses[categorie] || { risque: 'Non évalué', recommandation: 'Analyse en cours...', confiance: 50, alerte: 'Aucune alerte' };
 };
 
+export const createLitigeFromModeration = (row, disputeId = `DISP-${Date.now()}`) => {
+  const now = new Date();
+  const date = now.toISOString().split('T')[0];
+  const dossierTitle = row?.type ? `Litige ${row.type}` : 'Litige modération';
+  const centreName = row?.centre || 'Centre non renseigné';
+
+  return {
+    id: disputeId,
+    numeroDossier: `LTG-${String(Date.now()).slice(-4)}`,
+    titre: dossierTitle,
+    description: row?.description || 'Dossier créé depuis la modération.',
+    categorie: 'Paiement',
+    priorite: row?.risk === 'Critique' ? 'critique' : row?.risk === 'Élevé' ? 'haute' : 'moyenne',
+    statut: 'en_cours',
+    dateOuverture: date,
+    derniereMAJ: date,
+    tempsEcoule: '0j',
+    sla: '24h restantes',
+    niveauUrgence: row?.risk === 'Critique' ? 'Urgent' : 'Élevé',
+    responsable: { id: 'admin-1', nom: 'Admin Principal', email: 'admin@skillbridge.tn' },
+    etudiant: {
+      id: row?.userId || 'student-moderation',
+      nom: row?.user || 'Étudiant inconnu',
+      email: 'etudiant@skillbridge.tn',
+      tel: '+216 00 000 000',
+      litigesAnterieurs: 0,
+      dossiersResolus: 0,
+    },
+    centre: {
+      id: 'centre-moderation',
+      nom: centreName,
+      email: 'centre@skillbridge.tn',
+      tel: '+216 00 111 222',
+      litigesTotal: 1,
+      tempsMoyen: '1j',
+      litigesResolus: 0,
+    },
+    formation: { id: 'form-moderation', titre: 'Formation supervisée' },
+    piecesJointes: [],
+    conversation: [],
+    historique: [
+      { date, action: 'Ouverture du litige', auteur: row?.user || 'Système', details: 'Dossier créé depuis la modération' },
+    ],
+    notesInternes: [],
+    decisionFinale: null,
+    aiAnalysis: {
+      risque: row?.risk === 'Critique' ? 'Élevé' : 'Moyen',
+      recommandation: 'Vérifier le dossier et contacter le centre si nécessaire.',
+      confiance: 88,
+      alerte: 'Signalement issu de la modération',
+    },
+    student: row?.user || 'Étudiant inconnu',
+    centreLabel: centreName,
+    formationLabel: 'Formation supervisée',
+    priority: row?.risk === 'Critique' ? 'Critique' : row?.risk === 'Élevé' ? 'Moyen' : 'Faible',
+    status: 'En cours',
+    date,
+    dossier: dossierTitle,
+    source: 'moderation',
+  };
+};
+
 export const mockLitiges = generateMockLitiges();
 
 export const LITIGES_STORAGE_KEY = 'skillbridge_admin_litiges';

@@ -1,10 +1,3 @@
-const now = new Date();
-const formatDate = (offset) => {
-  const date = new Date(now);
-  date.setDate(date.getDate() + offset);
-  return date.toISOString().split('T')[0];
-};
-
 export const SECURITY_OVERVIEW = {
   securityScore: 98,
   activeAlerts: 7,
@@ -140,6 +133,18 @@ export const mockRiskUsers = [
 export const mockModerationTable = [
   {
     id: 'MOD-4201',
+    type: 'Fraude détectée',
+    user: 'Mohamed Chaker',
+    role: 'Apprenant',
+    category: 'Comptes à risque',
+    risk: 'Critique',
+    date: '2026-07-28',
+    status: 'Nouveau',
+    userId: 'user-101',
+    description: 'Tentative de paiement multiple avec carte étrangère et contrôle KYC échoué.',
+  },
+  {
+    id: 'MOD-4202',
     type: 'Contenu signalé',
     user: 'Yasmine Khelifi',
     role: 'Formateur',
@@ -151,7 +156,7 @@ export const mockModerationTable = [
     description: 'Publication de supports suspects avec allégations non conformes aux standards du programme.',
   },
   {
-    id: 'MOD-4202',
+    id: 'MOD-4203',
     type: 'Connexion inhabituelle',
     user: 'Sami Triki',
     role: 'Apprenant',
@@ -163,7 +168,7 @@ export const mockModerationTable = [
     description: 'Plusieurs tentatives de connexion déclenchées depuis une localisation non reconnue.',
   },
   {
-    id: 'MOD-4203',
+    id: 'MOD-4204',
     type: 'Signalement multiple',
     user: 'Amina Ghribi',
     role: 'Apprenant',
@@ -175,7 +180,7 @@ export const mockModerationTable = [
     description: 'Signalements répétés de contenu inadapté sur le fil de discussion.',
   },
   {
-    id: 'MOD-4204',
+    id: 'MOD-4205',
     type: 'Compte suspect',
     user: 'Moncef Triki',
     role: 'Entreprise',
@@ -187,7 +192,7 @@ export const mockModerationTable = [
     description: 'Modifications d’accès administrateur détectées sans MFA.',
   },
   {
-    id: 'MOD-4205',
+    id: 'MOD-4206',
     type: 'Publication sensée',
     user: 'Nora Ayadi',
     role: 'Formateur',
@@ -199,7 +204,7 @@ export const mockModerationTable = [
     description: 'Signalement d’un contenu jugé ambigu, vérifié et classé sans suite.',
   },
   {
-    id: 'MOD-4206',
+    id: 'MOD-4207',
     type: 'Activité anormale',
     user: 'Karim Hachemi',
     role: 'Centre',

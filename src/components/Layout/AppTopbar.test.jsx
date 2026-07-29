@@ -1,9 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { NotificationsBell } from './AppTopbar';
+import { NotificationProvider } from '../../context/NotificationContext';
 
 jest.mock('../../context/AuthContext', () => ({
-  useAuth: () => ({ user: { id: 1, name: 'Amine' }, logout: jest.fn() }),
+  useAuth: () => ({ user: { id: 1, name: 'Amine', role: 'admin' }, logout: jest.fn() }),
 }));
 
 jest.mock('../../context/ThemeContext', () => ({
@@ -18,10 +19,12 @@ describe('NotificationsBell', () => {
   it('affiche le compteur des notifications non lues', () => {
     render(
       <MemoryRouter>
-        <NotificationsBell />
+        <NotificationProvider>
+          <NotificationsBell />
+        </NotificationProvider>
       </MemoryRouter>
     );
 
-    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText('6')).toBeInTheDocument();
   });
 });

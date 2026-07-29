@@ -72,16 +72,16 @@ const KPIPremiumCard = ({ icon: Icon, label, value, growth = 0, target, progress
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
-      className="group relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 hover:border-white/20 hover:bg-white/[0.07] transition-all duration-300"
+      className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-[0_16px_35px_rgba(16,185,129,0.12)]"
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/15 text-brand-400">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
             <Icon size={18} />
           </div>
           <div>
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{label}</p>
-            <p className="text-2xl font-bold text-white mt-0.5 font-mono">{formattedValue}</p>
+            <p className="text-xs font-medium uppercase tracking-[0.24em] text-slate-500">{label}</p>
+            <p className="mt-0.5 text-2xl font-bold text-slate-900">{formattedValue}</p>
           </div>
         </div>
         <Sparkline data={sparklineData} color={sparkColor} />
@@ -95,7 +95,7 @@ const KPIPremiumCard = ({ icon: Icon, label, value, growth = 0, target, progress
           <span>{Math.abs(growth)}%</span>
         </div>
         {target > 0 && (
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-slate-600">
             Objectif: {format === 'currency' ? `${target.toLocaleString()} DT` : target}
           </span>
         )}
@@ -103,13 +103,13 @@ const KPIPremiumCard = ({ icon: Icon, label, value, growth = 0, target, progress
 
       {target > 0 && (
         <div className="mt-3">
-          <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+          <div className="mb-1 flex items-center justify-between text-xs text-slate-600">
             <span>Progression</span>
             <span>{progressPercent}%</span>
           </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-400"
+              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400"
               initial={{ width: 0 }}
               animate={{ width: `${progressPercent}%` }}
               transition={{ duration: 0.8, delay: delay + 0.2 }}
