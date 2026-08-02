@@ -40,7 +40,7 @@ export const mockFormations = [
   },
   {
     id: 'form-3',
-    title: 'Node.js Backend',
+    title: 'Node.js & Express Maître',
     centreId: 'centre-1',
     learnerId: 'learner-1',
     price: 549,

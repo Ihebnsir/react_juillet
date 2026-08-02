@@ -191,7 +191,7 @@ const generatePDFCertificate = (data) => {
 
 export const MesReservationsPage = () => {
   const { user } = useAuth();
-  const { getUserReservations, annulerReservation, payerReservation, getCertificateForReservation } = useReservations();
+  const { getUserReservations, annulerReservation, getCertificateForReservation } = useReservations();
   const { addNotification } = useNotifications();
   const navigate = useNavigate();
 
@@ -202,8 +202,6 @@ export const MesReservationsPage = () => {
   const [toast, setToast] = useState({ type: "", message: "" });
   const [showCancelModal, setShowCancelModal] = useState(null);
   const [cancelReason, setCancelReason] = useState("");
-  const [showPaymentModal, setShowPaymentModal] = useState(null);
-  const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedCards, setExpandedCards] = useState({});
 
@@ -327,28 +325,7 @@ export const MesReservationsPage = () => {
 
   const handlePayClick = (e, reservation) => {
     e.stopPropagation();
-    setShowPaymentModal(reservation);
-  };
-
-  const handleConfirmPayment = async () => {
-    setPaymentProcessing(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    try {
-      await payerReservation(showPaymentModal.id);
-      setShowPaymentModal(null);
-      setPaymentProcessing(false);
-      addNotification({
-        userId: user?.id,
-        role: "apprenant",
-        title: "Paiement confirmé",
-        message: `Votre réservation pour "${showPaymentModal.formationTitle}" est maintenant confirmée.`,
-        category: "payment",
-      });
-      setToast({ type: "success", message: "Paiement effectué avec succès !" });
-    } catch {
-      setPaymentProcessing(false);
-      setToast({ type: "error", message: "Erreur lors du paiement" });
-    }
+    navigate(`/paiement/${reservation.id}`, { state: { reservation } });
   };
 
   const handleDownloadCertificate = async (e, reservation) => {
@@ -821,7 +798,7 @@ export const MesReservationsPage = () => {
                                   className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 transition hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-300 dark:hover:bg-amber-900/40"
                                 >
                                   <FiCreditCard size={15} />
-                                  Payer maintenant
+                                  Payer par carte
                                 </button>
                                 <button
                                   onClick={(e) => handleCancelClick(e, reservation)}
@@ -1009,94 +986,6 @@ export const MesReservationsPage = () => {
       </AnimatePresence>
 
       {/* Payment Modal */}
-      <AnimatePresence>
-        {showPaymentModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
-            onClick={() => setShowPaymentModal(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-800"
-            >
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">Paiement sécurisé</h3>
-                <button
-                  onClick={() => setShowPaymentModal(null)}
-                  className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-700"
-                >
-                  <FiX size={20} />
-                </button>
-              </div>
-
-              <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-slate-700 dark:bg-slate-700/50">
-                <div className="mb-3 flex items-center gap-3">
-                  <img
-                    src={showPaymentModal.formationImage}
-                    alt={showPaymentModal.formationTitle}
-                    className="h-14 w-14 rounded-lg object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "/images/formation-placeholder.svg";
-                    }}
-                  />
-                  <div>
-                    <p className="font-semibold text-gray-900 dark:text-slate-100">{showPaymentModal.formationTitle}</p>
-                    <p className="text-sm text-gray-500 dark:text-slate-400">{showPaymentModal.centerName}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-2 border-t border-gray-200 pt-3 dark:border-slate-600">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500 dark:text-slate-400">Sous-total</span>
-                    <span className="text-gray-700 dark:text-slate-300">
-                      {formatPriceTND(showPaymentModal.price || showPaymentModal.formationPrice)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500 dark:text-slate-400">Taxe (0%)</span>
-                    <span className="text-gray-700 dark:text-slate-300">0,00 TND</span>
-                  </div>
-                  <div className="flex items-center justify-between border-t border-gray-200 pt-2 dark:border-slate-600">
-                    <span className="font-semibold text-gray-900 dark:text-slate-100">Total</span>
-                    <span className="text-xl font-bold text-teal-600">
-                      {formatPriceTND(showPaymentModal.price || showPaymentModal.formationPrice)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {paymentProcessing ? (
-                <div className="flex flex-col items-center gap-3 py-4">
-                  <div className="h-10 w-10 animate-spin rounded-full border-4 border-teal-600 border-t-transparent" />
-                  <p className="text-sm text-gray-600 dark:text-slate-300">Traitement du paiement en cours...</p>
-                </div>
-              ) : (
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setShowPaymentModal(null)}
-                    className="flex-1 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    onClick={handleConfirmPayment}
-                    className="flex-1 rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-teal-700"
-                  >
-                    Payer {formatPriceTND(showPaymentModal.price || showPaymentModal.formationPrice)}
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

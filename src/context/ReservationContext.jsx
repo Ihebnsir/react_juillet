@@ -5,15 +5,28 @@ const ReservationContext = createContext();
 
 export const ReservationProvider = ({ children }) => {
   const [reservations, setReservations] = useState([]);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const hydrate = async () => {
     const all = await reservationsService.getAll();
     setReservations(all);
+    setIsHydrated(true);
   };
 
   useEffect(() => {
     hydrate();
   }, []);
+
+  const addReservation = useCallback(
+    async (reservationData) => {
+      console.log("[ReservationContext] addReservation start", reservationData);
+      const created = await reservationsService.addReservation(reservationData);
+      console.log("[ReservationContext] addReservation created", created);
+      await hydrate();
+      return created;
+    },
+    []
+  );
 
   const getReservationsParFormation = useCallback(
     (formationId) => reservations.filter((r) => r.formationId === formationId),
@@ -75,8 +88,10 @@ export const ReservationProvider = ({ children }) => {
   const value = useMemo(
     () => ({
       reservations,
+      isHydrated,
       getReservationsParFormation,
       getReservationsParCentre,
+      addReservation,
       confirmerReservation,
       annulerReservation,
       payerReservation,
@@ -85,8 +100,10 @@ export const ReservationProvider = ({ children }) => {
     }),
     [
       reservations,
+      isHydrated,
       getReservationsParFormation,
       getReservationsParCentre,
+      addReservation,
       confirmerReservation,
       annulerReservation,
       payerReservation,

@@ -76,11 +76,29 @@ export const messagingService = {
     return conversation;
   },
 
-  createDirectConversation({ learnerId, centreId, formationId, initialMessage = 'Bonjour, j’ai une question sur cette formation.' }) {
+  createDirectConversation({
+    learnerId,
+    centreId,
+    formationId,
+    participantName = 'Centre SkillBridge',
+    participantAvatar = null,
+    formationTitle = 'Formation',
+    formationPrice = 0,
+    subject = '',
+    initialMessage = 'Bonjour, j’ai une question sur cette formation.',
+  }) {
     const conversations = getStoredConversations();
     const existing = conversations.find((conversation) => conversation.type === 'direct' && conversation.participantId === centreId && conversation.formationId === formationId);
 
     if (existing) {
+      existing.participantName = participantName || existing.participantName;
+      existing.participantAvatar = participantAvatar ?? existing.participantAvatar;
+      existing.formationTitle = formationTitle || existing.formationTitle;
+      existing.formationPrice = formationPrice ?? existing.formationPrice;
+      existing.subject = subject || existing.subject || formationTitle;
+      existing.lastMessage = initialMessage;
+      existing.lastMessageAt = new Date().toISOString();
+      saveConversations(conversations);
       return existing;
     }
 
@@ -88,13 +106,14 @@ export const messagingService = {
       id: `conv-direct-${Date.now()}`,
       type: 'direct',
       participantId: centreId,
-      participantName: 'Centre SkillBridge',
+      participantName,
       participantRole: 'Centre',
-      participantAvatar: null,
+      participantAvatar,
       participantStatus: 'en ligne',
       formationId,
-      formationTitle: 'Formation',
-      formationPrice: 0,
+      formationTitle,
+      formationPrice,
+      subject: subject || formationTitle,
       unreadCount: 1,
       lastMessageAt: new Date().toISOString(),
       lastMessage: initialMessage,

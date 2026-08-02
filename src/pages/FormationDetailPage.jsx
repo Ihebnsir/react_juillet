@@ -1,22 +1,73 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { messagingService } from "../services/messagingService";
 import { useTranslation } from "react-i18next";
 import { formationsService } from "../services/formationsService";
 import { useAuth } from "../context/AuthContext";
 import { useReservations } from "../context/ReservationContext";
+import { ToastMessage } from "../components/UI/ToastMessage";
 import {
-  FiMapPin,
-  FiClock,
-  FiDollarSign,
-  FiStar,
-  FiArrowLeft,
-  FiCheck,
-  FiBriefcase,
-  FiPlay,
-  FiMessageCircle,
-} from "react-icons/fi";
+  MapPin,
+  Clock,
+  DollarSign,
+  Star,
+  ArrowLeft,
+  Check,
+  Briefcase,
+  Play,
+  MessageCircle,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  CreditCard,
+  CheckCircle,
+  BookOpen,
+  Users,
+  Shield,
+  Info,
+} from "lucide-react";
 import { formatPriceTND } from "../utils/formatPrice";
+
+const PAYMENT_OPTIONS = [
+  { key: "online_card", label: "En ligne par carte" },
+  { key: "bank_transfer", label: "Virement" },
+  { key: "on_site", label: "Sur place au centre" },
+];
+
+const BOOKING_STEPS = ["Session", "Paiement", "Confirmation"];
+
+const ModalShell = ({ open, title, onClose, children, size = "xl" }) => {
+  if (!open) return null;
+
+  const widthClass = size === "2xl" ? "max-w-6xl" : size === "lg" ? "max-w-4xl" : "max-w-2xl";
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 px-3 py-6 backdrop-blur-sm">
+      <div className={`relative w-full ${widthClass} overflow-hidden rounded-[28px] border border-slate-700 bg-slate-900 shadow-2xl`}>
+        <div className="flex items-center justify-between border-b border-slate-700 px-5 py-4">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-100">{title}</h3>
+          </div>
+          <button onClick={onClose} className="rounded-full p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white" aria-label="Fermer">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="max-h-[85vh] overflow-y-auto p-5 sm:p-6">{children}</div>
+      </div>
+    </div>,
+    document.body
+  );
+};
+
+const StarRow = ({ rating = 0 }) => (
+  <div className="flex items-center gap-1">
+    {[1, 2, 3, 4, 5].map((star) => (
+          <Star key={star} className={star <= rating ? "fill-amber-400 text-amber-400" : "text-slate-500"} size={14} />
+    ))}
+  </div>
+);
 
 export const FormationDetailPage = () => {
   const { id } = useParams();
@@ -28,8 +79,28 @@ export const FormationDetailPage = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [similar, setSimilar] = useState([]);
   const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+  const [bookingStep, setBookingStep] = useState(1);
+  const [selectedSessionId, setSelectedSessionId] = useState("");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("online_card");
+  const [toast, setToast] = useState("");
+  const [toastType, setToastType] = useState("success");
   const { user, isAuthenticated } = useAuth();
   const { addReservation } = useReservations();
+
+  const bookingSessions = useMemo(() => formation?.bookingSessions || [], [formation?.bookingSessions]);
+  const selectedSession = useMemo(
+    () => bookingSessions.find((session) => session.id === selectedSessionId) || bookingSessions[0] || null,
+    [bookingSessions, selectedSessionId]
+  );
+
+  useEffect(() => {
+    if (formation?.bookingSessions?.[0] && !selectedSessionId) {
+      setSelectedSessionId(formation.bookingSessions[0].id);
+    }
+  }, [formation, selectedSessionId]);
 
   useEffect(() => {
     const loadFormation = async () => {
@@ -58,31 +129,108 @@ export const FormationDetailPage = () => {
       return;
     }
 
-    const centreId = formation?.centre?.id || 'centre-1';
-    const conversation = messagingService.createDirectConversation({
-      learnerId: user.id,
-      centreId,
-      formationId: formation?.id,
-      initialMessage: `Bonjour, j’ai une question sur la formation ${formation?.title}.`,
-    });
-
-    navigate(`/messagerie?conversation=${conversation.id}`);
+    onContactCenter();
   };
 
-  const handleReserve = () => {
+  const openBookingModal = () => {
     if (!isAuthenticated) {
       navigate("/login");
       return;
     }
 
-    if (user.role !== "learner") {
-      alert("Seuls les apprenants peuvent faire des réservations");
+    if (!["learner", "apprenant"].includes(user?.role)) {
+      setToastType("error");
+      setToast("Seuls les apprenants peuvent faire des réservations.");
       return;
     }
 
-    addReservation(formation, user.id);
-    alert("Formation réservée avec succès!");
-    navigate("/reservations");
+    setBookingStep(1);
+    setIsBookingModalOpen(true);
+  };
+
+  const closeBookingModal = () => {
+    setIsBookingModalOpen(false);
+    setBookingStep(1);
+  };
+
+  const onReserveSuccess = (courseId) => {
+    setToastType("success");
+    setToast(`Réservation validée pour la formation ${courseId}.`);
+  };
+
+  const onContactCenter = (centerId) => {
+    const centreName = formation?.centre?.name || "Tech Academy Tunis";
+    const conversation = messagingService.createDirectConversation({
+      learnerId: user.id,
+      centreId: centerId,
+      participantName: centreName,
+      participantAvatar: formation?.centre?.logo || null,
+      formationId: formation?.id,
+      formationTitle: formation?.title,
+      formationPrice: formation?.price || 0,
+      subject: `Question sur ${formation?.title}`,
+      initialMessage: `Bonjour, j’ai une question sur la formation ${formation?.title}.`,
+    });
+
+    navigate(`/messagerie?conversation=${conversation.id}&formationId=${formation?.id}&subject=${encodeURIComponent(`Question sur ${formation?.title}`)}&centerId=${centerId}`);
+  };
+
+  const handleReserve = async () => {
+    console.log("1 - clic: handleReserve");
+    if (!selectedSession) {
+      console.log("handleReserve: aucun selectedSession", { selectedSessionId, bookingSessions });
+      setToastType("error");
+      setToast("Veuillez choisir une session avant de réserver.");
+      return;
+    }
+
+    console.log("2 - début handleReserve", {
+      selectedSessionId,
+      selectedSession,
+      selectedPaymentMethod,
+      userId: user?.id,
+    });
+
+    const paymentOption = PAYMENT_OPTIONS.find((option) => option.key === selectedPaymentMethod) || PAYMENT_OPTIONS[0];
+    const reservationPayload = {
+      learnerId: user.id,
+      formationId: formation.id,
+      titre: formation.title,
+      image: formation.image,
+      centreId: formation.centre?.id || formation.centerId || 'center1',
+      centreNom: formation.centre?.name || 'Tech Academy Tunis',
+      ville: formation.city,
+      prix: formation.price,
+      duree: formation.duration,
+      dateReservation: new Date().toISOString(),
+      statut: 'En attente',
+      progression: 0,
+      modePaiement: null,
+      formationTitle: formation.title,
+      centreName: formation.centre?.name || 'Tech Academy Tunis',
+      sessionId: selectedSession.id,
+      sessionLabel: selectedSession.label,
+      sessionDate: selectedSession.date,
+      price: formation.price,
+      paymentMethodLabel: paymentOption.label,
+      paymentMethodKey: paymentOption.key,
+    };
+
+    const created = await addReservation(reservationPayload);
+    console.log("3 - addReservation retourné", created);
+    if (created?.duplicate) {
+      console.log("handleReserve: réservation en double détectée", created);
+      setToastType("error");
+      setToast("Cette formation est déjà réservée.");
+      return;
+    }
+    console.log("4 - réservation créée, fermeture modal et navigation prochaine");
+    onReserveSuccess(created?.id || formation.id);
+    closeBookingModal();
+    window.setTimeout(() => {
+      console.log("5 - navigation vers /reservations");
+      navigate("/reservations");
+    }, 900);
   };
 
   const handleAddReview = async () => {
@@ -132,13 +280,14 @@ export const FormationDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-8">
+      <ToastMessage message={toast} type={toastType} onClose={() => setToast("")} />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <button
           onClick={() => navigate("/formations")}
           className="flex items-center gap-2 text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100 mb-6 transition"
         >
-          <FiArrowLeft /> {t('common.back')}
+          <ArrowLeft /> {t('common.back')}
         </button>
 
         {/* Header */}
@@ -156,16 +305,16 @@ export const FormationDetailPage = () => {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
               <div className="flex items-center gap-2 text-gray-700">
-                <FiMapPin className="text-teal-600" /> {formation.city}
+                <MapPin className="text-teal-600" /> {formation.city}
               </div>
               <div className="flex items-center gap-2 text-gray-700">
-                <FiClock className="text-teal-600" /> {formation.duration}
+                <Clock className="text-teal-600" /> {formation.duration}
               </div>
               <div className="flex items-center gap-2 text-gray-700">
-                <FiDollarSign className="text-teal-600" /> {formatPriceTND(formation.price)}
+                <DollarSign className="text-teal-600" /> {formatPriceTND(formation.price)}
               </div>
               <div className="flex items-center gap-2 text-gray-700">
-                <FiStar className="text-yellow-400 fill-yellow-400" />
+                <Star className="text-yellow-400 fill-yellow-400" />
                 {formation.averageRating}
               </div>
             </div>
@@ -173,7 +322,7 @@ export const FormationDetailPage = () => {
             {formation.centre && (
               <div className="mb-6 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/50 p-4">
                 <div className="flex items-center gap-3">
-                  <img src={formation.centre.logo} alt={formation.centre.name} className="w-12 h-12 rounded-full object-cover" />
+                    <img src={formation.centre.logo} alt={formation.centre.name} className="w-12 h-12 rounded-full object-cover" />
                   <div>
                     <p className="text-sm text-gray-600 dark:text-slate-300">{t('detail.offeredBy')}</p>
                     <Link to={`/centres/${formation.centre.id}`} className="font-semibold text-teal-600 hover:text-teal-700">{formation.centre.name}</Link>
@@ -185,7 +334,7 @@ export const FormationDetailPage = () => {
             {formation.offreStage && (
               <div className="mb-6 flex flex-wrap items-center gap-3">
                 <span className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
-                  <FiBriefcase size={14} /> {t('common.stageBadge')}
+                  <Briefcase size={14} /> {t('common.stageBadge')}
                 </span>
                 {formation.entreprisesPartenaires?.map((enterprise) => (
                   <span key={enterprise} className="rounded-full border border-gray-300 px-3 py-1 text-sm text-gray-700 dark:text-slate-200">{enterprise}</span>
@@ -198,24 +347,25 @@ export const FormationDetailPage = () => {
             {/* CTA */}
             <div className="flex flex-col sm:flex-row gap-4">
               <button
-                onClick={handleReserve}
-                className="px-8 py-3 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition"
+                onClick={openBookingModal}
+                disabled={formation.availablePlaces === 0}
+                className="px-8 py-3 rounded-lg bg-emerald-500 text-white font-medium transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-600"
               >
-                {t('detail.reserve')}
+                Réserver maintenant
               </button>
               <button
                 onClick={handleContactCentre}
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-teal-600 px-8 py-3 font-medium text-teal-600 transition hover:bg-teal-50 dark:hover:bg-slate-700"
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-500 px-8 py-3 font-medium text-emerald-400 transition hover:bg-emerald-500/10 dark:hover:bg-slate-700"
               >
-                <FiMessageCircle size={16} />
+                <MessageCircle size={16} />
                 Poser une question au centre
               </button>
-              <a
-                href="#payment"
-                className="px-8 py-3 border border-teal-600 text-teal-600 font-medium rounded-lg hover:bg-teal-50 transition"
+              <button
+                onClick={() => setIsDetailModalOpen(true)}
+                className="px-8 py-3 rounded-lg border border-slate-600 text-slate-200 font-medium transition hover:bg-slate-800"
               >
-                {t('detail.moreInfo')}
-              </a>
+                Plus d'infos
+              </button>
             </div>
           </div>
         </div>
@@ -279,7 +429,7 @@ export const FormationDetailPage = () => {
                 <ul className="space-y-3">
                   {formation.program.map((item, index) => (
                     <li key={index} className="flex gap-3">
-                      <FiCheck className="text-green-600 flex-shrink-0 mt-1" />
+                      <Check className="text-green-600 flex-shrink-0 mt-1" />
                       <span className="text-gray-700 dark:text-slate-300">{item}</span>
                     </li>
                   ))}
@@ -365,7 +515,7 @@ export const FormationDetailPage = () => {
                             </h5>
                             <div className="flex gap-1">
                               {[...Array(review.rating)].map((_, i) => (
-                                <FiStar
+                                <Star
                                   key={i}
                                   className="fill-yellow-400 text-yellow-400"
                                   size={16}
@@ -417,7 +567,7 @@ export const FormationDetailPage = () => {
                 <div className="h-2 w-[68%] rounded-full bg-teal-600" />
               </div>
               <div className="rounded-lg border border-gray-200 dark:border-slate-700 p-4">
-                <div className="flex items-center gap-2 text-teal-600"><FiPlay /> Aperçu vidéo</div>
+                <div className="flex items-center gap-2 text-teal-600"><Play /> Aperçu vidéo</div>
                 <p className="mt-2 text-sm text-gray-600 dark:text-slate-300">Mini présentation du parcours disponible dès maintenant.</p>
               </div>
             </div>
@@ -436,6 +586,202 @@ export const FormationDetailPage = () => {
           </div>
         </div>
       </div>
+
+      <ModalShell open={isBookingModalOpen} onClose={closeBookingModal} title="Réservation guidée" size="lg">
+        <div className="space-y-6 text-slate-100">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+            {BOOKING_STEPS.map((stepLabel, index) => (
+              <div key={stepLabel} className={`flex items-center gap-2 ${index === 0 ? '' : 'ml-1'}`}>
+                <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${bookingStep === index + 1 ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'}`}>{index + 1}</span>
+                <span>{stepLabel}</span>
+                {index < BOOKING_STEPS.length - 1 && <ChevronRight className="h-4 w-4 text-slate-600" />}
+              </div>
+            ))}
+          </div>
+
+          {bookingStep === 1 && (
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-slate-700 bg-slate-950/40 p-4">
+                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200"><Calendar className="h-4 w-4 text-emerald-400" /> Choisissez votre session</div>
+                <div className="space-y-3">
+                  {bookingSessions.map((session) => (
+                    <button
+                      key={session.id}
+                      onClick={() => setSelectedSessionId(session.id)}
+                      disabled={session.full}
+                      className={`w-full rounded-2xl border p-4 text-left transition ${selectedSession?.id === session.id ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-700 bg-slate-900/70 hover:border-slate-500'} ${session.full ? 'cursor-not-allowed opacity-50' : ''}`}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <div className="font-semibold text-slate-100">{session.label}</div>
+                          <div className="mt-1 text-sm text-slate-400">{session.time} · {session.location}</div>
+                        </div>
+                        <div className="text-right text-sm text-slate-300">
+                          <div>{session.placesLeft} place{session.placesLeft > 1 ? 's' : ''} restante{session.placesLeft > 1 ? 's' : ''}</div>
+                          {session.full && <div className="text-rose-400">Complet</div>}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex justify-end">
+                  <button onClick={() => setBookingStep(2)} className="inline-flex items-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3 font-semibold text-white transition hover:bg-emerald-400">
+                  Continuer <ChevronRight />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {bookingStep === 2 && (
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-slate-700 bg-slate-950/40 p-4">
+                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200"><CreditCard className="h-4 w-4 text-emerald-400" /> Récapitulatif et paiement</div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-2xl bg-slate-900 p-4">
+                    <div className="text-sm text-slate-400">Session choisie</div>
+                    <div className="mt-1 font-semibold text-slate-100">{selectedSession?.label}</div>
+                    <div className="mt-2 text-sm text-slate-400">{selectedSession?.date}</div>
+                  </div>
+                  <div className="rounded-2xl bg-slate-900 p-4">
+                    <div className="text-sm text-slate-400">Prix</div>
+                    <div className="mt-1 text-2xl font-bold text-white">{formatPriceTND(formation.price)}</div>
+                  </div>
+                </div>
+                <div className="mt-4 space-y-2">
+                  {PAYMENT_OPTIONS.map((option) => (
+                    <button
+                      key={option.key}
+                      onClick={() => setSelectedPaymentMethod(option.key)}
+                      className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${selectedPaymentMethod === option.key ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-700 bg-slate-900/70 hover:border-slate-500'}`}
+                    >
+                      <span className="font-medium text-slate-100">{option.label}</span>
+                      {selectedPaymentMethod === option.key && <CheckCircle className="h-5 w-5 text-emerald-400" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <button onClick={() => setBookingStep(1)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-700 px-5 py-3 font-semibold text-slate-200 transition hover:bg-slate-800">
+                  <ChevronLeft /> Retour
+                </button>
+                <button onClick={() => setBookingStep(3)} className="inline-flex items-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3 font-semibold text-white transition hover:bg-emerald-400">
+                  Valider le paiement <ChevronRight />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {bookingStep === 3 && (
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-slate-700 bg-slate-950/40 p-5">
+                <div className="flex items-center gap-2 text-sm font-semibold text-slate-200"><CheckCircle className="h-4 w-4 text-emerald-400" /> Confirmation</div>
+                <div className="mt-4 space-y-2 text-sm text-slate-300">
+                  <p><span className="text-slate-500">Formation:</span> {formation.title}</p>
+                  <p><span className="text-slate-500">Session:</span> {selectedSession?.label}</p>
+                  <p><span className="text-slate-500">Paiement:</span> {PAYMENT_OPTIONS.find((option) => option.key === selectedPaymentMethod)?.label}</p>
+                </div>
+                <div className="mt-4 rounded-2xl bg-emerald-500/10 p-4 text-sm text-emerald-200">
+                  En validant, la réservation sera enregistrée dans <strong>Mes Réservations</strong> et une notification de succès sera affichée.
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <button onClick={() => setBookingStep(2)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-700 px-5 py-3 font-semibold text-slate-200 transition hover:bg-slate-800">
+                  <ChevronLeft /> Retour
+                </button>
+                <button onClick={handleReserve} className="inline-flex items-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3 font-semibold text-white transition hover:bg-emerald-400">
+                  Confirmer la réservation <CheckCircle />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </ModalShell>
+
+      <ModalShell open={isDetailModalOpen} onClose={() => setIsDetailModalOpen(false)} title="Détails complets de la formation" size="2xl">
+        <div className="space-y-6 text-slate-100">
+          <section className="grid gap-4 lg:grid-cols-2">
+            <div className="rounded-3xl border border-slate-700 bg-slate-950/40 p-5">
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200"><BookOpen className="h-4 w-4 text-emerald-400" /> Programme module par module</div>
+              <div className="space-y-3">
+                {formation.program?.map((module, index) => (
+                  <div key={module} className="rounded-2xl bg-slate-900 px-4 py-3 text-sm text-slate-300">
+                    <span className="mr-2 font-semibold text-emerald-400">{index + 1}.</span>{module}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-slate-700 bg-slate-950/40 p-5">
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200"><Info className="h-4 w-4 text-emerald-400" /> Prérequis techniques</div>
+              <div className="space-y-2 text-sm text-slate-300">
+                {(formation.prerequisites || ["Notions de base en JavaScript", "Ordinateur portable recommandé"]).map((item) => (
+                  <div key={item} className="rounded-2xl bg-slate-900 px-4 py-3">{item}</div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="grid gap-4 lg:grid-cols-2">
+            <div className="rounded-3xl border border-slate-700 bg-slate-950/40 p-5">
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200"><Users className="h-4 w-4 text-emerald-400" /> Formateurs certifiés - Tech Academy Tunis</div>
+              <div className="space-y-3">
+                {(formation.trainers || []).map((trainer) => (
+                  <div key={trainer.name} className="rounded-2xl bg-slate-900 p-4">
+                    <div className="font-semibold text-white">{trainer.name}</div>
+                    <div className="text-sm text-slate-400">{trainer.role}</div>
+                    <div className="mt-1 text-xs text-emerald-300">{trainer.certification}</div>
+                    <p className="mt-2 text-sm text-slate-300">{trainer.bio}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-slate-700 bg-slate-950/40 p-5">
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200"><Star className="h-4 w-4 text-amber-400" /> Avis détaillés des apprenants</div>
+              <div className="space-y-3">
+                {(formation.detailedReviews || []).map((review) => (
+                  <div key={review.author} className="rounded-2xl bg-slate-900 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="font-semibold text-white">{review.author}</div>
+                        <div className="text-xs text-slate-400">{review.role}</div>
+                      </div>
+                      <StarRow rating={review.rating} />
+                    </div>
+                    <p className="mt-3 text-sm text-slate-300">{review.comment}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-slate-700 bg-slate-950/40 p-5">
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200"><Shield className="h-4 w-4 text-emerald-400" /> Politique d'annulation / remboursement</div>
+            <div className="space-y-2 text-sm text-slate-300">
+              {(formation.cancellationPolicy || ["Annulation gratuite jusqu'à 72 h avant la session."]).map((item) => (
+                <div key={item} className="rounded-2xl bg-slate-900 px-4 py-3">{item}</div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </ModalShell>
+
+      <ModalShell open={isQuestionModalOpen} onClose={() => setIsQuestionModalOpen(false)} title="Poser une question au centre" size="lg">
+        <div className="space-y-4 text-slate-100">
+          <div className="rounded-2xl border border-slate-700 bg-slate-950/40 p-4 text-sm text-slate-300">
+            Vous allez ouvrir le canal de messagerie direct avec <strong className="text-white">Tech Academy Tunis</strong> et pré-remplir l’objet lié à cette formation.
+          </div>
+          <div className="flex justify-end gap-3">
+            <button onClick={() => setIsQuestionModalOpen(false)} className="rounded-2xl border border-slate-700 px-5 py-3 font-semibold text-slate-200 transition hover:bg-slate-800">
+              Annuler
+            </button>
+            <button onClick={() => setIsQuestionModalOpen(false)} className="rounded-2xl bg-emerald-500 px-5 py-3 font-semibold text-white transition hover:bg-emerald-400">
+              Ouvrir Messages
+            </button>
+          </div>
+        </div>
+      </ModalShell>
     </div>
   );
 };

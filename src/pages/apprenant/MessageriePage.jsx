@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FiArrowLeft, FiAlertTriangle } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { messagingService } from '../../services/messagingService';
@@ -17,6 +17,7 @@ export const MessageriePage = () => {
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const isRtl = i18n.language === 'ar';
   const [conversations, setConversations] = useState([]);
   const [activeConversationId, setActiveConversationId] = useState(null);
@@ -33,7 +34,10 @@ export const MessageriePage = () => {
         setIsLoading(true);
         const data = messagingService.getConversationsForUser(user);
         setConversations(data);
-        if (data[0]) {
+        const requestedConversationId = searchParams.get('conversation');
+        if (requestedConversationId && data.some((conversation) => conversation.id === requestedConversationId)) {
+          setActiveConversationId(requestedConversationId);
+        } else if (data[0]) {
           setActiveConversationId(data[0].id);
         }
       } catch (err) {
@@ -44,7 +48,7 @@ export const MessageriePage = () => {
     };
 
     load();
-  }, [user, t]);
+  }, [user, t, searchParams]);
 
   const filteredConversations = useMemo(() => {
     return conversations.filter((conversation) => {

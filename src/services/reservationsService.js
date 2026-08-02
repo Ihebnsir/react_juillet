@@ -76,9 +76,79 @@ const saveDataset = (dataset) => {
 
 const getActiveStatuses = () => new Set(["en_attente", "confirmee"]);
 
+const toDisplayDate = (value) => {
+  if (!value) return new Date().toISOString().split('T')[0];
+  return String(value).split('T')[0];
+};
+
 export const reservationsService = {
   getAll: async () => {
     return hydrateDataset();
+  },
+
+  addReservation: async (reservationInput) => {
+    console.log("[reservationsService] addReservation start", reservationInput);
+    const all = hydrateDataset();
+    const learnerId = reservationInput?.learnerId ?? reservationInput?.userId ?? null;
+    const formationId = reservationInput?.formationId ?? reservationInput?.id ?? null;
+    const sessionId = reservationInput?.sessionId ?? null;
+
+    const existing = all.find(
+      (reservation) =>
+        String(reservation.learnerId) === String(learnerId) &&
+        String(reservation.formationId) === String(formationId) &&
+        (!sessionId || String(reservation.sessionId || '') === String(sessionId))
+    );
+
+    if (existing) {
+      console.log("[reservationsService] duplicate reservation", existing);
+      return { ...existing, duplicate: true };
+    }
+
+    const paymentMethodLabel = reservationInput?.paymentMethodLabel || reservationInput?.modePaiement || reservationInput?.paymentMethod || 'Sur place au centre';
+    const paymentMethodKey = reservationInput?.paymentMethodKey || String(paymentMethodLabel).toLowerCase();
+    const isOnlineCard = paymentMethodKey.includes('online_card') || paymentMethodKey.includes('carte');
+    const createdAt = new Date().toISOString();
+    const today = toDisplayDate(createdAt);
+    const statusValue = normalizeStatus(reservationInput?.statut || reservationInput?.status || (isOnlineCard ? 'confirmee' : 'en_attente'));
+
+    const reservation = {
+      id: `res-${Date.now()}`,
+      learnerId,
+      formationId,
+      centerId: reservationInput?.centerId ?? reservationInput?.centreId ?? null,
+      centreId: reservationInput?.centreId ?? reservationInput?.centerId ?? null,
+      titre: reservationInput?.titre || reservationInput?.formationTitle || '',
+      image: reservationInput?.image || '',
+      centreNom: reservationInput?.centreNom || reservationInput?.centreName || '',
+      ville: reservationInput?.ville || '',
+      prix: Number(reservationInput?.prix || reservationInput?.price || 0),
+      duree: reservationInput?.duree || '',
+      dateReservation: reservationInput?.dateReservation || createdAt,
+      progression: Number(reservationInput?.progression ?? 0),
+      modePaiement: reservationInput?.modePaiement ?? null,
+      formationTitle: reservationInput?.formationTitle || reservationInput?.titre || '',
+      centreName: reservationInput?.centreName || reservationInput?.centreNom || '',
+      sessionId,
+      sessionLabel: reservationInput?.sessionLabel || '',
+      sessionDate: reservationInput?.sessionDate || toDisplayDate(reservationInput?.date),
+      date: reservationInput?.date || today,
+      price: Number(reservationInput?.price || reservationInput?.prix || 0),
+      status: statusValue,
+      statut: reservationInput?.statut || 'En attente',
+      paid: isOnlineCard ? true : Boolean(reservationInput?.paid),
+      paymentDate: isOnlineCard ? today : (reservationInput?.paymentDate || null),
+      paymentMethod: paymentMethodLabel,
+      transactionId: isOnlineCard ? `TXN-${Date.now()}` : (reservationInput?.transactionId || null),
+      history: [
+        { date: today, action: 'Réservation créée', icon: 'create' },
+        ...(isOnlineCard ? [{ date: today, action: 'Paiement effectué', icon: 'payment' }] : []),
+        { date: today, action: 'Réservation confirmée', icon: 'confirm' },
+      ],
+    };
+
+    saveDataset([reservation, ...all]);
+    return reservation;
   },
 
   getReservationsParFormation: async (formationId) => {

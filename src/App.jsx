@@ -34,6 +34,7 @@ import { ContactPage } from "./pages/ContactPage";
 import { CentresPage } from "./pages/CentresPage";
 import { DashboardPage as ApprenantDashboardPage } from "./pages/apprenant/DashboardPage";
 import { MesReservationsPage } from "./pages/apprenant/MesReservationsPage";
+import { PaymentCheckoutPage } from "./pages/apprenant/PaymentCheckoutPage";
 import { MesFavorisPage } from "./pages/apprenant/MesFavorisPage";
 import { MesCertificationsPage } from "./pages/apprenant/MesCertificationsPage";
 import { RecommandationsPage } from "./pages/apprenant/RecommandationsPage";
@@ -150,6 +151,7 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
               <Route path="/formations" element={<FormationsPage />} />
               <Route path="/formations/:id" element={<FormationDetailPage />} />
               <Route path="/reservations" element={<MesReservationsPage />} />
+              <Route path="/paiement/:reservationId" element={<PaymentCheckoutPage />} />
               <Route path="/favoris" element={<MesFavorisPage />} />
               <Route path="/certifications" element={<MesCertificationsPage />} />
               <Route path="/recommandations" element={<RecommandationsPage />} />
