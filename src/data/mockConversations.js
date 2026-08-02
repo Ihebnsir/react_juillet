@@ -2,6 +2,7 @@ export const mockConversations = [
   {
     id: 'conv-direct-1',
     type: 'direct',
+    learnerId: 1,
     participantId: 'centre-1',
     participantName: 'Centre Excellence Formation',
     participantRole: 'Centre',
@@ -16,7 +17,7 @@ export const mockConversations = [
     messages: [
       {
         id: 'm1',
-        senderId: 'learner-1',
+        senderId: 1,
         senderName: 'Amine Ben Salah',
         content: 'Bonjour, je souhaite avoir plus d’informations sur la formation.',
         createdAt: '2026-07-15T14:10:00.000Z',

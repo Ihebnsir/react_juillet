@@ -38,11 +38,28 @@ export const messagingService = {
     }
 
     return allConversations.filter((conversation) => {
+      const normalizedLearnerId = user.role === 'apprenant' || user.role === 'learner' ? `learner-${user.id}` : user.id;
+      const normalizedLearnerIdAlt = user.role === 'apprenant' || user.role === 'learner' ? user.id : `${user.role}-${user.id}`;
+
       if (conversation.type === 'support') {
-        return conversation.participantId === user.id || conversation.participantId === `${user.role}-${user.id}`;
+        return (
+          conversation.participantId === user.id ||
+          conversation.participantId === `${user.role}-${user.id}` ||
+          conversation.learnerId === user.id ||
+          conversation.learnerId === normalizedLearnerId ||
+          conversation.learnerId === normalizedLearnerIdAlt ||
+          conversation.userId === user.id
+        );
       }
 
-      return conversation.participantId === user.id || conversation.participantId === `${user.role}-${user.id}`;
+      return (
+        conversation.learnerId === user.id ||
+        conversation.learnerId === normalizedLearnerId ||
+        conversation.learnerId === normalizedLearnerIdAlt ||
+        conversation.participantId === user.id ||
+        conversation.participantId === `${user.role}-${user.id}` ||
+        conversation.userId === user.id
+      );
     });
   },
 
@@ -88,7 +105,7 @@ export const messagingService = {
     initialMessage = 'Bonjour, j’ai une question sur cette formation.',
   }) {
     const conversations = getStoredConversations();
-    const existing = conversations.find((conversation) => conversation.type === 'direct' && conversation.participantId === centreId && conversation.formationId === formationId);
+    const existing = conversations.find((conversation) => conversation.type === 'direct' && conversation.participantId === centreId && conversation.formationId === formationId && conversation.learnerId === learnerId);
 
     if (existing) {
       existing.participantName = participantName || existing.participantName;
@@ -105,6 +122,7 @@ export const messagingService = {
     const conversation = {
       id: `conv-direct-${Date.now()}`,
       type: 'direct',
+      learnerId,
       participantId: centreId,
       participantName,
       participantRole: 'Centre',
@@ -140,6 +158,7 @@ export const messagingService = {
     const conversation = {
       id: `conv-support-${Date.now()}`,
       type: 'support',
+      learnerId: user.id,
       participantId: 'admin-1',
       participantName: 'Support SkillBridge',
       participantRole: 'Support',

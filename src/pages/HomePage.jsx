@@ -8,6 +8,7 @@ import { FormationCard } from "../components/Cards/FormationCard";
 import { FiArrowRight, FiCheckCircle, FiShield, FiGlobe, FiGrid, FiClock } from "react-icons/fi";
 import Carousel from "../components/UI/Carousel";
 import AnimatedSearchBar from "../components/UI/AnimatedSearchBar";
+import { ApercuProduit } from '../components/home/ApercuProduit';
 import CompetencesParDomaine from '../components/home/CompetencesParDomaine';
 import { mockFormations } from '../data/mockFormations';
 import { mockCentres } from '../data/mockCentres';
@@ -214,10 +215,13 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* 5. Compétences par domaine */}
+      {/* 5. Aperçu du produit */}
+      <ApercuProduit />
+
+      {/* 6. Compétences par domaine */}
       <CompetencesParDomaine formations={mockFormations} />
 
-      {/* 6. Ce qui nous distingue (ancien "Pourquoi choisir SkillBridge?" renommé) */}
+      {/* 7. Ce qui nous distingue (ancien "Pourquoi choisir SkillBridge?" renommé) */}
       <section className="sb-page py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 items-start">
@@ -398,18 +402,12 @@ export const HomePage = () => {
                   </div>
                 </div>
 
-                <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                <div className="mt-6">
                   <Link
                     to="/formations"
                     className="btn-primary inline-flex items-center justify-center px-8 py-3 rounded-xl shadow-[0_10px_30px_rgba(26,184,153,0.35)]"
                   >
                     {t("common.viewAll")}
-                  </Link>
-                  <Link
-                    to="/favoris"
-                    className="btn-outline inline-flex items-center justify-center px-8 py-3 rounded-xl border-white/30 text-white hover:bg-white/10"
-                  >
-                    Voir les favoris
                   </Link>
                 </div>
 
