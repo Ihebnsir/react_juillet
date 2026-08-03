@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { getStats, updateStats, getTemoignages, addTemoignage, updateTemoignage, deleteTemoignage, getCategoriesVisibles, toggleCategorieVisible } from '../../services/contenuAccueilService';
+import { getStats, updateStats, getTemoignages, addTemoignage, updateTemoignage, deleteTemoignage, getCategoriesVisibles, toggleCategorieVisible, getTextesAPropos, updateTextesAPropos } from '../../services/contenuAccueilService';
 
 const initialForm = { nom: '', role: '', citation: '' };
 
@@ -22,6 +22,7 @@ const NumericField = ({ label, value, suffix, onChange }) => (
 export const ContenuAccueilPage = () => {
   const [activeTab, setActiveTab] = useState('stats');
   const [stats, setStats] = useState(getStats());
+  const [textesAPropos, setTextesAPropos] = useState(getTextesAPropos());
   const [temoignages, setTemoignages] = useState(getTemoignages());
   const [categories, setCategories] = useState(getCategoriesVisibles());
   const [draft, setDraft] = useState(initialForm);
@@ -30,10 +31,15 @@ export const ContenuAccueilPage = () => {
   useEffect(() => {
     setTemoignages(getTemoignages());
     setCategories(getCategoriesVisibles());
+    setTextesAPropos(getTextesAPropos());
   }, []);
 
   const handleSaveStats = () => {
     updateStats(stats);
+  };
+
+  const handleSaveAPropos = () => {
+    updateTextesAPropos(textesAPropos);
   };
 
   const handleSubmitTemoignage = (e) => {
@@ -69,6 +75,7 @@ export const ContenuAccueilPage = () => {
     { id: 'stats', label: 'Statistiques' },
     { id: 'temoignages', label: 'Témoignages' },
     { id: 'categories', label: 'Catégories' },
+    { id: 'aPropos', label: 'Page À propos' },
   ], []);
 
   return (
@@ -146,6 +153,41 @@ export const ContenuAccueilPage = () => {
                 <input type="checkbox" checked={cat.visible} onChange={() => handleToggleCategory(cat.id)} className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
               </label>
             ))}
+          </div>
+        </motion.div>
+      )}
+
+      {activeTab === 'aPropos' && (
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <h2 className="text-lg font-semibold">Page À propos</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Titre "Notre histoire"</label>
+              <input
+                value={textesAPropos.titre}
+                onChange={(e) => setTextesAPropos((prev) => ({ ...prev, titre: e.target.value }))}
+                className="input w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Premier paragraphe</label>
+              <textarea
+                value={textesAPropos.paragraphe1}
+                onChange={(e) => setTextesAPropos((prev) => ({ ...prev, paragraphe1: e.target.value }))}
+                rows={4}
+                className="input w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Second paragraphe</label>
+              <textarea
+                value={textesAPropos.paragraphe2}
+                onChange={(e) => setTextesAPropos((prev) => ({ ...prev, paragraphe2: e.target.value }))}
+                rows={4}
+                className="input w-full"
+              />
+            </div>
+            <button onClick={handleSaveAPropos} className="btn-primary">Enregistrer</button>
           </div>
         </motion.div>
       )}

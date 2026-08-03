@@ -18,7 +18,7 @@ export const mockFormations = [
     startDate: '2026-08-15',
     endDate: '2026-09-26',
     progress: 65,
-    image: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=600&fit=crop&q=80',
   },
   {
     id: 'form-2',
@@ -36,10 +36,10 @@ export const mockFormations = [
     startDate: '2026-07-20',
     endDate: '2026-08-24',
     progress: 35,
-    image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&h=600&fit=crop&q=80',
   },
   {
-    id: 'form-3',
+    id: 'form3',
     title: 'Node.js & Express Maître',
     centreId: 'centre-1',
     learnerId: 'learner-1',
@@ -54,7 +54,7 @@ export const mockFormations = [
     startDate: '2026-04-01',
     endDate: '2026-05-15',
     progress: 100,
-    image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=600&fit=crop&q=80',
   },
   {
     id: 'form-4',
@@ -72,7 +72,7 @@ export const mockFormations = [
     startDate: '2026-08-01',
     endDate: '2026-08-29',
     progress: 10,
-    image: 'https://images.unsplash.com/photo-1533750349088-cd871a92f312?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop&q=80',
   },
   {
     id: 'form-5',
@@ -90,7 +90,7 @@ export const mockFormations = [
     startDate: '2026-09-01',
     endDate: '2026-10-24',
     progress: 20,
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop&q=80',
   },
   {
     id: 'form-6',
@@ -108,7 +108,7 @@ export const mockFormations = [
     startDate: '2026-07-25',
     endDate: '2026-08-15',
     progress: 40,
-    image: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&h=600&fit=crop&q=80',
   },
   {
     id: 'form-7',
@@ -126,7 +126,7 @@ export const mockFormations = [
     startDate: '2026-06-15',
     endDate: '2026-07-15',
     progress: 75,
-    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=600&fit=crop&q=80',
   },
   {
     id: 'form-8',
@@ -144,6 +144,6 @@ export const mockFormations = [
     startDate: '2026-08-10',
     endDate: '2026-09-30',
     progress: 15,
-    image: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&h=600&fit=crop&q=80',
   },
 ];

@@ -232,7 +232,7 @@ export const MOCK_FORMATIONS = [
     availablePlaces: 5,
     startDate: "2024-08-22",
     image:
-      "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=250&fit=crop",
+      "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&h=600&fit=crop&q=80",
     program: [
       "Fondamentaux Node.js",
       "Framework Express",

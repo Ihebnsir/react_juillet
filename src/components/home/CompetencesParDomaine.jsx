@@ -1,6 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Carousel from '../UI/Carousel';
 import { FormationCard } from '../Cards/FormationCard';
 import { getCategoriesVisibles } from '../../services/contenuAccueilService';
 import { FiCode, FiBarChart2, FiCpu, FiTerminal, FiShield, FiGlobe } from 'react-icons/fi';
@@ -71,11 +70,11 @@ function CompetencesParDomaine({ formations = [] }) {
 
       {formationsFiltered.length > 0 ? (
         <>
-          <Carousel itemsPerPage={4}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {formationsFiltered.map((formation) => (
               <FormationCard key={formation.id} formation={formation} />
             ))}
-          </Carousel>
+          </div>
 
           <Link
             to={`/formations?categorie=${activeCategory}`}

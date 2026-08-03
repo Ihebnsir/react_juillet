@@ -2,6 +2,8 @@ const STORAGE_KEYS = {
   stats: 'skillbridge_home_stats',
   temoignages: 'skillbridge_home_testimonials',
   categories: 'skillbridge_home_categories',
+  aPropos: 'skillbridge_home_about_content',
+  platformMetrics: 'skillbridge_platform_metrics',
 };
 
 const defaultStats = {
@@ -9,6 +11,20 @@ const defaultStats = {
   formations: 350,
   apprenants: 10,
   satisfaction: 4.8,
+};
+
+const defaultAPropos = {
+  titre: 'Née d\'un constat simple',
+  paragraphe1: 'En Tunisie, trouver une formation professionnelle fiable relevait souvent du bouche-à-oreille ou d\'une recherche fastidieuse entre plusieurs sites peu clairs. SkillBridge est né pour centraliser cette recherche, avec des centres vérifiés et un parcours de réservation simple.',
+  paragraphe2: 'Aujourd\'hui, la plateforme connecte apprenants et centres de formation à travers tout le pays, avec un objectif constant : rendre la montée en compétences accessible à tous.',
+};
+
+const defaultPlatformMetrics = {
+  centresPartenaires: 120,
+  formations: 350,
+  reservations: 2400,
+  certificats: 1800,
+  utilisateursActifs: 5200,
 };
 
 const defaultCategories = [
@@ -43,6 +59,26 @@ export function updateStats(newStats) {
   const safeStats = { ...defaultStats, ...newStats };
   writeStorage(STORAGE_KEYS.stats, safeStats);
   return safeStats;
+}
+
+export function getTextesAPropos() {
+  return readStorage(STORAGE_KEYS.aPropos, defaultAPropos);
+}
+
+export function updateTextesAPropos(newTextes) {
+  const safeTextes = { ...defaultAPropos, ...newTextes };
+  writeStorage(STORAGE_KEYS.aPropos, safeTextes);
+  return safeTextes;
+}
+
+export function getPlatformMetrics() {
+  return readStorage(STORAGE_KEYS.platformMetrics, defaultPlatformMetrics);
+}
+
+export function updatePlatformMetrics(newMetrics) {
+  const safe = { ...defaultPlatformMetrics, ...newMetrics };
+  writeStorage(STORAGE_KEYS.platformMetrics, safe);
+  return safe;
 }
 
 export function getTemoignages() {

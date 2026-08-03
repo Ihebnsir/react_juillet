@@ -6,7 +6,6 @@ import { formationsService } from "../services/formationsService";
 import heroVideo from "../assets/videos/hero-education.mp4";
 import { FormationCard } from "../components/Cards/FormationCard";
 import { FiArrowRight, FiCheckCircle, FiShield, FiGlobe, FiGrid, FiClock } from "react-icons/fi";
-import Carousel from "../components/UI/Carousel";
 import AnimatedSearchBar from "../components/UI/AnimatedSearchBar";
 import { ApercuProduit } from '../components/home/ApercuProduit';
 import CompetencesParDomaine from '../components/home/CompetencesParDomaine';
@@ -309,7 +308,7 @@ export const HomePage = () => {
         </div>
       ) : (
         <>
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+          <section className="max-w-7xl mx-auto px-6 md:px-10 py-14">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-8">
               <div>
                 <h2 className="sb-h2 text-slate-900 dark:text-white">{t("home.trendingTitle")}</h2>
@@ -329,13 +328,13 @@ export const HomePage = () => {
               </div>
             </div>
 
-            <Carousel itemsPerPage={4}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {trendingFormations.map((formation, idx) => (
                 <div key={formation.id} className="animate-[fadeInUp_0.55s_ease-out_both]" style={{ animationDelay: `${idx * 60}ms` }}>
                   <FormationCard formation={formation} />
                 </div>
               ))}
-            </Carousel>
+            </div>
           </section>
 
           {/* Pourquoi choisir SkillBridge ? (témoignages — titre conservé ici) */}

@@ -20,24 +20,37 @@ export const CentresPage = () => {
 
         <section className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {mockCentres.map((centre) => (
-            <article key={centre.id} className="rounded-2xl border border-slate-200/70 bg-white/70 p-6 shadow-sm dark:border-slate-700/50 dark:bg-slate-900/60">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="font-display text-xl font-bold text-slate-900 dark:text-white">{centre.name}</h2>
-                  <p className="mt-2 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                    <FiMapPin /> {centre.ville}
-                  </p>
+            <article key={centre.id} className="rounded-2xl border border-slate-200/70 bg-white/70 shadow-sm dark:border-slate-700/50 dark:bg-slate-900/60 overflow-hidden">
+              <div className="relative w-full aspect-[4/3] overflow-hidden bg-slate-800">
+                <img
+                  src={centre.image || centre.cover}
+                  alt={centre.name}
+                  className="absolute inset-0 w-full h-full object-cover object-center"
+                  onError={(event) => {
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = '/images/centre-placeholder.jpg';
+                  }}
+                />
+              </div>
+              <div className="p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 className="font-display text-xl font-bold text-slate-900 dark:text-white">{centre.name}</h2>
+                    <p className="mt-2 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                      <FiMapPin /> {centre.ville}
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-brand-400/15 px-3 py-1 text-sm font-semibold text-brand-700 dark:text-brand-200">
+                    {centre.verifie ? 'Vérifié' : 'À confirmer'}
+                  </span>
                 </div>
-                <span className="rounded-full bg-brand-400/15 px-3 py-1 text-sm font-semibold text-brand-700 dark:text-brand-200">
-                  {centre.verifie ? 'Vérifié' : 'À confirmer'}
-                </span>
+                <div className="mt-5 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                  <FiAward /> {centre.formationsPubliees} formations publiées
+                </div>
+                <Link to={`/centres/${centre.id}`} className="mt-6 inline-flex items-center text-sm font-semibold text-brand-700 hover:text-brand-800 dark:text-brand-300">
+                  Voir le profil
+                </Link>
               </div>
-              <div className="mt-5 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                <FiAward /> {centre.formationsPubliees} formations publiées
-              </div>
-              <Link to={`/centres/${centre.id}`} className="mt-6 inline-flex items-center text-sm font-semibold text-brand-700 hover:text-brand-800 dark:text-brand-300">
-                Voir le profil
-              </Link>
             </article>
           ))}
         </section>

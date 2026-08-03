@@ -29,8 +29,7 @@ export const FormationCard = ({ formation }) => {
       className="card cursor-pointer group overflow-hidden bg-white dark:bg-slate-800 border border-slate-100/80 dark:border-slate-700/60"
     >
         {/* Image */}
-        <div className="relative h-48 overflow-hidden bg-brand-50/70 dark:bg-slate-900">
-
+        <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-xl bg-slate-800">
           <img
             src={formation.image}
             alt={formation.title}
@@ -38,7 +37,7 @@ export const FormationCard = ({ formation }) => {
               event.currentTarget.onerror = null;
               event.currentTarget.src = '/images/formation-placeholder.svg';
             }}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
           />
           <button
             onClick={toggleFavorite}
