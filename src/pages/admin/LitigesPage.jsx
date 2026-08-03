@@ -1,4 +1,4 @@
-﻿/**
+/**
  * LITIGES — Résolution formelle des dossiers escaladés.
  * Rôle : suivi procédural et financier des dossiers déjà ouverts (via Modération
  * ou directement signalés par un utilisateur), avec SLA, priorité et arbitrage.
