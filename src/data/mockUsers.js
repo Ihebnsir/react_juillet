@@ -105,7 +105,7 @@ export const mockUsers = [
     profilVerifie: true,
     centreAssocie: null,
     formations: [],
-    activiteRecente: [
+    activiteRecente: [n
       { date: _j(0), action: 'Connexion' },
       { date: _j(0), action: 'Modération effectuée' },
       { date: _j(-1), action: 'Utilisateur suspendu' },
