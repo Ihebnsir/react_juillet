@@ -1,23 +1,7 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { FiX, FiSend } from 'react-icons/fi';
-
-const REPONSES_AUTOMATIQUES = {
-  formation:
-    "Vous pouvez rechercher une formation depuis la page 'Formations', avec des filtres par domaine, ville et budget.",
-  reservation:
-    "Pour réserver, ouvrez la page détail d'une formation et cliquez sur 'Réserver'.",
-  certificat:
-    "Vos certificats sont disponibles dans la section 'Certifications', téléchargeables avec QR code de vérification.",
-  centre:
-    "Tous nos centres sont vérifiés avant publication. Vous pouvez consulter leurs profils, notes et avis depuis la page 'Centres'.",
-  paiement:
-    "Le paiement s'effectue en ligne via notre plateforme sécurisée. Vous recevez une confirmation immédiate après réservation.",
-  contact:
-    "Pour toute question, utilisez le formulaire de contact ou écrivez-nous directement depuis la messagerie.",
-  default:
-    "Je n'ai pas encore de réponse précise pour cette question — contactez le support via 'Aide & support' pour une assistance humaine.",
-};
+import { sendChatbotMessage } from '../../services/chatbotService';
 
 function AssistantIAModal({ onClose }) {
   const [messages, setMessages] = useState([
@@ -28,24 +12,36 @@ function AssistantIAModal({ onClose }) {
     },
   ]);
   const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const sessionIdRef = useRef(`skillbridge-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
-  const envoyerMessage = () => {
+  const envoyerMessage = async () => {
     const trimmed = input.trim();
-    if (!trimmed) return;
+    if (!trimmed || isLoading) return;
 
     const messageUser = { role: 'user', texte: trimmed };
-
-    const motCle = Object.keys(REPONSES_AUTOMATIQUES).find((k) =>
-      trimmed.toLowerCase().includes(k)
-    );
-    const reponse = {
-      role: 'assistant',
-      texte:
-        REPONSES_AUTOMATIQUES[motCle] || REPONSES_AUTOMATIQUES.default,
-    };
-
-    setMessages((prev) => [...prev, messageUser, reponse]);
+    setMessages((prev) => [...prev, messageUser]);
     setInput('');
+    setIsLoading(true);
+
+    try {
+      const responseText = await sendChatbotMessage({
+        chatInput: trimmed,
+        sessionId: sessionIdRef.current,
+      });
+      setMessages((prev) => [...prev, { role: 'assistant', texte: responseText }]);
+    } catch (error) {
+      console.error("Erreur lors de l'appel au chatbot n8n", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          texte: 'Désolé, je rencontre actuellement un problème de connexion. Veuillez réessayer dans quelques instants.',
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -90,6 +86,11 @@ function AssistantIAModal({ onClose }) {
               {m.texte}
             </div>
           ))}
+          {isLoading && (
+            <div className="max-w-[85%] rounded-2xl bg-slate-700 p-3 text-sm leading-relaxed text-slate-200">
+              Chargement...
+            </div>
+          )}
         </div>
 
         {/* Input */}
@@ -104,7 +105,7 @@ function AssistantIAModal({ onClose }) {
           <button
             type="button"
             onClick={envoyerMessage}
-            disabled={!input.trim()}
+            disabled={!input.trim() || isLoading}
             className="btn-primary rounded-lg px-3 py-2 disabled:opacity-50"
           >
             <FiSend size={16} />

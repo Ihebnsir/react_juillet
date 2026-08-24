@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ChatMessage } from "./ChatMessage";
-import { getMockChatResponse } from "../data/mockChatResponses";
+import { sendChatbotMessage } from "../services/chatbotService";
 
 const initialMessages = [
   {
@@ -17,6 +17,7 @@ export function Chatbot() {
   const [draft, setDraft] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+  const sessionIdRef = useRef(`skillbridge-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
   const currentTime = useMemo(() => {
     return new Date().toLocaleTimeString([], {
@@ -32,9 +33,9 @@ export function Chatbot() {
     }
   }, [messages, isTyping]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const trimmed = draft.trim();
-    if (!trimmed) return;
+    if (!trimmed || isTyping) return;
 
     const userMessage = {
       id: Date.now(),
@@ -47,11 +48,15 @@ export function Chatbot() {
     setDraft("");
     setIsTyping(true);
 
-    window.setTimeout(() => {
+    try {
+      const responseText = await sendChatbotMessage({
+        chatInput: trimmed,
+        sessionId: sessionIdRef.current,
+      });
       const assistantMessage = {
         id: Date.now() + 1,
         role: "assistant",
-        text: getMockChatResponse(trimmed),
+        text: responseText,
         timestamp: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
@@ -59,8 +64,23 @@ export function Chatbot() {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error("Erreur lors de l'appel au chatbot n8n", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          role: "assistant",
+          text: "Désolé, je rencontre actuellement un problème de connexion. Veuillez réessayer dans quelques instants.",
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+    } finally {
       setIsTyping(false);
-    }, 1400);
+    }
   };
 
   const handleKeyDown = (event) => {
