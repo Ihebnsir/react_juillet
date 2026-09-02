@@ -9,7 +9,6 @@ import { FiArrowRight, FiCheckCircle, FiShield, FiGlobe, FiGrid, FiClock } from 
 import AnimatedSearchBar from "../components/UI/AnimatedSearchBar";
 import { ApercuProduit } from '../components/home/ApercuProduit';
 import CompetencesParDomaine from '../components/home/CompetencesParDomaine';
-import { mockFormations } from '../data/mockFormations';
 import { mockCentres } from '../data/mockCentres';
 import { mockTemoignages } from '../data/mockTemoignages';
 import { getStats, getTemoignages } from '../services/contenuAccueilService';
@@ -218,7 +217,7 @@ export const HomePage = () => {
       <ApercuProduit />
 
       {/* 6. Compétences par domaine */}
-      <CompetencesParDomaine formations={mockFormations} />
+      <CompetencesParDomaine formations={trendingFormations} />
 
       {/* 7. Ce qui nous distingue (ancien "Pourquoi choisir SkillBridge?" renommé) */}
       <section className="sb-page py-16">

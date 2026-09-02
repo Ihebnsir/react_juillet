@@ -1,202 +1,98 @@
-import { MOCK_FORMATIONS, MOCK_REVIEWS } from "../data/mockData";
+import { apiRequest } from './apiClient';
 
-const enrichFormation = (formation) => ({
-  ...formation,
-  centre: formation.centre || null,
-  offreStage: formation.offreStage || false,
-  entreprisesPartenaires: formation.entreprisesPartenaires || [],
-});
+const normalizeCentre = (centre) => {
+  if (!centre || typeof centre !== 'object') return null;
+  return { ...centre, id: centre.id || centre._id, city: centre.city || centre.ville || '' };
+};
 
-// Service pour gérer les formations
+const normalizeFormation = (formation) => {
+  if (!formation || typeof formation !== 'object') return formation;
+  const centre = normalizeCentre(formation.centre);
+  return {
+    ...formation,
+    id: formation.id || formation._id,
+    centre,
+    city: formation.city || centre?.city || '',
+    domain: formation.domain || formation.category || formation.categorie || '',
+    availablePlaces: formation.availablePlaces ?? null,
+    averageRating: formation.averageRating ?? 0,
+    reviewCount: formation.reviewCount ?? 0,
+  };
+};
+
+const toBackendPayload = (formationData = {}) => {
+  const payload = {};
+  const allowedFields = ['title', 'description', 'price', 'duration', 'category', 'categorie', 'status', 'offreStage', 'entreprisesPartenaires', 'startDate', 'endDate', 'progress', 'image'];
+  allowedFields.forEach((field) => {
+    if (formationData[field] !== undefined) payload[field] = formationData[field];
+  });
+  if (payload.category === undefined && formationData.domain !== undefined) payload.category = formationData.domain;
+  if (payload.status === 'active') payload.status = 'pending';
+  return payload;
+};
+
+const list = async (params = {}) => {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== '' && value !== null) query.set(key, String(value));
+  });
+  const result = await apiRequest(`/api/formations${query.toString() ? `?${query}` : ''}`);
+  return {
+    ...result,
+    data: Array.isArray(result?.data) ? result.data.map(normalizeFormation) : [],
+  };
+};
+
 export const formationsService = {
-  // Récupérer toutes les formations
-  getAll: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(MOCK_FORMATIONS.map(enrichFormation)), 500);
-    });
-  },
+  getAll: async () => (await list({ page: 1, limit: 100 })).data,
 
-  // Récupérer une formation par ID
   getById: async (id) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const formation = MOCK_FORMATIONS.find((f) => f.id === id);
-        if (formation) {
-          resolve(enrichFormation(formation));
-        } else {
-          reject("Formation non trouvée");
-        }
-      }, 300);
-    });
+    const result = await apiRequest(`/api/formations/${encodeURIComponent(id)}`);
+    return normalizeFormation(result?.data);
   },
 
-  // Rechercher les formations avec filtres
-  search: async (filters) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        let results = MOCK_FORMATIONS;
-
-        if (filters.keyword) {
-          const keyword = filters.keyword.toLowerCase();
-          results = results.filter(
-            (f) =>
-              f.title.toLowerCase().includes(keyword) ||
-              f.description.toLowerCase().includes(keyword)
-          );
-        }
-
-        if (filters.categorie) {
-          results = results.filter(
-            (f) => String(f.categorie || '').toLowerCase() === String(filters.categorie).toLowerCase()
-          );
-        }
-
-        if (filters.domain) {
-          results = results.filter((f) => f.domain === filters.domain);
-        }
-
-        if (filters.city) {
-          results = results.filter((f) => f.city === filters.city);
-        }
-
-        if (filters.stageOnly) {
-          results = results.filter((f) => f.offreStage);
-        }
-
-        if (filters.priceMin !== undefined && filters.priceMax !== undefined) {
-          results = results.filter(
-            (f) => f.price >= filters.priceMin && f.price <= filters.priceMax
-          );
-        }
-
-        // Tri par popularité si demandé
-        if (filters.sortBy === "trending") {
-          results = results.sort((a, b) => b.reviewCount - a.reviewCount);
-        } else if (filters.sortBy === "price_low") {
-          results = results.sort((a, b) => a.price - b.price);
-        } else if (filters.sortBy === "price_high") {
-          results = results.sort((a, b) => b.price - a.price);
-        }
-
-        resolve(results.map(enrichFormation));
-      }, 600);
+  search: async (filters = {}) => {
+    const result = await list({
+      search: filters.keyword,
+      category: filters.domain,
+      categorie: filters.categorie,
+      offreStage: filters.stageOnly ? true : undefined,
     });
+    let formations = result.data;
+    if (filters.city) formations = formations.filter((formation) => formation.city.toLowerCase() === filters.city.toLowerCase());
+    if (filters.priceMin !== undefined && filters.priceMin !== 0) formations = formations.filter((formation) => formation.price >= filters.priceMin);
+    if (filters.priceMax !== undefined && filters.priceMax !== Infinity) formations = formations.filter((formation) => formation.price <= filters.priceMax);
+    if (filters.sortBy === 'price_low') formations.sort((a, b) => a.price - b.price);
+    if (filters.sortBy === 'price_high') formations.sort((a, b) => b.price - a.price);
+    return formations;
   },
 
-  // Récupérer les formations tendances
-  getTrending: async (limit = 5) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const trending = MOCK_FORMATIONS.filter((f) => f.trending).slice(0, limit);
-        resolve(trending);
-      }, 400);
-    });
-  },
+  // No backend trending endpoint exists; the API's newest-first order is used.
+  getTrending: async (limit = 5) => (await formationsService.getAll()).slice(0, limit),
 
-  // Créer une nouvelle formation (pour les centres)
   create: async (formationData) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const newFormation = {
-          id: `form${Date.now()}`,
-          ...formationData,
-          averageRating: 0,
-          reviewCount: 0,
-          trending: false,
-        };
-        MOCK_FORMATIONS.push(newFormation);
-        resolve(newFormation);
-      }, 500);
-    });
+    const result = await apiRequest('/api/formations', { method: 'POST', body: JSON.stringify(toBackendPayload(formationData)) });
+    return normalizeFormation(result?.data);
   },
 
-  // Mettre à jour une formation existante
   update: async (id, updates) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const index = MOCK_FORMATIONS.findIndex((f) => f.id === id);
-        if (index === -1) {
-          reject(new Error("Formation non trouvée"));
-          return;
-        }
-        MOCK_FORMATIONS[index] = {
-          ...MOCK_FORMATIONS[index],
-          ...updates,
-        };
-        resolve(MOCK_FORMATIONS[index]);
-      }, 500);
-    });
+    const result = await apiRequest(`/api/formations/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(toBackendPayload(updates)) });
+    return normalizeFormation(result?.data);
   },
 
-  // Supprimer une formation
   delete: async (id) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const index = MOCK_FORMATIONS.findIndex((f) => f.id === id);
-        if (index === -1) {
-          reject(new Error("Formation non trouvée"));
-          return;
-        }
-        MOCK_FORMATIONS.splice(index, 1);
-        resolve(true);
-      }, 500);
-    });
+    const result = await apiRequest(`/api/formations/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    return normalizeFormation(result?.data);
   },
 
-  // Récupérer les formations d'un centre
   getCenterFormations: async (centreId) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const formations = MOCK_FORMATIONS.filter(
-          (f) => f.centreId === centreId
-        );
-        resolve(formations);
-      }, 400);
-    });
+    const formations = await formationsService.getAll();
+    return formations.filter((formation) => formation.centre?.id === centreId || formation.centre?.userId === centreId);
   },
 
-  // Méthode attendue par la page "Mes offres"
-  getMesFormations: async (centreId) => {
-    return formationsService.getCenterFormations(centreId);
-  },
+  getMesFormations: async (centreId) => formationsService.getCenterFormations(centreId),
 
-
-  // Obtenir les avis d'une formation
-  getReviews: async (formationId) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const reviews = MOCK_REVIEWS.filter(
-          (r) => r.formationId === formationId
-        );
-        resolve(reviews);
-      }, 300);
-    });
-  },
-
-  // Ajouter un avis
-  addReview: async (formationId, review) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const newReview = {
-          id: `rev${Date.now()}`,
-          formationId,
-          ...review,
-          date: new Date().toISOString().split("T")[0],
-        };
-        MOCK_REVIEWS.push(newReview);
-        
-        // Mettre à jour la notation de la formation
-        const formation = MOCK_FORMATIONS.find((f) => f.id === formationId);
-        if (formation) {
-          const allReviews = MOCK_REVIEWS.filter((r) => r.formationId === formationId);
-          const avgRating =
-            allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
-          formation.averageRating = parseFloat(avgRating.toFixed(1));
-          formation.reviewCount = allReviews.length;
-        }
-        
-        resolve(newReview);
-      }, 400);
-    });
-  },
+  // No formation review routes exist in backend_aout2026.
+  getReviews: async () => [],
+  addReview: async () => { throw new Error('FORMATION_REVIEWS_UNAVAILABLE'); },
 };

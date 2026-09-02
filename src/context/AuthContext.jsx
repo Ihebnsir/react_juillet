@@ -1,6 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { getCurrentUser, login as loginService, logout as logoutService, saveUser } from "../services/authService";
-import { mockUsers } from "../data/mockUsers";
+import { getCurrentUser, getAuthenticatedUser, login as loginService, logout as logoutService, register as registerService, saveUser, getToken } from "../services/authService";
 
 const AuthContext = createContext();
 
@@ -19,10 +18,24 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = normalizeUser(getCurrentUser());
-    console.log('[AuthContext] storedUser:', storedUser);
-    setUser(storedUser);
-    setIsLoading(false);
+    const restoreSession = async () => {
+      if (!getToken()) {
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setUser(await getAuthenticatedUser());
+      } catch {
+        logoutService();
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    restoreSession();
   }, []);
 
 
@@ -38,63 +51,24 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginViaProvider = async ({ email, nom, avatar, provider }) => {
-    const existingUser = mockUsers.find(
-      (candidate) => candidate.email?.trim().toLowerCase() === email?.trim().toLowerCase()
-    );
-
-    const userToUse = existingUser
-      ? existingUser
-      : {
-          id: `provider-${Date.now()}`,
-          nom: nom || email?.split("@")[0] || "Utilisateur",
-          name: nom || email?.split("@")[0] || "Utilisateur",
-          email,
-          avatar,
-          role: "apprenant",
-          provider,
-          favorites: [],
-          reservations: [],
-        };
-
-    if (!existingUser) {
-      mockUsers.push(userToUse);
-    }
-
+    const userToUse = {
+      id: `provider-${Date.now()}`,
+      nom: nom || email?.split("@")[0] || "Utilisateur",
+      name: nom || email?.split("@")[0] || "Utilisateur",
+      email,
+      avatar,
+      role: "apprenant",
+      provider,
+    };
     const normalizedUser = normalizeUser(userToUse);
     setUser(normalizedUser);
     saveUser(normalizedUser);
     return normalizedUser;
   };
 
-  const register = (userData) => {
-    // Extends registration payload: preserve every field coming from the form.
-    const newUserRaw = {
-      id: `user${Date.now()}`,
-      ...userData,
-      name: userData?.name ?? userData?.nom ?? userData?.email?.split("@")[0] ?? "Utilisateur",
-      nom: userData?.nom ?? userData?.name ?? userData?.email?.split("@")[0] ?? "Utilisateur",
-      avatar:
-        userData.avatar ??
-        `https://api.dicebear.com/7.x/avataaars/svg?seed=${(userData?.name ?? userData?.nom ?? "user").toString()}`,
-      favorites: [],
-      reservations: [],
-    };
-
-    // Ensure profile shape exists (only used by the rest of the app later)
-    newUserRaw.profile = newUserRaw.profile ??
-      (newUserRaw.role === "centre"
-        ? { description: "", city: "", phone: "", verified: false }
-        : { cv: "", portfolio: "", city: "" });
-
-    // Strict rule: centre accounts start with statutVerification = 'non_soumis'
-    if (newUserRaw.role === "centre") {
-      newUserRaw.statutVerification = "non_soumis";
-    }
-
-    const newUser = normalizeUser(newUserRaw);
-    setUser(newUser);
-    saveUser(newUser);
-    return { success: true, user: newUser };
+  const register = async (userData) => {
+    const result = await registerService(userData);
+    return { success: true, user: result.user };
   };
 
   const logout = () => {

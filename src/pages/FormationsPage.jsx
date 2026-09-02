@@ -20,6 +20,7 @@ export const FormationsPage = () => {
   const [searchParams] = useSearchParams();
   const [formations, setFormations] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const initialCategorie = searchParams.get("categorie") || "";
   const initialDomain = CATEGORY_TO_DOMAIN[initialCategorie] || searchParams.get("domain") || "";
   const [filters, setFilters] = useState({
@@ -36,9 +37,13 @@ export const FormationsPage = () => {
   useEffect(() => {
     const loadFormations = async () => {
       setLoading(true);
+      setError("");
       try {
         const results = await formationsService.search(filters);
         setFormations(results);
+      } catch {
+        setFormations([]);
+        setError("Impossible de charger les formations. Réessayez dans quelques instants.");
       } finally {
         setLoading(false);
       }
@@ -188,6 +193,10 @@ export const FormationsPage = () => {
             {loading ? (
               <div className="flex justify-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+              </div>
+            ) : error ? (
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-8 text-center" role="alert">
+                <p className="text-red-600 dark:text-red-300 text-lg">{error}</p>
               </div>
             ) : formations.length === 0 ? (
               <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-8 text-center">

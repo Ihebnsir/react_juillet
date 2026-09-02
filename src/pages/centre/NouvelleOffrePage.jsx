@@ -23,7 +23,8 @@ export const NouvelleOffrePage = () => {
       setLoading(true);
       try {
         const data = await formationsService.getById(id);
-        if (!data || data.centreId !== user?.id) {
+        const ownerId = data?.centre?.userId?._id || data?.centre?.userId;
+        if (!data || ownerId !== user?.id) {
           navigate("/centre/offres", { replace: true });
           return;
         }

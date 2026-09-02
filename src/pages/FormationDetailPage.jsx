@@ -177,60 +177,21 @@ export const FormationDetailPage = () => {
 
   const handleReserve = async () => {
     console.log("1 - clic: handleReserve");
-    if (!selectedSession) {
-      console.log("handleReserve: aucun selectedSession", { selectedSessionId, bookingSessions });
+    try {
+      const created = await addReservation({ formationId: formation.id });
+      onReserveSuccess(created?.id || formation.id);
+      closeBookingModal();
+      window.setTimeout(() => navigate("/reservations"), 900);
+    } catch (error) {
       setToastType("error");
-      setToast("Veuillez choisir une session avant de réserver.");
-      return;
+      setToast(
+        error?.status === 409
+          ? "Cette formation est déjà réservée."
+          : error?.status === 404
+          ? "Cette formation n'est plus disponible."
+          : "Impossible de créer la réservation. Réessayez dans quelques instants."
+      );
     }
-
-    console.log("2 - début handleReserve", {
-      selectedSessionId,
-      selectedSession,
-      selectedPaymentMethod,
-      userId: user?.id,
-    });
-
-    const paymentOption = PAYMENT_OPTIONS.find((option) => option.key === selectedPaymentMethod) || PAYMENT_OPTIONS[0];
-    const reservationPayload = {
-      learnerId: user.id,
-      formationId: formation.id,
-      titre: formation.title,
-      image: formation.image,
-      centreId: formation.centre?.id || formation.centerId || 'center1',
-      centreNom: formation.centre?.name || 'Tech Academy Tunis',
-      ville: formation.city,
-      prix: formation.price,
-      duree: formation.duration,
-      dateReservation: new Date().toISOString(),
-      statut: 'En attente',
-      progression: 0,
-      modePaiement: null,
-      formationTitle: formation.title,
-      centreName: formation.centre?.name || 'Tech Academy Tunis',
-      sessionId: selectedSession.id,
-      sessionLabel: selectedSession.label,
-      sessionDate: selectedSession.date,
-      price: formation.price,
-      paymentMethodLabel: paymentOption.label,
-      paymentMethodKey: paymentOption.key,
-    };
-
-    const created = await addReservation(reservationPayload);
-    console.log("3 - addReservation retourné", created);
-    if (created?.duplicate) {
-      console.log("handleReserve: réservation en double détectée", created);
-      setToastType("error");
-      setToast("Cette formation est déjà réservée.");
-      return;
-    }
-    console.log("4 - réservation créée, fermeture modal et navigation prochaine");
-    onReserveSuccess(created?.id || formation.id);
-    closeBookingModal();
-    window.setTimeout(() => {
-      console.log("5 - navigation vers /reservations");
-      navigate("/reservations");
-    }, 900);
   };
 
   const handleAddReview = async () => {

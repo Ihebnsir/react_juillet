@@ -195,9 +195,9 @@ export const PaymentCheckoutPage = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const { payerReservation, isHydrated } = useReservations();
+  const { payerReservation, getReservationById, isHydrated } = useReservations();
 
-  const reservation = useMemo(() => state?.reservation || null, [state]);
+  const reservation = useMemo(() => state?.reservation || getReservationById(reservationId), [state, getReservationById, reservationId]);
   const [selectedCardType, setSelectedCardType] = useState("visa");
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
@@ -218,20 +218,7 @@ export const PaymentCheckoutPage = () => {
 
   useEffect(() => {
     if (!reservation && isHydrated) {
-      const stored = window.localStorage.getItem("skillBridgeReservations");
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          const found = parsed.find((item) => String(item.id) === String(reservationId));
-          if (found) {
-            navigate(`/paiement/${reservationId}`, { replace: true, state: { reservation: found } });
-          } else {
-            navigate("/reservations");
-          }
-        } catch {
-          navigate("/reservations");
-        }
-      }
+      navigate("/reservations");
     }
   }, [reservation, reservationId, isHydrated, navigate]);
 
@@ -269,23 +256,15 @@ export const PaymentCheckoutPage = () => {
     }
 
     setIsSubmitting(true);
-    window.setTimeout(async () => {
-      try {
-        await payerReservation(reservation.id);
-        const transactionId = `TXN-${Date.now()}`;
-        setConfirmation({
-          ...reservation,
-          transactionId,
-          amountPaid: reservation.prix,
-          paymentDate: new Date().toISOString(),
-        });
-        setIsSubmitting(false);
-        setIsSuccess(true);
-      } catch {
-        setIsSubmitting(false);
-        setToast("Le paiement frontend n’a pas pu être finalisé.");
-      }
-    }, 1800);
+    try {
+      const updated = await payerReservation(reservation.id, selectedCardType);
+      setConfirmation({ ...reservation, ...updated, amountPaid: updated.price });
+      setIsSuccess(true);
+    } catch (error) {
+      setToast(error?.status === 409 ? "Cette réservation est déjà payée." : "Le paiement n’a pas pu être finalisé.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSuccess && confirmation) {

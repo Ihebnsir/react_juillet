@@ -18,6 +18,7 @@ export const RegisterPage = () => {
   } = useForm({ mode: "onTouched" });
 
   const [toast, setToast] = useState({ type: "", message: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const toastMessage = useMemo(() => {
     if (toast.message && toast.type) return toast;
@@ -25,27 +26,56 @@ export const RegisterPage = () => {
   }, [toast]);
 
   const onSubmit = async (data) => {
-    const nouvelUtilisateur = {
-      ...data,
-      role: typeCompte,
-    };
+    const nouvelUtilisateur = typeCompte === "centre"
+      ? {
+          role: "centre",
+          name: data.nom,
+          responsable: data.nomDirecteur,
+          email: data.email,
+          password: data.password,
+          matriculeFiscal: data.matriculeFiscal,
+          numeroRNE: data.numeroRNE,
+          adresse: data.adresseSiege,
+          ville: data.ville,
+        }
+      : {
+          role: "apprenant",
+          nom: data.nom,
+          prenom: data.prenom,
+          email: data.email,
+          password: data.password,
+          ville: data.ville,
+        };
 
-    if (typeCompte === "centre") {
-      nouvelUtilisateur.statutVerification = "non_soumis";
-    }
+    setIsSubmitting(true);
+    setToast({ type: "", message: "" });
 
-    const result = registerUser(nouvelUtilisateur);
-    if (result?.success) {
-      if (typeCompte === "apprenant") {
-        setToast({ type: "success", message: "Compte créé avec succès, connectez-vous." });
-      } else {
-        setToast({
-          type: "success",
-          message: "Compte créé. Rendez-vous dans la section Vérification pour soumettre vos justificatifs.",
-        });
+    try {
+      const result = await registerUser(nouvelUtilisateur);
+      if (result?.success) {
+        if (typeCompte === "apprenant") {
+          setToast({ type: "success", message: "Compte créé avec succès, connectez-vous." });
+        } else {
+          setToast({
+            type: "success",
+            message: "Compte créé. Rendez-vous dans la section Vérification pour soumettre vos justificatifs.",
+          });
+        }
+        reset();
+        navigate("/login", { replace: true });
       }
-      reset();
-      navigate("/login", { replace: true });
+    } catch (error) {
+      let message = "Impossible de créer le compte. Vérifiez les informations saisies.";
+      if (error?.message === "NETWORK_ERROR") {
+        message = "Le serveur est indisponible. Réessayez dans quelques instants.";
+      } else if (error?.status === 409) {
+        message = "Cette adresse email est déjà utilisée.";
+      } else if (error?.status === 400 && error?.message) {
+        message = error.message;
+      }
+      setToast({ type: "error", message });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -122,6 +152,16 @@ export const RegisterPage = () => {
                         className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                       />
                       {errors.nom && <p className="text-sm text-red-500 mt-1">{errors.nom.message}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Prénom</label>
+                      <input
+                        type="text"
+                        {...register("prenom", { required: "Prénom est obligatoire" })}
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      />
+                      {errors.prenom && <p className="text-sm text-red-500 mt-1">{errors.prenom.message}</p>}
                     </div>
 
                     <div>
@@ -271,9 +311,10 @@ export const RegisterPage = () => {
 
                 <button
                   type="submit"
-                  className="w-full py-2 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition"
+                  disabled={isSubmitting}
+                  className="w-full py-2 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition disabled:cursor-not-allowed disabled:bg-slate-400"
                 >
-                  S'inscrire
+                  {isSubmitting ? "Création en cours..." : "S'inscrire"}
                 </button>
               </form>
             )}

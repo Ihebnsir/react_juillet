@@ -162,9 +162,14 @@ export const LoginForm = () => {
     } catch (err) {
       const delay = Math.max(0, 2000 - (Date.now() - start));
       await new Promise((resolve) => setTimeout(resolve, delay));
-      const message = t("login.invalidCredentials");
+      const message =
+        err?.message === "NETWORK_ERROR"
+          ? "Le serveur est indisponible. Réessayez dans quelques instants."
+          : err?.status === 401
+          ? t("login.invalidCredentials")
+          : "Connexion impossible. Vérifiez vos informations et réessayez.";
       setError(message);
-      setToast({ type: "error", message: t("login.errorToast") });
+      setToast({ type: "error", message });
     } finally {
       setLoading(false);
     }

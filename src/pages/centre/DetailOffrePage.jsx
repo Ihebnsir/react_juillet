@@ -32,7 +32,7 @@ export const DetailOffrePage = () => {
         const reservations = await reservationsService.getReservationsParFormation(id);
         const detailed = reservations.map((reservation) => ({
           ...reservation,
-          learnerName: mockUsers.find((user) => user.id === reservation.learnerId)?.nom || reservation.learnerId,
+          learnerName: reservation.learnerName || mockUsers.find((user) => user.id === reservation.learnerId)?.nom || reservation.learnerId,
         }));
         if (mounted) setInscriptions(detailed);
       } catch (error) {

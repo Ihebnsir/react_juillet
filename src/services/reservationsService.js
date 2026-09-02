@@ -1,269 +1,68 @@
-import { mockReservations } from "../data/mockReservations";
-import { mockCertificates } from "../data/mockCertificates";
-import { formationsService } from "./formationsService";
+import { apiRequest } from "./apiClient";
 
-const STORAGE_KEY = "skillBridgeReservations";
+const statusMap = { PENDING: "en_attente", CONFIRMED: "confirmee", COMPLETED: "terminee", CANCELLED: "annulee" };
+const getId = (value) => (value && typeof value === "object" ? value.id || value._id : value);
 
-const normalizeStatus = (status) => {
-  if (!status) return "";
-  // On accepte quelques variantes, mais on normalise vers snake_case sans accents
-  const s = String(status).trim().toLowerCase();
-
-  const map = new Map([
-    // français accents
-    ["en attente", "en_attente"],
-    ["en_attente", "en_attente"],
-    ["confirmée", "confirmee"],
-    ["confirmee", "confirmee"],
-    ["annulée", "annulee"],
-    ["annulee", "annulee"],
-    ["terminée", "terminee"],
-    ["terminee", "terminee"],
-    ["remboursée", "remboursee"],
-    ["remboursee", "remboursee"],
-
-    // possibles anglais
-    ["pending", "en_attente"],
-    ["confirmed", "confirmee"],
-    ["cancelled", "annulee"],
-    ["completed", "terminee"],
-    ["refunded", "remboursee"],
-  ]);
-
-  return map.get(s) ?? s.replace(/\s+/g, "_").replace(/[àáâãäå]/g, "a")
-    .replace(/ç/g, "c")
-    .replace(/èéêë/g, "e")
-    .replace(/ìíîï/g, "i")
-    .replace(/ñ/g, "n")
-    .replace(/òóôõö/g, "o")
-    .replace(/ùúûü/g, "u")
-    .replace(/ýÿ/g, "y")
-    .replace(/[^a-z0-9_]/g, "");
+const normalizeReservation = (reservation) => {
+  if (!reservation || typeof reservation !== "object") return reservation;
+  const formation = reservation.formationId && typeof reservation.formationId === "object" ? reservation.formationId : null;
+  const centre = reservation.centreId && typeof reservation.centreId === "object" ? reservation.centreId : null;
+  const learner = reservation.learnerId && typeof reservation.learnerId === "object" ? reservation.learnerId : null;
+  const status = statusMap[reservation.status] || reservation.status || "";
+  return {
+    ...reservation,
+    id: reservation.id || reservation._id,
+    learnerId: getId(reservation.learnerId),
+    formationId: getId(reservation.formationId),
+    centreId: getId(reservation.centreId),
+    status,
+    statut: status,
+    titre: formation?.title || reservation.titre || "",
+    formationTitle: formation?.title || reservation.formationTitle || "",
+    image: formation?.image || reservation.image || "",
+    prix: formation?.price ?? reservation.price ?? 0,
+    price: formation?.price ?? reservation.price ?? 0,
+    duree: formation?.duration || reservation.duree || "",
+    centreNom: centre?.name || reservation.centreNom || "",
+    centreName: centre?.name || reservation.centreName || "",
+    formationCategory: formation?.category || reservation.formationCategory || "",
+    learnerName: learner ? `${learner.prenom || ""} ${learner.nom || ""}`.trim() : reservation.learnerName || "",
+    dateReservation: reservation.createdAt || reservation.dateReservation || "",
+    date: reservation.createdAt || reservation.date || reservation.dateReservation || "",
+  };
 };
 
-const loadFromStorage = () => {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) return null;
-  try {
-    return JSON.parse(stored);
-  } catch {
-    return null;
-  }
+const toQuery = (params = {}) => {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== "" && value !== null) query.set(key, String(value));
+  });
+  return query.toString() ? `?${query}` : "";
 };
 
-const persist = (next) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-};
+const normalizeListResponse = (result) => ({
+  ...result,
+  data: Array.isArray(result?.data) ? result.data.map(normalizeReservation) : [],
+});
 
-const hydrateDataset = () => {
-  const stored = loadFromStorage();
-  const base = stored ?? mockReservations;
-  // Normaliser statuts dès l'hydratation
-  return (base ?? []).map((r) => ({
-    ...r,
-    status: normalizeStatus(r.status),
-  }));
-};
-
-const saveDataset = (dataset) => {
-  const normalized = dataset.map((r) => ({
-    ...r,
-    status: normalizeStatus(r.status),
-  }));
-  persist(normalized);
-  return normalized;
-};
-
-const getActiveStatuses = () => new Set(["en_attente", "confirmee"]);
-
-const toDisplayDate = (value) => {
-  if (!value) return new Date().toISOString().split('T')[0];
-  return String(value).split('T')[0];
+const updateReservation = async (reservationId, action) => {
+  const result = await apiRequest(`/api/reservations/${encodeURIComponent(reservationId)}/${action}`, { method: "PATCH" });
+  return normalizeReservation(result?.data);
 };
 
 export const reservationsService = {
-  getAll: async () => {
-    return hydrateDataset();
-  },
-
-  addReservation: async (reservationInput) => {
-    console.log("[reservationsService] addReservation start", reservationInput);
-    const all = hydrateDataset();
-    const learnerId = reservationInput?.learnerId ?? reservationInput?.userId ?? null;
-    const formationId = reservationInput?.formationId ?? reservationInput?.id ?? null;
-    const sessionId = reservationInput?.sessionId ?? null;
-
-    const existing = all.find(
-      (reservation) =>
-        String(reservation.learnerId) === String(learnerId) &&
-        String(reservation.formationId) === String(formationId) &&
-        (!sessionId || String(reservation.sessionId || '') === String(sessionId))
-    );
-
-    if (existing) {
-      console.log("[reservationsService] duplicate reservation", existing);
-      return { ...existing, duplicate: true };
-    }
-
-    const paymentMethodLabel = reservationInput?.paymentMethodLabel || reservationInput?.modePaiement || reservationInput?.paymentMethod || 'Sur place au centre';
-    const paymentMethodKey = reservationInput?.paymentMethodKey || String(paymentMethodLabel).toLowerCase();
-    const isOnlineCard = paymentMethodKey.includes('online_card') || paymentMethodKey.includes('carte');
-    const createdAt = new Date().toISOString();
-    const today = toDisplayDate(createdAt);
-    const statusValue = normalizeStatus(reservationInput?.statut || reservationInput?.status || (isOnlineCard ? 'confirmee' : 'en_attente'));
-
-    const reservation = {
-      id: `res-${Date.now()}`,
-      learnerId,
-      formationId,
-      centerId: reservationInput?.centerId ?? reservationInput?.centreId ?? null,
-      centreId: reservationInput?.centreId ?? reservationInput?.centerId ?? null,
-      titre: reservationInput?.titre || reservationInput?.formationTitle || '',
-      image: reservationInput?.image || '',
-      centreNom: reservationInput?.centreNom || reservationInput?.centreName || '',
-      ville: reservationInput?.ville || '',
-      prix: Number(reservationInput?.prix || reservationInput?.price || 0),
-      duree: reservationInput?.duree || '',
-      dateReservation: reservationInput?.dateReservation || createdAt,
-      progression: Number(reservationInput?.progression ?? 0),
-      modePaiement: reservationInput?.modePaiement ?? null,
-      formationTitle: reservationInput?.formationTitle || reservationInput?.titre || '',
-      centreName: reservationInput?.centreName || reservationInput?.centreNom || '',
-      sessionId,
-      sessionLabel: reservationInput?.sessionLabel || '',
-      sessionDate: reservationInput?.sessionDate || toDisplayDate(reservationInput?.date),
-      date: reservationInput?.date || today,
-      price: Number(reservationInput?.price || reservationInput?.prix || 0),
-      status: statusValue,
-      statut: reservationInput?.statut || 'En attente',
-      paid: isOnlineCard ? true : Boolean(reservationInput?.paid),
-      paymentDate: isOnlineCard ? today : (reservationInput?.paymentDate || null),
-      paymentMethod: paymentMethodLabel,
-      transactionId: isOnlineCard ? `TXN-${Date.now()}` : (reservationInput?.transactionId || null),
-      history: [
-        { date: today, action: 'Réservation créée', icon: 'create' },
-        ...(isOnlineCard ? [{ date: today, action: 'Paiement effectué', icon: 'payment' }] : []),
-        { date: today, action: 'Réservation confirmée', icon: 'confirm' },
-      ],
-    };
-
-    saveDataset([reservation, ...all]);
-    return reservation;
-  },
-
-  getReservationsParFormation: async (formationId) => {
-    const all = hydrateDataset();
-    return all.filter((r) => r.formationId === formationId);
-  },
-
-  getReservationsParCentre: async (centreId) => {
-    const all = hydrateDataset();
-    // join : formationId -> formation.centreId
-    const formations = await formationsService.getMesFormations(centreId);
-    const formationIds = new Set(formations.map((f) => f.id));
-    return all.filter((r) => formationIds.has(r.formationId));
-  },
-
-  confirmerReservation: async (reservationId) => {
-    const all = hydrateDataset();
-    const active = all.find((r) => r.id === reservationId);
-    if (!active) return null;
-    const now = new Date().toISOString().split('T')[0];
-    const next = all.map((r) => {
-      if (r.id !== reservationId) return r;
-      const historyEntry = { date: now, action: 'Réservation confirmée', icon: 'confirm' };
-      return {
-        ...r,
-        status: "confirmee",
-        history: [...(r.history || []), historyEntry],
-      };
-    });
-    saveDataset(next);
-    return next.find((r) => r.id === reservationId) || null;
-  },
-
-  annulerReservation: async (reservationId, motif) => {
-    const all = hydrateDataset();
-    const active = all.find((r) => r.id === reservationId);
-    if (!active) return null;
-    const now = new Date().toISOString().split('T')[0];
-    const next = all.map((r) => {
-      if (r.id !== reservationId) return r;
-      const historyEntry = { date: now, action: 'Réservation annulée', icon: 'cancel' };
-      return {
-        ...r,
-        status: "annulee",
-        cancellationReason: motif,
-        history: [...(r.history || []), historyEntry],
-      };
-    });
-    saveDataset(next);
-    return next.find((r) => r.id === reservationId) || null;
-  },
-
-  payerReservation: async (reservationId) => {
-    const all = hydrateDataset();
-    const active = all.find((r) => r.id === reservationId);
-    if (!active) return null;
-    const now = new Date().toISOString().split('T')[0];
-    const txnId = `TXN-${Date.now()}`;
-    const next = all.map((r) => {
-      if (r.id !== reservationId) return r;
-      const historyEntries = [
-        { date: now, action: 'Paiement effectué', icon: 'payment' },
-        { date: now, action: 'Réservation confirmée', icon: 'confirm' },
-      ];
-      return {
-        ...r,
-        status: "confirmee",
-        paid: true,
-        paymentDate: now,
-        paymentMethod: 'Carte bancaire',
-        transactionId: txnId,
-        history: [...(r.history || []), ...historyEntries],
-      };
-    });
-    saveDataset(next);
-    return next.find((r) => r.id === reservationId) || null;
-  },
-
-  getCertificateForReservation: async (reservationId, userName) => {
-    const all = hydrateDataset();
-    const reservation = all.find((r) => r.id === reservationId);
-    if (!reservation) return null;
-
-    const formations = await formationsService.getAll();
-    const formation = formations.find((f) => f.id === reservation.formationId);
-
-    const certificate = mockCertificates.find(
-      (c) => c.formation === (formation?.title || reservation.formationId)
-    );
-
-    if (!certificate && formation) {
-      return {
-        id: `cert-${reservationId}`,
-        trainee: userName || 'Apprenant',
-        formation: formation.title,
-        formationCategory: formation.categorie || formation.domain || '',
-        centreName: formation.centre?.name || '',
-        issuedAt: new Date().toISOString().split('T')[0],
-        startDate: formation.startDate || '',
-        endDate: formation.endDate || '',
-        status: 'Émis',
-        downloadUrl: '#',
-      };
-    }
-
-    return certificate || null;
-  },
-
-  // Helper utile pour bloquer la suppression d'une offre
+  getMyReservations: async (params = {}) => normalizeListResponse(await apiRequest(`/api/reservations/me${toQuery(params)}`)),
+  getAll: async (params = {}) => normalizeListResponse(await apiRequest(`/api/reservations${toQuery(params)}`)),
+  getById: async (reservationId) => normalizeReservation((await apiRequest(`/api/reservations/${encodeURIComponent(reservationId)}`))?.data),
+  addReservation: async ({ formationId }) => normalizeReservation((await apiRequest("/api/reservations", { method: "POST", body: JSON.stringify({ formationId }) }))?.data),
+  getReservationsParFormation: async (formationId, params = {}) => (await normalizeListResponse(await apiRequest(`/api/reservations/formation/${encodeURIComponent(formationId)}${toQuery(params)}`))).data,
+  confirmerReservation: async (reservationId) => updateReservation(reservationId, "confirm"),
+  annulerReservation: async (reservationId) => updateReservation(reservationId, "cancel"),
+  payerReservation: async (reservationId, paymentMethod = "Carte bancaire") => normalizeReservation((await apiRequest(`/api/reservations/${encodeURIComponent(reservationId)}/pay`, { method: "PATCH", body: JSON.stringify({ paymentMethod }) }))?.data),
+  getReservationsParCentre: async () => { throw new Error("CENTRE_RESERVATIONS_USE_FORMATION_ENDPOINT"); },
+  getCertificateForReservation: async () => { throw new Error("RESERVATION_CERTIFICATE_ENDPOINT_UNAVAILABLE"); },
   hasActiveReservationsForFormation: async (formationId) => {
-    const all = hydrateDataset();
-    const activeStatuses = getActiveStatuses();
-    return all.some(
-      (r) => r.formationId === formationId && activeStatuses.has(normalizeStatus(r.status))
-    );
+    const result = await reservationsService.getReservationsParFormation(formationId);
+    return result.some((reservation) => ["en_attente", "confirmee"].includes(reservation.status));
   },
 };
-
