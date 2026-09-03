@@ -1,86 +1,101 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useAuth } from './AuthContext';
-import { mockNotifications } from '../data/mockNotifications';
+import { notificationsService } from '../services/notificationsService';
 
 const NotificationContext = createContext(null);
-const STORAGE_KEY = 'skillbridge_notifications';
-
 const normalizeNotification = (item) => ({
-  id: item.id || `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-  role: item.role || 'system',
-  userId: item.userId ?? 1,
+  ...item,
+  id: item.id || item._id,
   title: item.title || item.texte || 'Notification',
   message: item.message || item.texte || '',
   category: item.category || 'system',
-  kind: item.kind || 'system',
+  kind: item.kind || item.category || 'system',
   lu: Boolean(item.lu),
-  createdAt: item.createdAt || item.date || new Date().toISOString(),
+  createdAt: item.createdAt || item.date,
 });
-
-const readStoredNotifications = () => {
-  if (typeof window === 'undefined') return mockNotifications.map(normalizeNotification);
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (!stored) return mockNotifications.map(normalizeNotification);
-    const parsed = JSON.parse(stored);
-    return Array.isArray(parsed) && parsed.length ? parsed.map(normalizeNotification) : mockNotifications.map(normalizeNotification);
-  } catch {
-    return mockNotifications.map(normalizeNotification);
-  }
-};
-
-/**
- * Filtre les notifications selon le rôle de l'utilisateur.
- *
- * Règles :
- * - admin     → notifications dont role === 'admin' (boîte partagée)
- * - centre    → notifications dont role === 'centre' ET userId === user.id
- * - apprenant → notifications dont role === 'apprenant' ET userId === user.id
- */
-const filterByRole = (notifications, user) => {
-  if (!user) return [];
-  const { role, id } = user;
-  if (role === 'admin') return notifications.filter((n) => n.role === 'admin');
-  if (role === 'centre') return notifications.filter((n) => n.role === 'centre' && n.userId === id);
-  if (role === 'apprenant' || role === 'learner') return notifications.filter((n) => n.role === 'apprenant' && n.userId === id);
-  return [];
-};
 
 const NotificationProviderInner = ({ children }) => {
   const { user } = useAuth();
-  const [all, setAll] = useState(readStoredNotifications);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const refresh = useCallback(async () => {
+    if (!user) {
+      setNotifications([]);
+      setUnreadCount(0);
+      setError(null);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const [listResult, count] = await Promise.all([
+        notificationsService.getAll({ page: 1, limit: 100 }),
+        notificationsService.getUnreadCount(),
+      ]);
+      setNotifications(listResult.data.map(normalizeNotification));
+      setUnreadCount(count);
+    } catch (requestError) {
+      setNotifications([]);
+      setUnreadCount(0);
+      setError(requestError);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+    refresh();
+  }, [refresh]);
+
+  const markAsRead = useCallback(async (id) => {
+    try {
+      const current = notifications.find((item) => item.id === id);
+      const updated = await notificationsService.markAsRead(id);
+      setNotifications((previous) => previous.map((item) => item.id === id ? updated : item));
+      if (current && !current.lu) setUnreadCount((count) => Math.max(0, count - 1));
+    } catch (requestError) {
+      setError(requestError);
     }
-  }, [all]);
+  }, [notifications]);
 
-  const notifications = useMemo(() => filterByRole(all, user), [all, user]);
-  const unreadCount = useMemo(() => notifications.filter((n) => !n.lu).length, [notifications]);
+  const markAllAsRead = useCallback(async () => {
+    try {
+      await notificationsService.markAllAsRead();
+      setNotifications((previous) => previous.map((item) => ({ ...item, lu: true })));
+      setUnreadCount(0);
+    } catch (requestError) {
+      setError(requestError);
+    }
+  }, []);
 
-  const addNotification = (payload) => {
-    const next = normalizeNotification({
-      ...payload,
-      id: payload.id || `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      createdAt: payload.createdAt || new Date().toISOString(),
-    });
-    setAll((prev) => [next, ...prev]);
-    return next;
-  };
+  const deleteNotification = useCallback(async (id) => {
+    try {
+      const current = notifications.find((item) => item.id === id);
+      await notificationsService.delete(id);
+      setNotifications((previous) => previous.filter((item) => item.id !== id));
+      if (current && !current.lu) setUnreadCount((count) => Math.max(0, count - 1));
+    } catch (requestError) {
+      setError(requestError);
+    }
+  }, [notifications]);
 
-  const markAsRead = (id) => setAll((prev) => prev.map((n) => n.id === id ? { ...n, lu: true } : n));
-  const markAllAsRead = () => setAll((prev) => prev.map((n) => ({ ...n, lu: true })));
-  const deleteNotification = (id) => setAll((prev) => prev.filter((n) => n.id !== id));
+  const addNotification = useCallback(() => null, []);
 
   const value = useMemo(() => ({
     notifications,
     unreadCount,
+    loading,
+    error,
+    refresh,
     addNotification,
     markAsRead,
     markAllAsRead,
     deleteNotification,
-  }), [notifications, unreadCount]);
+  }), [notifications, unreadCount, loading, error, refresh, markAsRead, markAllAsRead, deleteNotification, addNotification]);
 
   return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>;
 };

@@ -19,7 +19,7 @@ const formatTimestamp = (value) => new Date(value).toLocaleString('fr-FR', {
 });
 
 export const NotificationsPage = () => {
-  const { notifications, markAsRead, markAllAsRead, deleteNotification, unreadCount } = useNotifications();
+  const { notifications, markAsRead, markAllAsRead, deleteNotification, unreadCount, loading, error } = useNotifications();
   const [filter, setFilter] = useState('all');
 
   const visibleNotifications = useMemo(() => {
@@ -45,6 +45,9 @@ export const NotificationsPage = () => {
           <span className="rounded-full bg-brand-500/10 px-3 py-2 text-sm font-medium text-brand-700 dark:text-brand-300">{unreadCount} non lues</span>
         </div>
       </div>
+
+      {loading ? <div className="text-sm text-slate-500 dark:text-slate-400">Chargement des notifications...</div> : null}
+      {error ? <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">Impossible de charger les notifications. Vérifiez votre session et réessayez.</div> : null}
 
       <div className="flex flex-wrap gap-2">
         <FiFilter className="mt-2 text-slate-400" />

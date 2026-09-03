@@ -11,7 +11,7 @@ const filters = [
 ];
 
 export const AdminNotificationsPage = () => {
-  const { notifications, markAsRead, markAllAsRead, deleteNotification, unreadCount } = useNotifications();
+  const { notifications, markAsRead, markAllAsRead, deleteNotification, unreadCount, loading, error } = useNotifications();
   const [filter, setFilter] = useState('all');
 
   const visibleNotifications = useMemo(() => {
@@ -33,6 +33,9 @@ export const AdminNotificationsPage = () => {
           <div className="rounded-full bg-brand-50 px-3 py-2 text-sm font-medium text-brand-700 dark:bg-brand-900/20 dark:text-brand-300">{unreadCount} non lues</div>
         </div>
       </div>
+
+      {loading ? <div className="text-sm text-slate-500 dark:text-slate-400">Chargement des notifications...</div> : null}
+      {error ? <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">Impossible de charger les notifications. Vérifiez votre session et réessayez.</div> : null}
 
       <div className="flex flex-wrap items-center gap-2">
         <FiFilter className="text-slate-400" />

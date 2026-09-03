@@ -10,6 +10,7 @@ import AnimatedSearchBar from "../components/UI/AnimatedSearchBar";
 import { ApercuProduit } from '../components/home/ApercuProduit';
 import CompetencesParDomaine from '../components/home/CompetencesParDomaine';
 import { mockCentres } from '../data/mockCentres';
+import { mockFormations } from '../data/mockFormations';
 import { mockTemoignages } from '../data/mockTemoignages';
 import { getStats, getTemoignages } from '../services/contenuAccueilService';
 
@@ -40,6 +41,9 @@ export const HomePage = () => {
       try {
         const trending = await formationsService.getTrending(4);
         setTrendingFormations(trending);
+      } catch {
+        // Keep the home page usable when the optional API is unavailable.
+        setTrendingFormations(mockFormations.slice(0, 4));
       } finally {
         setLoading(false);
       }
