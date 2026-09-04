@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { formationsService } from "../services/formationsService";
 import { useAuth } from "../context/AuthContext";
 import { useReservations } from "../context/ReservationContext";
+import { useNotifications } from "../context/NotificationContext";
 import { ToastMessage } from "../components/UI/ToastMessage";
 import {
   MapPin,
@@ -87,8 +88,10 @@ export const FormationDetailPage = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("online_card");
   const [toast, setToast] = useState("");
   const [toastType, setToastType] = useState("success");
+  const [isSubmittingReservation, setIsSubmittingReservation] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const { addReservation } = useReservations();
+  const { refresh: refreshNotifications } = useNotifications();
 
   const bookingSessions = useMemo(() => formation?.bookingSessions || [], [formation?.bookingSessions]);
   const selectedSession = useMemo(
@@ -176,21 +179,32 @@ export const FormationDetailPage = () => {
   };
 
   const handleReserve = async () => {
-    console.log("1 - clic: handleReserve");
+    if (isSubmittingReservation || !formation?.id) return;
+
+    setIsSubmittingReservation(true);
     try {
       const created = await addReservation({ formationId: formation.id });
+      await refreshNotifications();
       onReserveSuccess(created?.id || formation.id);
       closeBookingModal();
       window.setTimeout(() => navigate("/reservations"), 900);
     } catch (error) {
       setToastType("error");
       setToast(
-        error?.status === 409
+        error?.status === 400
+          ? "Les informations de réservation sont invalides. Vérifiez la formation sélectionnée."
+          : error?.status === 401
+          ? "Votre session a expiré. Connectez-vous à nouveau pour réserver."
+          : error?.status === 409
           ? "Cette formation est déjà réservée."
           : error?.status === 404
           ? "Cette formation n'est plus disponible."
+          : error?.status >= 500
+          ? "Le service de réservation est temporairement indisponible."
           : "Impossible de créer la réservation. Réessayez dans quelques instants."
       );
+    } finally {
+      setIsSubmittingReservation(false);
     }
   };
 
@@ -650,8 +664,8 @@ export const FormationDetailPage = () => {
                 <button onClick={() => setBookingStep(2)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-700 px-5 py-3 font-semibold text-slate-200 transition hover:bg-slate-800">
                   <ChevronLeft /> Retour
                 </button>
-                <button onClick={handleReserve} className="inline-flex items-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3 font-semibold text-white transition hover:bg-emerald-400">
-                  Confirmer la réservation <CheckCircle />
+                <button onClick={handleReserve} disabled={isSubmittingReservation} className="inline-flex items-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3 font-semibold text-white transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60">
+                  {isSubmittingReservation ? "Enregistrement..." : "Confirmer la réservation"} <CheckCircle />
                 </button>
               </div>
             </div>

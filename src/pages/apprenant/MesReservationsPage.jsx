@@ -191,8 +191,8 @@ const generatePDFCertificate = (data) => {
 
 export const MesReservationsPage = () => {
   const { user } = useAuth();
-  const { getUserReservations, annulerReservation, getCertificateForReservation } = useReservations();
-  const { addNotification } = useNotifications();
+  const { getUserReservations, annulerReservation, getCertificateForReservation, error: reservationError } = useReservations();
+  const { refresh: refreshNotifications } = useNotifications();
   const navigate = useNavigate();
 
   const [enrichedReservations, setEnrichedReservations] = useState([]);
@@ -217,12 +217,12 @@ export const MesReservationsPage = () => {
 
           return {
             ...reservation,
-            formationTitle: formation?.title || "Formation inconnue",
-            formationImage: formation?.image || "/images/formation-placeholder.svg",
-            centerName: centre?.name || "Centre inconnu",
-            centerLogo: centre?.logo || "",
-            formationPrice: formation?.price || reservation.price || 0,
-            formationDuration: formation?.duration || "",
+            formationTitle: reservation.formationTitle || formation?.title || "Formation inconnue",
+            formationImage: reservation.image || formation?.image || "/images/formation-placeholder.svg",
+            centerName: reservation.centreName || centre?.name || "Centre inconnu",
+            centerLogo: reservation.centreLogo || centre?.logo || "",
+            formationPrice: reservation.price ?? formation?.price ?? 0,
+            formationDuration: reservation.duree || formation?.duration || "",
             formationModules: formation?.program?.length || 0,
             formationLevel: formation?.level || "Intermédiaire",
             formationProgress: formation?.progress || 0,
@@ -239,7 +239,7 @@ export const MesReservationsPage = () => {
       }
     };
     loadData();
-  }, [user, getUserReservations]);
+  }, [user, getUserReservations, reservationError]);
 
   // Filter, search and sort
   const filteredAndSorted = useMemo(() => {
@@ -310,16 +310,17 @@ export const MesReservationsPage = () => {
       await annulerReservation(showCancelModal.id, cancelReason);
       setShowCancelModal(null);
       setCancelReason("");
-      addNotification({
-        userId: user?.id,
-        role: "apprenant",
-        title: "Réservation annulée",
-        message: `Votre réservation pour "${showCancelModal.formationTitle}" a été annulée.`,
-        category: "reservation",
-      });
+      await refreshNotifications();
       setToast({ type: "success", message: "Réservation annulée avec succès" });
-    } catch {
-      setToast({ type: "error", message: "Erreur lors de l'annulation" });
+    } catch (error) {
+      setToast({
+        type: "error",
+        message: error?.status === 401
+          ? "Votre session a expiré. Connectez-vous à nouveau."
+          : error?.status === 409
+          ? "Cette réservation ne peut plus être annulée."
+          : "Erreur lors de l'annulation",
+      });
     }
   };
 
@@ -343,13 +344,6 @@ export const MesReservationsPage = () => {
         });
         doc.save(`certificat-${reservation.formationId}.pdf`);
 
-        addNotification({
-          userId: user?.id,
-          role: "apprenant",
-          title: "Certificat prêt",
-          message: `Votre certificat pour "${reservation.formationTitle}" est prêt.`,
-          category: "certificate",
-        });
         setToast({ type: "success", message: "Certificat téléchargé avec succès" });
       } else {
         setToast({ type: "error", message: "Certificat non disponible pour cette formation" });
@@ -362,13 +356,6 @@ export const MesReservationsPage = () => {
 
   const handleReview = (e, reservation) => {
     e.stopPropagation();
-    addNotification({
-      userId: user?.id,
-      role: "apprenant",
-      title: "Ouverture avis",
-      message: `Ouverture du formulaire d'avis pour "${reservation.formationTitle}".`,
-      category: "review",
-    });
     navigate(`/mes-avis?formationId=${reservation.formationId}`);
   };
 
@@ -410,6 +397,15 @@ export const MesReservationsPage = () => {
   const emptyState = getEmptyState();
 
   // Empty state - no reservations at all
+  if (!loading && reservationError) {
+    return (
+      <div className="rounded-3xl border border-red-200 bg-white p-6 shadow-sm dark:border-red-900/40 dark:bg-slate-800">
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-slate-100">Mes réservations</h1>
+        <p className="mt-4 text-red-600 dark:text-red-300">Impossible de charger vos réservations. Vérifiez votre connexion ou reconnectez-vous.</p>
+      </div>
+    );
+  }
+
   if (!loading && enrichedReservations.length === 0) {
     return (
       <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
