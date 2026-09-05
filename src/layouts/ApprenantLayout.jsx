@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { FiHome, FiBookOpen, FiCalendar, FiHeart, FiMessageCircle, FiAward, FiUser, FiX, FiTrendingUp, FiStar, FiSettings, FiBell } from 'react-icons/fi';
-import { messagingService } from '../services/messagingService';
+import { connectMessagingSocket, messagingService, subscribeToMessaging } from '../services/messagingService';
 import { AppTopbar, FloatingActionButton } from '../components/Layout/AppTopbar';
 
 const sections = [
@@ -52,9 +52,24 @@ export const ApprenantLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(getInitialCollapsed);
   const isRTL = typeof document !== 'undefined' ? document.documentElement.dir === 'rtl' : false;
-  const unreadCount = useMemo(() => {
-    if (!user) return 0;
-    return messagingService.getConversationsForUser(user).reduce((sum, conversation) => sum + (conversation.unreadCount || 0), 0);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    const refreshUnread = async () => {
+      if (!user) return;
+      try {
+        const conversations = await messagingService.getConversations();
+        if (!cancelled) setUnreadCount(conversations.reduce((sum, conversation) => sum + (conversation.unreadCount || 0), 0));
+      } catch {
+        if (!cancelled) setUnreadCount(0);
+      }
+    };
+
+    refreshUnread();
+    connectMessagingSocket();
+    const unsubscribe = subscribeToMessaging(refreshUnread);
+    return () => { cancelled = true; unsubscribe(); };
   }, [user]);
 
   useEffect(() => {

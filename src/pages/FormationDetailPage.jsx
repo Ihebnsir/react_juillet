@@ -132,7 +132,7 @@ export const FormationDetailPage = () => {
       return;
     }
 
-    onContactCenter();
+    onContactCenter(formation?.centreId || formation?.centre?.id);
   };
 
   const openBookingModal = () => {
@@ -161,21 +161,23 @@ export const FormationDetailPage = () => {
     setToast(`Réservation validée pour la formation ${courseId}.`);
   };
 
-  const onContactCenter = (centerId) => {
-    const centreName = formation?.centre?.name || "Tech Academy Tunis";
-    const conversation = messagingService.createDirectConversation({
-      learnerId: user.id,
-      centreId: centerId,
-      participantName: centreName,
-      participantAvatar: formation?.centre?.logo || null,
-      formationId: formation?.id,
-      formationTitle: formation?.title,
-      formationPrice: formation?.price || 0,
-      subject: `Question sur ${formation?.title}`,
-      initialMessage: `Bonjour, j’ai une question sur la formation ${formation?.title}.`,
-    });
+  const onContactCenter = async (centerId) => {
+    if (!centerId) {
+      setToastType("error");
+      setToast("Le centre de cette formation est indisponible.");
+      return;
+    }
 
-    navigate(`/messagerie?conversation=${conversation.id}&formationId=${formation?.id}&subject=${encodeURIComponent(`Question sur ${formation?.title}`)}&centerId=${centerId}`);
+    try {
+      const conversation = await messagingService.createDirectConversation({
+        centreId: centerId,
+        formationId: formation?.id,
+      });
+      navigate(`/messagerie?conversation=${conversation.id}`);
+    } catch (error) {
+      setToastType("error");
+      setToast(error?.message || "Impossible d’ouvrir la conversation avec le centre.");
+    }
   };
 
   const handleReserve = async () => {

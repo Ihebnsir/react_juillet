@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
-import { messagingService } from '../../services/messagingService';
+import { connectMessagingSocket, joinMessagingConversation, leaveMessagingConversation, messagingService, subscribeToMessaging } from '../../services/messagingService';
 import { ConversationList } from '../../components/messaging/ConversationList';
 import { MessageBubble } from '../../components/messaging/MessageBubble';
 import { MessageInput } from '../../components/messaging/MessageInput';
 import { ContextPanel } from '../../components/messaging/ContextPanel';
 import { EmptyState } from '../../components/messaging/EmptyState';
 import { DateSeparator } from '../../components/messaging/DateSeparator';
-import { TypingIndicator } from '../../components/messaging/TypingIndicator';
 import { NewSupportConversationModal } from '../../components/messaging/NewSupportConversationModal';
 import { ToastMessage } from '../../components/UI/ToastMessage';
 
@@ -24,26 +23,64 @@ export const SupportPage = () => {
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
-    const load = () => {
+    let cancelled = false;
+    const load = async () => {
       try {
         setIsLoading(true);
-        const data = messagingService.getConversationsForUser(user);
+        setError('');
+        const data = await messagingService.getConversations();
+        if (cancelled) return;
         setConversations(data);
         if (data[0]) {
           setActiveConversationId(data[0].id);
         }
       } catch (err) {
-        setError(t('messaging.error', 'Impossible de charger les conversations.'));
+        if (!cancelled) setError(err?.message || t('messaging.error', 'Impossible de charger les conversations.'));
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
     load();
-  }, [user, t]);
+    connectMessagingSocket();
+    const unsubscribe = subscribeToMessaging((event) => {
+      const conversationId = event?.conversationId || event?.conversation?.id || event?.message?.conversationId;
+      if (conversationId && conversationId === activeConversationId) {
+        messagingService.getConversation(conversationId).then((detail) => {
+          if (!cancelled) setConversations((items) => items.map((item) => item.id === detail.id ? { ...item, ...detail } : item));
+        }).catch(() => {});
+        return;
+      }
+      messagingService.getConversations().then((items) => {
+        if (!cancelled) setConversations(items);
+      }).catch(() => {});
+    });
+    return () => { cancelled = true; unsubscribe(); };
+  }, [activeConversationId, user, t]);
+
+  useEffect(() => {
+    if (!activeConversationId) return undefined;
+    let cancelled = false;
+    joinMessagingConversation(activeConversationId);
+    const open = async () => {
+      try {
+        const detail = await messagingService.getConversation(activeConversationId);
+        const read = await messagingService.markConversationRead(activeConversationId);
+        if (cancelled) return;
+        const updated = read.id ? read : { ...detail, unreadCount: 0 };
+        setConversations((items) => items.map((item) => item.id === updated.id ? { ...item, ...updated } : item));
+      } catch (err) {
+        if (!cancelled) setError(err?.message || t('messaging.error', 'Impossible de charger la conversation.'));
+      }
+    };
+    open();
+    return () => {
+      cancelled = true;
+      leaveMessagingConversation(activeConversationId);
+    };
+  }, [activeConversationId, t]);
 
   const filteredConversations = useMemo(() => {
     return conversations.filter((conversation) => {
@@ -57,36 +94,44 @@ export const SupportPage = () => {
     return filteredConversations.find((conversation) => conversation.id === activeConversationId) || conversations.find((conversation) => conversation.id === activeConversationId) || null;
   }, [activeConversationId, conversations, filteredConversations]);
 
-  const handleSend = (content) => {
+  const handleSend = async (content) => {
     if (!activeConversation) {
       return;
     }
 
-    const updated = messagingService.sendMessage(activeConversation.id, { content });
-    setConversations((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
-    setIsTyping(true);
-    window.setTimeout(() => setIsTyping(false), 1200);
-    setToast(t('messaging.sent', 'Message envoyé'));
+    try {
+      const updated = await messagingService.sendMessage(activeConversation.id, content, window.crypto?.randomUUID?.());
+      setConversations((prev) => prev.map((item) => (item.id === updated.id ? { ...item, ...updated } : item)));
+      setToast(t('messaging.sent', 'Message envoyé'));
+    } catch (err) {
+      setError(err?.message || t('messaging.error', 'Impossible d’envoyer le message.'));
+    }
   };
 
   const handleAttachment = () => {
     setToast(t('messaging.attachmentSoon', 'Pièce jointe bientôt disponible'));
   };
 
-  const handleStatusChange = (status) => {
-    const updated = messagingService.updateSupportStatus(activeConversation.id, status);
-    if (updated) {
+  const handleStatusChange = async (status) => {
+    try {
+      const updated = await messagingService.updateSupportStatus(activeConversation.id, status);
       setConversations((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
       setToast(t('messaging.statusUpdated', 'Statut mis à jour'));
+    } catch (err) {
+      setError(err?.message || t('messaging.error', 'Impossible de mettre à jour le statut.'));
     }
   };
 
-  const handleCreateConversation = ({ subject, message }) => {
-    const created = messagingService.createSupportConversation({ user, subject, initialMessage: message });
-    setConversations((prev) => [created, ...prev]);
-    setActiveConversationId(created.id);
-    setIsModalOpen(false);
-    setToast(t('messaging.ticketOpened', 'Ticket ouvert avec succès'));
+  const handleCreateConversation = async ({ subject, message }) => {
+    try {
+      const created = await messagingService.createSupportConversation({ subject, initialMessage: message });
+      setConversations((prev) => [created, ...prev]);
+      setActiveConversationId(created.id);
+      setIsModalOpen(false);
+      setToast(t('messaging.ticketOpened', 'Ticket ouvert avec succès'));
+    } catch (err) {
+      setError(err?.message || t('messaging.error', 'Impossible de créer le ticket.'));
+    }
   };
 
   if (!user) {
@@ -153,11 +198,10 @@ export const SupportPage = () => {
                           {index === 0 || new Date(message.createdAt).toDateString() !== new Date(activeConversation.messages[index - 1].createdAt).toDateString() ? (
                             <DateSeparator label={new Date(message.createdAt).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} />
                           ) : null}
-                          <MessageBubble message={message} isMine={message.senderId === 'me'} showAvatar={showAvatar} avatar={activeConversation.participantAvatar} name={activeConversation.participantName} />
+                          <MessageBubble message={message} isMine={String(message.senderId) === String(user.id)} showAvatar={showAvatar} avatar={activeConversation.participantAvatar} name={activeConversation.participantName} />
                         </div>
                       );
                     })}
-                    {isTyping && <TypingIndicator />}
                   </>
                 )}
               </div>

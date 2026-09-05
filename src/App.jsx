@@ -40,6 +40,7 @@ import { MesCertificationsPage } from "./pages/apprenant/MesCertificationsPage";
 import { RecommandationsPage } from "./pages/apprenant/RecommandationsPage";
 import { MesAvisPage } from "./pages/apprenant/MesAvisPage";
 import { ParametresPage } from "./pages/apprenant/ParametresPage";
+import { SupportPage as LearnerSupportPage } from "./pages/apprenant/SupportPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { DashboardPage as CentreDashboardPage } from "./pages/centre/DashboardPage";
 import { MesOffresPage } from "./pages/centre/MesOffresPage";
@@ -160,7 +161,7 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
               <Route path="/messagerie" element={<ApprenantMessageriePage />} />
               <Route path="/profil" element={<ProfilePage />} />
               <Route path="/parametres" element={<Navigate to="/settings" replace />} />
-              <Route path="/support" element={<AdminSupportPage />} />
+              <Route path="/support" element={<LearnerSupportPage />} />
             </Route>
           </Route>
 

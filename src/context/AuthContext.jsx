@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { getCurrentUser, getAuthenticatedUser, login as loginService, logout as logoutService, register as registerService, saveUser, getToken } from "../services/authService";
+import { connectMessagingSocket, disconnectMessagingSocket } from "../services/messagingService";
 
 const AuthContext = createContext();
 
@@ -27,6 +28,7 @@ export const AuthProvider = ({ children }) => {
 
       try {
         setUser(await getAuthenticatedUser());
+        connectMessagingSocket();
       } catch {
         logoutService();
         setUser(null);
@@ -47,6 +49,7 @@ export const AuthProvider = ({ children }) => {
 
     const authenticatedUser = normalizeUser(await loginService(emailOrParams, password));
     setUser(authenticatedUser);
+    connectMessagingSocket();
     return authenticatedUser;
   };
 
@@ -72,6 +75,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    disconnectMessagingSocket();
     setUser(null);
     logoutService();
   };
