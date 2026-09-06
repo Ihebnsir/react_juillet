@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { connectMessagingSocket, joinMessagingConversation, leaveMessagingConversation, messagingService, subscribeToMessaging } from '../../services/messagingService';
 import { ConversationList } from '../../components/messaging/ConversationList';
@@ -14,12 +15,14 @@ import { ToastMessage } from '../../components/UI/ToastMessage';
 export const SupportPage = () => {
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
+  const location = useLocation();
   const isRtl = i18n.language === 'ar';
   const [conversations, setConversations] = useState([]);
   const [activeConversationId, setActiveConversationId] = useState(null);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,9 +35,21 @@ export const SupportPage = () => {
         setError('');
         const data = await messagingService.getConversations();
         if (cancelled) return;
-        setConversations(data);
-        if (data[0]) {
-          setActiveConversationId(data[0].id);
+        const requestedId = location.state?.conversationId ? String(location.state.conversationId) : null;
+        let loadedConversations = data;
+        if (requestedId && !data.some((item) => String(item.id) === requestedId)) {
+          try {
+            const requestedConversation = await messagingService.getConversation(requestedId);
+            loadedConversations = [requestedConversation, ...data];
+          } catch {
+            loadedConversations = data;
+          }
+        }
+        setConversations(loadedConversations);
+        if (requestedId && loadedConversations.some((item) => String(item.id) === requestedId)) {
+          setActiveConversationId(requestedId);
+        } else if (loadedConversations[0]) {
+          setActiveConversationId(loadedConversations[0].id);
         }
       } catch (err) {
         if (!cancelled) setError(err?.message || t('messaging.error', 'Impossible de charger les conversations.'));
@@ -58,7 +73,7 @@ export const SupportPage = () => {
       }).catch(() => {});
     });
     return () => { cancelled = true; unsubscribe(); };
-  }, [activeConversationId, user, t]);
+  }, [activeConversationId, location.state, user, t]);
 
   useEffect(() => {
     if (!activeConversationId) return undefined;
@@ -94,22 +109,42 @@ export const SupportPage = () => {
     return filteredConversations.find((conversation) => conversation.id === activeConversationId) || conversations.find((conversation) => conversation.id === activeConversationId) || null;
   }, [activeConversationId, conversations, filteredConversations]);
 
-  const handleSend = async (content) => {
+  const handleSend = async (content, files = []) => {
     if (!activeConversation) {
-      return;
+      return false;
     }
 
     try {
-      const updated = await messagingService.sendMessage(activeConversation.id, content, window.crypto?.randomUUID?.());
+      setIsSending(true);
+      const attachments = await Promise.all(files.map((file) => messagingService.uploadAttachment(activeConversation.id, file)));
+      const updated = await messagingService.sendMessage(activeConversation.id, content, window.crypto?.randomUUID?.(), attachments);
       setConversations((prev) => prev.map((item) => (item.id === updated.id ? { ...item, ...updated } : item)));
       setToast(t('messaging.sent', 'Message envoyé'));
+      return true;
     } catch (err) {
       setError(err?.message || t('messaging.error', 'Impossible d’envoyer le message.'));
+      return false;
+    } finally {
+      setIsSending(false);
     }
   };
 
-  const handleAttachment = () => {
-    setToast(t('messaging.attachmentSoon', 'Pièce jointe bientôt disponible'));
+  const handleAttachmentOpen = async (attachment) => {
+    if (!activeConversation) return;
+    try {
+      const blob = await messagingService.downloadAttachment(activeConversation.id, attachment);
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank', 'noopener,noreferrer');
+      window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch {
+      setError(t('messaging.attachmentDownloadError', 'Impossible d’ouvrir la pièce jointe.'));
+    }
+  };
+
+  const handleAttachmentPreview = async (attachment) => {
+    if (!activeConversation) return '';
+    const blob = await messagingService.downloadAttachment(activeConversation.id, attachment);
+    return URL.createObjectURL(blob);
   };
 
   const handleStatusChange = async (status) => {
@@ -198,7 +233,7 @@ export const SupportPage = () => {
                           {index === 0 || new Date(message.createdAt).toDateString() !== new Date(activeConversation.messages[index - 1].createdAt).toDateString() ? (
                             <DateSeparator label={new Date(message.createdAt).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} />
                           ) : null}
-                          <MessageBubble message={message} isMine={String(message.senderId) === String(user.id)} showAvatar={showAvatar} avatar={activeConversation.participantAvatar} name={activeConversation.participantName} />
+                          <MessageBubble message={message} isMine={String(message.senderId) === String(user.id)} showAvatar={showAvatar} avatar={activeConversation.participantAvatar} name={activeConversation.participantName} onAttachmentOpen={handleAttachmentOpen} onAttachmentPreview={handleAttachmentPreview} />
                         </div>
                       );
                     })}
@@ -207,7 +242,7 @@ export const SupportPage = () => {
               </div>
 
               <div className="border-t border-slate-200 px-3 py-3 dark:border-slate-700">
-                <MessageInput onSend={handleSend} onAttachmentClick={handleAttachment} />
+                <MessageInput isSending={isSending} onSend={handleSend} onError={setError} />
               </div>
             </div>
           )}

@@ -6,6 +6,7 @@ const NotificationContext = createContext(null);
 const normalizeNotification = (item) => ({
   ...item,
   id: item.id || item._id,
+  conversationId: item.conversationId || item.metadata?.conversationId || item.data?.conversationId || null,
   title: item.title || item.texte || 'Notification',
   message: item.message || item.texte || '',
   category: item.category || 'system',

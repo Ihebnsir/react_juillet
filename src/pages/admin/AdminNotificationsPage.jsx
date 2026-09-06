@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FiBell, FiCheckCircle, FiFilter, FiTrash2 } from 'react-icons/fi';
 import { useNotifications } from '../../context/NotificationContext';
 
@@ -11,8 +12,13 @@ const filters = [
 ];
 
 export const AdminNotificationsPage = () => {
+  const navigate = useNavigate();
   const { notifications, markAsRead, markAllAsRead, deleteNotification, unreadCount, loading, error } = useNotifications();
   const [filter, setFilter] = useState('all');
+  const openNotification = (notification) => {
+    if (notification.category !== 'messages') return;
+    navigate('/admin/support', notification.conversationId ? { state: { conversationId: notification.conversationId } } : undefined);
+  };
 
   const visibleNotifications = useMemo(() => {
     if (filter === 'unread') return notifications.filter((item) => !item.lu);
@@ -53,7 +59,7 @@ export const AdminNotificationsPage = () => {
       ) : (
         <div className="space-y-3">
           {visibleNotifications.map((notification) => (
-            <div key={notification.id} className={`rounded-2xl border p-4 ${notification.lu ? 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900/40' : 'border-brand-200 bg-brand-50/70 dark:border-brand-700 dark:bg-brand-900/10'}`}>
+            <div key={notification.id} onClick={() => openNotification(notification)} className={`rounded-2xl border p-4 ${notification.category === 'messages' ? 'cursor-pointer hover:border-brand-300' : ''} ${notification.lu ? 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900/40' : 'border-brand-200 bg-brand-50/70 dark:border-brand-700 dark:bg-brand-900/10'}`}>
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div className="flex gap-3">
                   <div className="rounded-2xl bg-slate-100 p-2 text-slate-600 dark:bg-slate-700 dark:text-slate-200">
@@ -67,9 +73,9 @@ export const AdminNotificationsPage = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   {!notification.lu ? (
-                    <button type="button" onClick={() => markAsRead(notification.id)} className="rounded-lg border border-emerald-200 p-2 text-emerald-600 transition hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 dark:hover:bg-emerald-900/20"><FiCheckCircle size={16} /></button>
+                    <button type="button" onClick={(event) => { event.stopPropagation(); markAsRead(notification.id); }} className="rounded-lg border border-emerald-200 p-2 text-emerald-600 transition hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 dark:hover:bg-emerald-900/20"><FiCheckCircle size={16} /></button>
                   ) : null}
-                  <button type="button" onClick={() => deleteNotification(notification.id)} className="rounded-lg border border-rose-200 p-2 text-rose-600 transition hover:bg-rose-50 dark:border-rose-700 dark:text-rose-300 dark:hover:bg-rose-900/20"><FiTrash2 size={16} /></button>
+                  <button type="button" onClick={(event) => { event.stopPropagation(); deleteNotification(notification.id); }} className="rounded-lg border border-rose-200 p-2 text-rose-600 transition hover:bg-rose-50 dark:border-rose-700 dark:text-rose-300 dark:hover:bg-rose-900/20"><FiTrash2 size={16} /></button>
                 </div>
               </div>
             </div>

@@ -6,6 +6,10 @@ jest.mock('./apiClient', () => ({
 }));
 
 describe('formationsService', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('normalizes formations returned by the backend', async () => {
     apiRequest.mockResolvedValue({
       success: true,
@@ -26,8 +30,29 @@ describe('formationsService', () => {
     expect(formation.centre).toBeDefined();
     expect(formation.id).toBe('507f1f77bcf86cd799439011');
     expect(formation.centre.name).toBe('Centre réel');
+    expect(formation.centreId).toBe('507f1f77bcf86cd799439012');
     expect(formation.city).toBe('Tunis');
     expect(formation.offreStage).toBe(true);
     expect(formation.entreprisesPartenaires).toContain('Entreprise');
+  });
+
+  it('uses the legacy centreId when no populated centre exists', async () => {
+    apiRequest.mockResolvedValue({
+      data: [{ _id: 'formation-legacy', centreId: 'centre-legacy' }],
+    });
+
+    const [formation] = await formationsService.getAll();
+
+    expect(formation.centreId).toBe('centre-legacy');
+  });
+
+  it('sets centreId to null when the backend provides neither form', async () => {
+    apiRequest.mockResolvedValue({
+      data: [{ _id: 'formation-incomplete' }],
+    });
+
+    const [formation] = await formationsService.getAll();
+
+    expect(formation.centreId).toBeNull();
   });
 });

@@ -69,6 +69,8 @@ export function Breadcrumb() {
 }
 
 export function NotificationsBell() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const { notifications, markAsRead, unreadCount } = useNotifications();
   const [open, setOpen] = useState(false);
   const buttonRef = useRef(null);
@@ -77,8 +79,19 @@ export function NotificationsBell() {
   // Le filtrage par rôle est déjà géré dans NotificationContext
   const visibleNotifications = notifications;
 
-  const handleRead = (id) => {
-    markAsRead(id);
+  const handleRead = (notification) => {
+    markAsRead(notification.id);
+    const messagingRoute = user?.role === 'admin'
+      ? '/admin/support'
+      : user?.role === 'centre'
+        ? '/centre/messagerie'
+        : '/messagerie';
+    if (notification.conversationId) {
+      navigate(messagingRoute, { state: { conversationId: notification.conversationId } });
+    } else if (notification.category === 'messages') {
+      navigate(messagingRoute);
+    }
+    setOpen(false);
   };
 
   const handleToggle = () => {
@@ -133,10 +146,11 @@ export function NotificationsBell() {
               <button
                 key={notification.id}
                 type="button"
-                onClick={() => handleRead(notification.id)}
+                onClick={() => handleRead(notification)}
                 className={`block w-full border-b border-slate-700/50 px-3 py-3 text-left text-sm ${!notification.lu ? 'bg-brand-500/5' : ''}`}
               >
                 <p className="text-slate-200">{notification.title || notification.message}</p>
+                {notification.message && notification.title ? <p className="mt-1 line-clamp-2 text-xs text-slate-400">{notification.message}</p> : null}
                 <p className="mt-1 text-xs text-slate-500">{formatRelativeDate(notification.createdAt || notification.date)}</p>
               </button>
             )) : <p className="px-3 py-4 text-sm text-slate-400">Aucune notification pour le moment.</p>}

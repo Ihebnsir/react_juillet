@@ -132,7 +132,7 @@ export const FormationDetailPage = () => {
       return;
     }
 
-    onContactCenter(formation?.centreId || formation?.centre?.id);
+    onContactCenter();
   };
 
   const openBookingModal = () => {
@@ -161,19 +161,23 @@ export const FormationDetailPage = () => {
     setToast(`Réservation validée pour la formation ${courseId}.`);
   };
 
-  const onContactCenter = async (centerId) => {
-    if (!centerId) {
+  const onContactCenter = async () => {
+    const centreId = formation?.centreId;
+    if (!centreId || !formation?.id) {
       setToastType("error");
-      setToast("Le centre de cette formation est indisponible.");
+      setToast("Les informations de cette formation sont incomplètes.");
       return;
     }
 
     try {
       const conversation = await messagingService.createDirectConversation({
-        centreId: centerId,
-        formationId: formation?.id,
+        centreId,
+        formationId: formation.id,
       });
-      navigate(`/messagerie?conversation=${conversation.id}`);
+      if (!conversation?.id) {
+        throw new Error("La conversation créée est invalide.");
+      }
+      navigate('/messagerie', { state: { conversationId: conversation.id } });
     } catch (error) {
       setToastType("error");
       setToast(error?.message || "Impossible d’ouvrir la conversation avec le centre.");

@@ -26,6 +26,8 @@ const normalizeReservation = (reservation) => {
     centreNom: centre?.name || reservation.centreNom || "",
     centreName: centre?.name || reservation.centreName || "",
     formationCategory: formation?.category || reservation.formationCategory || "",
+    formationStartDate: formation?.startDate || reservation.formationStartDate || reservation.startDate || "",
+    formationEndDate: formation?.endDate || reservation.formationEndDate || reservation.endDate || "",
     learnerName: learner ? `${learner.prenom || ""} ${learner.nom || ""}`.trim() : reservation.learnerName || "",
     dateReservation: reservation.createdAt || reservation.dateReservation || "",
     date: reservation.createdAt || reservation.date || reservation.dateReservation || "",

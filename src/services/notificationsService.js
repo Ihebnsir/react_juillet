@@ -3,6 +3,7 @@ import { apiRequest } from './apiClient';
 const normalizeNotification = (notification) => ({
   ...notification,
   id: notification.id || notification._id,
+  conversationId: notification.conversationId || notification.metadata?.conversationId || notification.data?.conversationId || null,
   title: notification.title || 'Notification',
   message: notification.message || '',
   category: notification.category || 'system',

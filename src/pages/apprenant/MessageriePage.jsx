@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { FiArrowLeft, FiAlertTriangle } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { connectMessagingSocket, joinMessagingConversation, leaveMessagingConversation, messagingService, subscribeToMessaging } from '../../services/messagingService';
@@ -12,17 +12,19 @@ import { EmptyState } from '../../components/messaging/EmptyState';
 import { DateSeparator } from '../../components/messaging/DateSeparator';
 import { ToastMessage } from '../../components/UI/ToastMessage';
 
-const mergeConversation = (items, updated) => items.map((item) => item.id === updated.id ? { ...item, ...updated } : item);
+const mergeConversation = (items, updated) => items.map((item) => String(item.id) === String(updated.id) ? { ...item, ...updated } : item);
 
 export const MessageriePage = () => {
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
+  const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [conversations, setConversations] = useState([]);
   const [activeConversationId, setActiveConversationId] = useState(null);
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
   const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
@@ -35,9 +37,20 @@ export const MessageriePage = () => {
         setError('');
         const data = await messagingService.getConversations();
         if (cancelled) return;
-        setConversations(data);
-        const requested = searchParams.get('conversation');
-        setActiveConversationId(requested && data.some((item) => item.id === requested) ? requested : data[0]?.id || null);
+        const requested = location.state?.conversationId || searchParams.get('conversation');
+        const requestedId = requested ? String(requested) : null;
+        let loadedConversations = data;
+        if (requestedId && !data.some((item) => String(item.id) === requestedId)) {
+          try {
+            const createdConversation = await messagingService.getConversation(requestedId);
+            loadedConversations = [createdConversation, ...data];
+          } catch {
+          }
+        }
+        setConversations(loadedConversations);
+        setActiveConversationId(requestedId && loadedConversations.some((item) => String(item.id) === requestedId)
+          ? requestedId
+          : loadedConversations[0]?.id || null);
       } catch (err) {
         if (!cancelled) setError(err?.message || t('messaging.error', 'Impossible de charger les conversations.'));
       } finally {
@@ -60,7 +73,7 @@ export const MessageriePage = () => {
       }).catch(() => {});
     });
     return () => { cancelled = true; unsubscribe(); };
-  }, [activeConversationId, searchParams, t]);
+  }, [activeConversationId, location.state, searchParams, t]);
 
   useEffect(() => {
     if (!activeConversationId) return undefined;
@@ -94,16 +107,41 @@ export const MessageriePage = () => {
     setIsMobileChatOpen(true);
   };
 
-  const handleSend = async (content) => {
-    if (!activeConversation) return;
+  const handleSend = async (content, files = []) => {
+    if (!activeConversation || isSending) return false;
     try {
+      setIsSending(true);
       setError('');
-      const updated = await messagingService.sendMessage(activeConversation.id, content, window.crypto?.randomUUID?.());
+      const attachments = await Promise.all(files.map((file) => messagingService.uploadAttachment(activeConversation.id, file)));
+      const updated = await messagingService.sendMessage(activeConversation.id, content, window.crypto?.randomUUID?.(), attachments);
       setConversations((items) => mergeConversation(items, updated));
       setToast(t('messaging.sent', 'Message envoyé'));
+      return true;
     } catch (err) {
-      setError(err?.message || t('messaging.error', 'Impossible d’envoyer le message.'));
+      const statusMessage = { 400: 'Fichier ou message invalide.', 401: 'Votre session a expiré.', 403: 'Vous n’êtes pas autorisé à utiliser cette conversation.', 404: 'Conversation ou pièce jointe introuvable.', 413: 'Le fichier est trop volumineux.', 500: 'Le service de messagerie est indisponible.' }[err?.status];
+      setError(statusMessage || t('messaging.error', 'Impossible d’envoyer le message.'));
+      return false;
+    } finally {
+      setIsSending(false);
     }
+  };
+
+  const handleAttachmentOpen = async (attachment) => {
+    if (!activeConversation) return;
+    try {
+      const blob = await messagingService.downloadAttachment(activeConversation.id, attachment);
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank', 'noopener,noreferrer');
+      window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch {
+      setError(t('messaging.attachmentDownloadError', 'Impossible d’ouvrir la pièce jointe.'));
+    }
+  };
+
+  const handleAttachmentPreview = async (attachment) => {
+    if (!activeConversation) return '';
+    const blob = await messagingService.downloadAttachment(activeConversation.id, attachment);
+    return URL.createObjectURL(blob);
   };
 
   const handleStatusChange = async (status) => {
@@ -132,7 +170,10 @@ export const MessageriePage = () => {
                 <div className="flex items-center gap-3">
                   {window.innerWidth < 1024 && <button onClick={() => setIsMobileChatOpen(false)} className="rounded-full p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"><FiArrowLeft className="h-4 w-4" /></button>}
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-indigo-500 text-sm font-semibold text-white">{activeConversation.participantName?.slice(0, 2).toUpperCase()}</div>
-                  <div><div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{activeConversation.participantName}</div><div className="text-xs text-slate-500 dark:text-slate-400">{activeConversation.participantStatus || 'en ligne'}</div></div>
+                  <div>
+                    <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{activeConversation.participantName}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">{activeConversation.formationTitle || activeConversation.participantRole}</div>
+                  </div>
                 </div>
                 <div className="rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-700 dark:bg-teal-900/20 dark:text-teal-300">{activeConversation.type === 'support' ? 'Support' : 'Direct'}</div>
               </div>
@@ -140,10 +181,10 @@ export const MessageriePage = () => {
                 {error ? <div className="flex h-full items-center justify-center rounded-2xl border border-rose-200 bg-rose-50 p-6 text-center text-sm text-rose-700"><div><FiAlertTriangle className="mx-auto mb-3 text-2xl" />{error}</div></div> : activeConversation.messages?.map((message, index) => {
                   const previous = activeConversation.messages[index - 1];
                   const showAvatar = !previous || previous.senderId !== message.senderId;
-                  return <div key={message.id}>{(index === 0 || new Date(message.createdAt).toDateString() !== new Date(previous.createdAt).toDateString()) && <DateSeparator label={new Date(message.createdAt).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} />}<MessageBubble message={message} isMine={String(message.senderId) === String(user.id)} showAvatar={showAvatar} avatar={activeConversation.participantAvatar} name={activeConversation.participantName} /></div>;
+                  return <div key={message.id}>{(index === 0 || new Date(message.createdAt).toDateString() !== new Date(previous.createdAt).toDateString()) && <DateSeparator label={new Date(message.createdAt).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} />}<MessageBubble message={message} isMine={String(message.senderId) === String(user.id)} showAvatar={showAvatar} avatar={activeConversation.participantAvatar} name={activeConversation.participantName} onAttachmentOpen={handleAttachmentOpen} onAttachmentPreview={handleAttachmentPreview} /></div>;
                 })}
               </div>
-              <div className="border-t border-slate-200 px-3 py-3 dark:border-slate-700"><MessageInput onSend={handleSend} onAttachmentClick={() => setToast(t('messaging.attachmentSoon', 'Pièce jointe bientôt disponible'))} /></div>
+              <div className="border-t border-slate-200 px-3 py-3 dark:border-slate-700"><MessageInput isSending={isSending} onSend={handleSend} onError={setError} /></div>
             </div>
           )}
         </div>

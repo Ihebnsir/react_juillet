@@ -12,6 +12,7 @@ const normalizeFormation = (formation) => {
     ...formation,
     id: formation.id || formation._id,
     centre,
+    centreId: centre?.id || formation.centreId || null,
     city: formation.city || centre?.city || '',
     domain: formation.domain || formation.category || formation.categorie || '',
     availablePlaces: formation.availablePlaces ?? null,
@@ -45,6 +46,8 @@ const list = async (params = {}) => {
 
 export const formationsService = {
   getAll: async () => (await list({ page: 1, limit: 100 })).data,
+
+  getByCentre: async (centreId) => (await list({ page: 1, limit: 100, centre: centreId })).data,
 
   getById: async (id) => {
     const result = await apiRequest(`/api/formations/${encodeURIComponent(id)}`);
@@ -85,10 +88,7 @@ export const formationsService = {
     return normalizeFormation(result?.data);
   },
 
-  getCenterFormations: async (centreId) => {
-    const formations = await formationsService.getAll();
-    return formations.filter((formation) => formation.centre?.id === centreId || formation.centre?.userId === centreId);
-  },
+  getCenterFormations: async (centreId) => formationsService.getByCentre(centreId),
 
   getMesFormations: async (centreId) => formationsService.getCenterFormations(centreId),
 
