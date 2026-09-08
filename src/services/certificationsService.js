@@ -27,6 +27,10 @@ export const certificationsService = {
       data: Array.isArray(result?.data) ? result.data.map(normalizeCertification) : [],
     };
   },
+  async verify(certificateNumber) {
+    const result = await apiRequest(`/api/certifications/verify/${encodeURIComponent(certificateNumber)}`);
+    return normalizeCertification(result?.data);
+  },
 };
 
 export { normalizeCertification };

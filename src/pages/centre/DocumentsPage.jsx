@@ -1,35 +1,18 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { FiFileText, FiUploadCloud, FiTrash2 } from 'react-icons/fi';
 import { ToastMessage } from '../../components/UI/ToastMessage';
 import { ManagementPageLayout } from '../../components/centre/ManagementPageLayout';
-import { mockDocuments } from '../../data/mockDocuments';
 import { useAuth } from '../../context/AuthContext';
 import { useTrash } from '../../context/TrashContext';
 import { useActivityLog } from '../../context/ActivityContext';
-
-const STORAGE_KEY = 'skillbridge_documents';
-
-const readStoredDocuments = () => {
-  if (typeof window === 'undefined') return mockDocuments;
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (!stored) return mockDocuments;
-    const parsed = JSON.parse(stored);
-    return Array.isArray(parsed) && parsed.length ? parsed : mockDocuments;
-  } catch {
-    return mockDocuments;
-  }
-};
 
 export const DocumentsPage = () => {
   const { user } = useAuth();
   const { softDelete } = useTrash();
   const { recordActivity } = useActivityLog();
-  const [documents, setDocuments] = useState(readStoredDocuments);
+  const [documents, setDocuments] = useState([]);
   const [search, setSearch] = useState('');
   const [toast, setToast] = useState({ type: '', message: '' });
-
-  useEffect(() => window.localStorage.setItem(STORAGE_KEY, JSON.stringify(documents)), [documents]);
 
   const filteredDocuments = useMemo(() => documents.filter((document) => [document.name, document.type].join(' ').toLowerCase().includes(search.toLowerCase())), [documents, search]);
 

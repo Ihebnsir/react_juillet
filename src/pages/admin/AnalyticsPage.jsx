@@ -4,9 +4,7 @@ import { FiActivity, FiBookOpen, FiDownload, FiFileText, FiMapPin, FiPrinter, Fi
 import { useAdminDashboardData } from '../../hooks/useAdminDashboardData';
 
 const periodOptions = [
-  { value: '30d', label: '30 jours', multiplier: 1 },
-  { value: '90d', label: '90 jours', multiplier: 1.9 },
-  { value: '1y', label: '12 mois', multiplier: 2.8 },
+  { value: 'backend', label: 'Données backend' },
 ];
 
 const exportToCsv = (rows, filename) => {
@@ -119,43 +117,29 @@ const DonutChart = ({ data }) => {
 
 export const AnalyticsPage = () => {
   const data = useAdminDashboardData();
-  const [activePeriod, setActivePeriod] = useState('30d');
+  const [activePeriod, setActivePeriod] = useState('backend');
 
   const periodMeta = useMemo(() => {
     const selected = periodOptions.find((option) => option.value === activePeriod) || periodOptions[0];
-    return {
-      ...selected,
-      users: Math.round(data.totalUsers * selected.multiplier),
-      centres: Math.round(data.totalCentres * selected.multiplier * 0.6),
-      formations: Math.round(data.totalFormations * selected.multiplier * 0.8),
-      reservations: Math.round(data.totalReservations * selected.multiplier * 1.2),
-    };
+    return { ...selected, users: data.totalUsers, centres: data.totalCentres, formations: data.totalFormations, reservations: data.totalReservations };
   }, [activePeriod, data]);
 
   const userBreakdown = [
-    { label: 'Apprenants', value: Math.round(data.totalUsers * 0.72), color: 'from-teal-500 to-emerald-500' },
-    { label: 'Centres', value: Math.round(data.totalCentres * 0.8), color: 'from-sky-500 to-blue-500' },
+    { label: 'Utilisateurs', value: data.totalUsers, color: 'from-teal-500 to-emerald-500' },
+    { label: 'Centres', value: data.totalCentres, color: 'from-sky-500 to-blue-500' },
   ];
 
   const popFormations = (data.topFormations || []).slice(0, 4).map((formation) => ({
     ...formation,
-    completion: Math.min(100, 70 + formation.progress / 3),
+    completion: null,
   }));
 
   const activeCentres = (data.topCentres || []).slice(0, 4).map((centre) => ({
     ...centre,
-    learners: Math.round(centre.students * 1.2),
+    learners: null,
   }));
 
-  const dailyActivity = [
-    { label: 'Lun', value: 62 },
-    { label: 'Mar', value: 74 },
-    { label: 'Mer', value: 81 },
-    { label: 'Jeu', value: 69 },
-    { label: 'Ven', value: 92 },
-    { label: 'Sam', value: 88 },
-    { label: 'Dim', value: 75 },
-  ];
+  const dailyActivity = [];
 
   const exportPdf = () => window.print();
   const exportExcel = () => {
@@ -333,7 +317,7 @@ export const AnalyticsPage = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{formation.bookings} réserv.</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{Math.round(formation.completion)}% compl.</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Progression indisponible</p>
                     </div>
                   </div>
                 </div>
@@ -361,7 +345,7 @@ export const AnalyticsPage = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{centre.formations} formations</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{centre.learners} apprenants</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Apprenants indisponibles</p>
                     </div>
                   </div>
                 </div>
@@ -378,12 +362,12 @@ export const AnalyticsPage = () => {
               <FiActivity className="text-emerald-500" />
             </div>
             <div className="mt-6 flex items-end gap-2">
-              {dailyActivity.map((item) => (
+              {dailyActivity.length > 0 ? dailyActivity.map((item) => (
                 <div key={item.label} className="flex flex-1 flex-col items-center gap-2">
                   <div className="w-full rounded-t-xl bg-gradient-to-t from-brand-500 to-emerald-400" style={{ height: `${item.value}px` }} />
                   <span className="text-xs text-slate-500 dark:text-slate-400">{item.label}</span>
                 </div>
-              ))}
+              )) : <p className="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-500 dark:bg-slate-700/50 dark:text-slate-300">Activité quotidienne non fournie par le backend.</p>}
             </div>
           </div>
 

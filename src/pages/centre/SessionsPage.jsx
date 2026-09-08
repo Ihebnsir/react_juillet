@@ -5,24 +5,9 @@ import { ModalShell } from '../../components/UI/ModalShell';
 import { ConfirmDialog } from '../../components/UI/ConfirmDialog';
 import { EmptyStateCard } from '../../components/UI/EmptyStateCard';
 import { ManagementPageLayout } from '../../components/centre/ManagementPageLayout';
-import { mockSessions } from '../../data/mockSessions';
 import { useAuth } from '../../context/AuthContext';
 import { useTrash } from '../../context/TrashContext';
 import { useActivityLog } from '../../context/ActivityContext';
-
-const STORAGE_KEY = 'skillbridge_sessions';
-
-const readStoredSessions = () => {
-  if (typeof window === 'undefined') return mockSessions;
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (!stored) return mockSessions;
-    const parsed = JSON.parse(stored);
-    return Array.isArray(parsed) && parsed.length ? parsed : mockSessions;
-  } catch {
-    return mockSessions;
-  }
-};
 
 const emptySession = {
   id: '',
@@ -91,16 +76,12 @@ export const SessionsPage = () => {
   const { user } = useAuth();
   const { softDelete } = useTrash();
   const { recordActivity } = useActivityLog();
-  const [sessions, setSessions] = useState(readStoredSessions);
+  const [sessions, setSessions] = useState([]);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
   const [modalState, setModalState] = useState({ open: false, mode: 'add', selected: null });
   const [confirmState, setConfirmState] = useState({ open: false, id: null });
   const [toast, setToast] = useState({ type: '', message: '' });
-
-  useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
-  }, [sessions]);
 
   const filteredSessions = useMemo(() => {
     return sessions.filter((session) => {

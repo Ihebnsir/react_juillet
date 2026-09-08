@@ -2,13 +2,14 @@ import { apiRequest } from "./apiClient";
 
 const statusMap = { PENDING: "en_attente", CONFIRMED: "confirmee", COMPLETED: "terminee", CANCELLED: "annulee" };
 const getId = (value) => (value && typeof value === "object" ? value.id || value._id : value);
+const normalizeReservationStatus = (status) => statusMap[status] || status || "";
 
 const normalizeReservation = (reservation) => {
   if (!reservation || typeof reservation !== "object") return reservation;
   const formation = reservation.formationId && typeof reservation.formationId === "object" ? reservation.formationId : null;
   const centre = reservation.centreId && typeof reservation.centreId === "object" ? reservation.centreId : null;
   const learner = reservation.learnerId && typeof reservation.learnerId === "object" ? reservation.learnerId : null;
-  const status = statusMap[reservation.status] || reservation.status || "";
+  const status = normalizeReservationStatus(reservation.status);
   return {
     ...reservation,
     id: reservation.id || reservation._id,
@@ -68,3 +69,5 @@ export const reservationsService = {
     return result.some((reservation) => ["en_attente", "confirmee"].includes(reservation.status));
   },
 };
+
+export { normalizeReservationStatus };

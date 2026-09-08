@@ -57,7 +57,7 @@ import {
   mockRiskUsers,
   mockActionTimeline,
 } from '../../data/mockModeration';
-import { createLitigeFromModeration, loadLitigesFromStorage, saveLitigesToStorage } from '../../data/mockLitiges';
+import { loadLitigesFromStorage, saveLitigesToStorage } from '../../data/mockLitiges';
 
 const TABLE_COLUMNS = [
   { key: 'type', label: 'Type' },
@@ -201,10 +201,10 @@ export const ModerationView = () => {
   const [notice, setNotice] = useState('');
   const [selectedRow, setSelectedRow] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
-  const [alerts, setAlerts] = useState(() => loadModerationAlertsFromStorage());
-  const [tableRows, setTableRows] = useState(() => loadModerationTableFromStorage());
+  const [alerts] = useState(() => loadModerationAlertsFromStorage());
+  const [tableRows] = useState(() => loadModerationTableFromStorage());
   const [auditEntries, setAuditEntries] = useState(() => mockActionTimeline.map((entry) => ({ ...entry })));
-  const [litiges, setLitiges] = useState(() => loadLitigesFromStorage());
+  const [litiges] = useState(() => loadLitigesFromStorage());
 
   useEffect(() => {
     saveModerationAlertsToStorage(alerts);
@@ -331,48 +331,8 @@ export const ModerationView = () => {
 
   const handleAction = (row, action) => {
     if (!row) return;
-
-    if (action === 'suspend') {
-      const updatedRow = { ...row, status: 'Bloqué', risk: 'Critique' };
-      setTableRows((prev) => prev.map((item) => (item.id === row.id ? updatedRow : item)));
-      setAlerts((prev) => prev.map((item) => (item.user === row.user ? { ...item, status: 'Bloqué', riskLevel: 'Critique' } : item)));
-      setSelectedRow(updatedRow);
-      setNotice(`Compte de ${row.user} suspendu. Une vérification manuel est désormais requise.`);
-      pushAuditEntry('Suspension de compte', row.user, 'Compte suspendu depuis la modération');
-      return;
-    }
-
-    if (action === 'treated') {
-      const updatedRow = { ...row, status: 'Traité' };
-      setTableRows((prev) => prev.map((item) => (item.id === row.id ? updatedRow : item)));
-      setAlerts((prev) => prev.map((item) => (item.user === row.user ? { ...item, status: 'Traité' } : item)));
-      setSelectedRow(updatedRow);
-      setNotice(`Alerte marquée traitée pour ${row.user}.`);
-      pushAuditEntry('Mise à jour de statut', row.user, 'Cas marqué traité');
-      return;
-    }
-
-    if (action === 'ignore') {
-      const updatedRow = { ...row, status: 'Ignoré' };
-      setTableRows((prev) => prev.map((item) => (item.id === row.id ? updatedRow : item)));
-      setAlerts((prev) => prev.map((item) => (item.user === row.user ? { ...item, status: 'Ignoré' } : item)));
-      setSelectedRow(updatedRow);
-      setNotice(`Alerte ignorée pour ${row.user}.`);
-      pushAuditEntry('Ignorance de signalement', row.user, 'Signalement classé sans suite');
-      return;
-    }
-
-    if (action === 'dispute') {
-      const updatedRow = { ...row, status: 'En cours' };
-      const newLitige = createLitigeFromModeration(row, `DISP-${Date.now()}`);
-      const nextLitiges = [newLitige, ...litiges];
-      setTableRows((prev) => prev.map((item) => (item.id === row.id ? updatedRow : item)));
-      setSelectedRow(updatedRow);
-      setLitiges(nextLitiges);
-      saveLitigesToStorage(nextLitiges);
-      setNotice(`Litige créé pour ${row.user}. Le dossier est maintenant visible dans l’espace litiges.`);
-      pushAuditEntry('Création de litige', row.user, `Dossier ${newLitige.dossier} créé`);
-    }
+    void action;
+    setNotice('Cette action est indisponible: cette vue utilise des données legacy et aucun backend action n’a été appelé.');
   };
 
   const handleExport = () => {
@@ -410,45 +370,17 @@ export const ModerationView = () => {
   };
 
   const handleAnalyze = () => {
-    const candidate = tableRows[0];
-    if (candidate) {
-      const updatedRow = { ...candidate, status: 'Analyse' };
-      setTableRows((prev) => prev.map((row) => (row.id === candidate.id ? updatedRow : row)));
-      setAlerts((prev) => [
-        {
-          id: `AL-${Date.now()}`,
-          userId: candidate.userId || 'system',
-          type: 'Analyse automatisée',
-          user: candidate.user,
-          role: candidate.role || 'Apprenant',
-          date: new Date().toISOString().slice(0, 10) + ' ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-          riskLevel: 'Élevé',
-          severity: 'info',
-          message: 'Analyse automatique exécutée avec 4 nouveaux incidents détectés.',
-          category: candidate.category || 'Sécurité comptes',
-          status: 'Analyse',
-          decision: 'Réviser le cas prioritaire dans la timeline.',
-        },
-        ...prev,
-      ]);
-      setSelectedRow(updatedRow);
-    }
-    setNotice('Analyse en cours… terminé. 4 nouveaux incidents détectés.');
-    pushAuditEntry('Analyse automatisée', 'Système', '4 nouveaux incidents détectés');
+    setNotice('Analyse automatisée indisponible: aucun backend d’analyse n’est appelé par cette vue legacy.');
   };
 
   const handleCreateRule = () => {
-    setNotice('Nouvelle règle créée et activée. Vérifiez la configuration dans la console de modération.');
-    pushAuditEntry('Règle créée', 'Centre de modération', 'Règle de conformité activée');
+    setNotice('La création de règles de modération n’est pas disponible via le backend.');
   };
 
   const handleRecommendationAction = (row, actionLabel) => {
     if (!row) return;
-    const updatedRow = { ...row, status: 'Analyse' };
-    setTableRows((prev) => prev.map((item) => (item.id === row.id ? updatedRow : item)));
-    setSelectedRow(updatedRow);
-    setNotice(`${actionLabel} déclenchée pour ${row.user}.`);
-    pushAuditEntry('Recommandation IA', row.user, actionLabel);
+    void actionLabel;
+    setNotice('Cette recommandation est indisponible: aucune action backend correspondante n’est appelée.');
   };
 
   const openRowDetail = (row) => setSelectedRow(row);

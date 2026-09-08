@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { FiSearch, FiEye, FiEdit2, FiTrash2, FiPlus, FiFilter, FiUserCheck } from 'react-icons/fi';
-import { mockTrainers } from '../../data/mockTrainers';
 import { ToastMessage } from '../../components/UI/ToastMessage';
 import { TrainerFormModal } from '../../components/centre/TrainerFormModal';
 import { ConfirmDialog } from '../../components/UI/ConfirmDialog';
@@ -10,21 +9,6 @@ import { useTrash } from '../../context/TrashContext';
 import { useActivityLog } from '../../context/ActivityContext';
 
 const PAGE_SIZE = 3;
-const STORAGE_KEY = 'skillbridge_trainers';
-
-const readStoredTrainers = () => {
-  if (typeof window === 'undefined') return mockTrainers;
-
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (!stored) return mockTrainers;
-    const parsed = JSON.parse(stored);
-    return Array.isArray(parsed) && parsed.length ? parsed : mockTrainers;
-  } catch {
-    return mockTrainers;
-  }
-};
-
 export const FormateursPage = () => {
   const { user } = useAuth();
   const { softDelete } = useTrash();
@@ -33,14 +17,10 @@ export const FormateursPage = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [specialityFilter, setSpecialityFilter] = useState('all');
   const [page, setPage] = useState(1);
-  const [trainers, setTrainers] = useState(readStoredTrainers);
+  const [trainers, setTrainers] = useState([]);
   const [modalState, setModalState] = useState({ open: false, mode: 'add', selected: null });
   const [confirmState, setConfirmState] = useState({ open: false, trainerId: null });
   const [toast, setToast] = useState({ type: '', message: '' });
-
-  useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(trainers));
-  }, [trainers]);
 
   const specialityOptions = useMemo(() => {
     return ['all', ...new Set(trainers.map((trainer) => trainer.speciality).filter(Boolean))];

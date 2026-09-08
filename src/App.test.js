@@ -1,8 +1,14 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders the home page hero content', () => {
+jest.mock('./services/formationsService', () => ({
+  formationsService: {
+    getTrending: jest.fn(() => new Promise(() => {})),
+  },
+}));
+
+test('renders the home route during the initial app preload', () => {
   render(<App />);
-  const heading = screen.getByText(/Bienvenue sur SkillBridge/i);
-  expect(heading).toBeInTheDocument();
+  expect(screen.getByRole('status')).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: /Développez vos compétences/i })).toBeInTheDocument();
 });

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { ToastMessage } from "../components/UI/ToastMessage";
+import { completeOAuthCallback } from "../services/oauthService";
 
 export const GithubCallbackPage = () => {
   const { loginViaProvider } = useAuth();
@@ -29,18 +30,7 @@ export const GithubCallbackPage = () => {
 
     const completeGithubLogin = async () => {
       try {
-        const response = await fetch("http://localhost:3001/auth/github/callback", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ code }),
-        });
-
-        const result = await response.json();
-        if (!response.ok) {
-          throw new Error(result.error || "Échec de l'authentification GitHub.");
-        }
+        const result = await completeOAuthCallback('github', { code });
 
         const user = await loginViaProvider({
           email: result.email,

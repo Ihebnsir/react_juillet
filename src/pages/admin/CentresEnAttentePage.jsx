@@ -9,7 +9,7 @@ import {
   FiUser, FiEdit2, FiTrash2, FiPlus,
   FiInfo, FiList, FiGrid, FiArrowUp, FiArrowDown,
 } from 'react-icons/fi';
-import { mockCentres as rawCentres } from '../../data/mockCentres';
+import { centresService } from '../../services/centresService';
 import { useNotifications } from '../../context/NotificationContext';
 import { ConfirmDialog } from '../../components/UI/ConfirmDialog';
 
@@ -122,13 +122,13 @@ const EmptyState = ({ search, onReset }) => (
 const ContactModal = ({ open, centre, onClose }) => {
   const [sujet, setSujet] = useState('');
   const [message, setMessage] = useState('');
-  const [envoye, setEnvoye] = useState(false);
+  const [unsupported, setUnsupported] = useState(false);
 
   useEffect(() => {
     if (open) {
       setSujet('');
       setMessage('');
-      setEnvoye(false);
+      setUnsupported(false);
     }
   }, [open]);
 
@@ -136,8 +136,7 @@ const ContactModal = ({ open, centre, onClose }) => {
 
   const handleEnvoyer = () => {
     if (!sujet.trim() || !message.trim()) return;
-    setEnvoye(true);
-    setTimeout(onClose, 1200);
+    setUnsupported(true);
   };
 
   return (
@@ -148,11 +147,11 @@ const ContactModal = ({ open, centre, onClose }) => {
         animate={{ opacity: 1, scale: 1 }}
         className="relative z-10 w-full max-w-lg rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-2xl"
       >
-        {envoye ? (
-          <div className="flex flex-col items-center py-8">
-            <FiCheckCircle size={48} className="mb-3 text-emerald-400" />
-            <h3 className="text-lg font-semibold text-white">Message envoyé</h3>
-            <p className="mt-1 text-sm text-slate-400">Un email a été envoyé à {centre?.email}</p>
+        {unsupported ? (
+          <div className="flex flex-col items-center py-8 text-center">
+            <FiInfo size={48} className="mb-3 text-amber-400" />
+            <h3 className="text-lg font-semibold text-white">Action non disponible</h3>
+            <p className="mt-2 text-sm text-slate-300">La messagerie ou l’email côté backend n’est pas disponible pour ce centre.</p>
           </div>
         ) : (
           <>
@@ -220,15 +219,9 @@ const DocumentPreview = ({ doc, onClose }) => {
         <div className="flex items-center justify-center rounded-xl border border-slate-700 bg-slate-900/50 p-12">
           <div className="text-center">
             <FiFileText size={64} className="mx-auto mb-3 text-slate-500" />
-            <p className="text-sm text-slate-400">Prévisualisation simulée</p>
+            <p className="text-sm text-slate-400">Prévisualisation indisponible</p>
             <p className="text-xs text-slate-500">{doc.name}</p>
-            <button
-              type="button"
-              className="mt-4 rounded-xl bg-brand-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-600"
-              onClick={() => alert(`Téléchargement simulé de : ${doc.name}`)}
-            >
-              Télécharger
-            </button>
+            <p className="mt-4 text-xs text-slate-500">Le backend ne fournit pas de téléchargement administrateur pour ce document.</p>
           </div>
         </div>
       </motion.div>
@@ -286,7 +279,7 @@ const CentreCard = ({ centre, onView, onApprove, onReject, onSuspend, onDocument
     <div className="flex items-start justify-between">
       <div className="flex items-center gap-3">
         <img
-          src={centre.logo}
+          src={centre.logo || undefined}
           alt=""
           className="h-12 w-12 rounded-xl bg-gray-100 object-contain p-1 dark:bg-slate-700"
         />
@@ -447,7 +440,7 @@ const CentreDrawer = ({
         {/* Header */}
         <div className="flex items-start justify-between border-b border-gray-100 p-6 dark:border-slate-700">
           <div className="flex items-center gap-3">
-            <img src={centre.logo} alt="" className="h-12 w-12 rounded-xl bg-gray-100 object-contain dark:bg-slate-700" />
+            <img src={centre.logo || undefined} alt="" className="h-12 w-12 rounded-xl bg-gray-100 object-contain dark:bg-slate-700" />
             <div>
               <h2 className="text-lg font-bold text-gray-900 dark:text-white">{centre.name}</h2>
               <p className="text-xs text-gray-400 dark:text-slate-500">{centre.ville} · {centre.domaine}</p>
@@ -482,7 +475,7 @@ const CentreDrawer = ({
           {tab === 'info' && (
             <div className="space-y-6">
               {centre.cover && (
-                <img src={centre.cover} alt="" className="h-40 w-full rounded-xl object-cover" />
+                <img src={centre.cover || undefined} alt="" className="h-40 w-full rounded-xl object-cover" />
               )}
               <div>
                 <h4 className="mb-1 text-sm font-semibold text-gray-700 dark:text-slate-200">Présentation</h4>
@@ -535,7 +528,7 @@ const CentreDrawer = ({
                   <h4 className="mb-2 text-sm font-semibold text-gray-700 dark:text-slate-200">Galerie</h4>
                   <div className="flex gap-2 overflow-x-auto">
                     {centre.gallery.map((url, i) => (
-                      <img key={i} src={url} alt="" className="h-24 w-36 shrink-0 rounded-lg object-cover" />
+                      <img key={i} src={url || undefined} alt="" className="h-24 w-36 shrink-0 rounded-lg object-cover" />
                     ))}
                   </div>
                 </div>
@@ -574,13 +567,7 @@ const CentreDrawer = ({
                         <p className="text-xs text-gray-400">{doc.type} · {formatDate(doc.date)}</p>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => alert(`Téléchargement simulé : ${doc.name}`)}
-                      className="rounded-lg px-3 py-1.5 text-xs font-medium text-brand-600 transition hover:bg-brand-50 dark:text-brand-400"
-                    >
-                      Télécharger
-                    </button>
+                    <span className="text-xs text-slate-400">Téléchargement indisponible</span>
                   </div>
                 ))
               )}
@@ -736,13 +723,9 @@ const CentreDrawer = ({
 export const CentresEnAttentePage = () => {
   const { addNotification } = useNotifications();
 
-  const [centres, setCentres] = useState(() =>
-    rawCentres.map((c) => ({
-      ...c,
-      progressionProfil: c.progressionProfil || calculerProgression(c.checklist),
-    }))
-  );
+  const [centres, setCentres] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({
     statut: '', ville: '', domaine: '', dateDebut: '', dateFin: '',
@@ -762,10 +745,25 @@ export const CentresEnAttentePage = () => {
   const [editingNote, setEditingNote] = useState(null);
   const [noteError, setNoteError] = useState('');
 
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 600);
-    return () => clearTimeout(t);
+  const loadCentres = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const result = await centresService.getAll();
+      setCentres(result.data.map((centre) => ({
+        ...centre,
+        statutVerification: String(centre.statutVerification || '').toLowerCase(),
+        progressionProfil: centre.profileCompletion ?? calculerProgression(centre.checklist),
+      })));
+    } catch (error) {
+      setLoadError(error);
+      setCentres([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => { loadCentres(); }, [loadCentres]);
 
   const villes = useMemo(() => [...new Set(centres.map((c) => c.ville))].sort(), [centres]);
   const domaines = useMemo(() => [...new Set(centres.map((c) => c.domaine).filter(Boolean))].sort(), [centres]);
@@ -830,35 +828,24 @@ export const CentresEnAttentePage = () => {
   }, [filtered, page]);
   useEffect(() => { if (page > totalPages) setPage(totalPages); }, [page, totalPages]);
 
-  const changerStatut = useCallback((centreId, nouveauStatut, motif) => {
-    setCentres((prev) =>
-      prev.map((c) => {
-        if (c.id !== centreId) return c;
-        const actionLabel = nouveauStatut === 'verifie' ? 'Approbation' : nouveauStatut === 'rejete' ? 'Refus' : nouveauStatut === 'suspendu' ? 'Suspension' : 'Mise à jour';
-        const entry = {
-          date: new Date().toISOString().split('T')[0],
-          action: actionLabel,
-          details: motif || `Statut changé vers "${LABELS_STATUT[nouveauStatut]}"`,
-        };
-        return {
-          ...c,
-          statutVerification: nouveauStatut,
-          dateValidation: nouveauStatut === 'verifie' ? new Date().toISOString().split('T')[0] : c.dateValidation,
-          motifRejet: nouveauStatut === 'rejete' ? (motif || c.motifRejet) : nouveauStatut === 'verifie' ? null : c.motifRejet,
-          historique: [entry, ...(c.historique || [])],
-        };
-      })
-    );
-    const centre = centres.find((c) => c.id === centreId);
-    addNotification({
-      role: 'admin',
-      userId: null,
-      title: `Centre ${nouveauStatut === 'verifie' ? 'approuvé' : nouveauStatut === 'rejete' ? 'refusé' : nouveauStatut === 'suspendu' ? 'suspendu' : 'mis à jour'}`,
-      message: `Le centre "${centre?.name}" a été ${nouveauStatut === 'verifie' ? 'approuvé' : nouveauStatut === 'rejete' ? 'refusé' : nouveauStatut === 'suspendu' ? 'suspendu' : 'mis à jour'}.`,
-      category: 'centres',
-      kind: 'action',
-    });
-  }, [centres, addNotification]);
+  const changerStatut = useCallback(async (centreId, nouveauStatut, motif) => {
+    try {
+      const updated = nouveauStatut === 'verifie'
+        ? await centresService.verify(centreId)
+        : nouveauStatut === 'rejete'
+          ? await centresService.reject(centreId, motif)
+          : await centresService.suspend(centreId);
+      setCentres((prev) => prev.map((centre) => centre.id === centreId ? {
+        ...centre,
+        ...updated,
+        statutVerification: String(updated.statutVerification || nouveauStatut).toLowerCase(),
+        progressionProfil: updated.profileCompletion ?? centre.progressionProfil,
+      } : centre));
+      addNotification({ role: 'admin', userId: null, title: 'Centre mis à jour', message: 'Le statut du centre a été mis à jour par le backend.', category: 'centres', kind: 'action' });
+    } catch (error) {
+      setLoadError(error);
+    }
+  }, [addNotification]);
 
   const ajouterNote = (centreId) => {
     if (!noteText.trim()) { setNoteError('La note ne peut pas être vide'); return; }
@@ -926,6 +913,10 @@ export const CentresEnAttentePage = () => {
     );
   }
 
+  if (loadError) {
+    return <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">Impossible de charger les centres. <button type="button" onClick={loadCentres} className="ml-2 font-semibold underline">Réessayer</button></div>;
+  }
+
   return (
     <div className="space-y-6">
       {/* Titre + Boutons */}
@@ -937,7 +928,7 @@ export const CentresEnAttentePage = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setCentres([...rawCentres.map((c) => ({ ...c, progressionProfil: c.progressionProfil || calculerProgression(c.checklist) }))])} className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-600 transition hover:bg-gray-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700">
+          <button type="button" onClick={loadCentres} className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-600 transition hover:bg-gray-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700">
             <FiRefreshCw size={15} /> Actualiser
           </button>
           <button type="button" onClick={exporterCSV} className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-600 transition hover:bg-gray-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700">
@@ -1052,7 +1043,7 @@ export const CentresEnAttentePage = () => {
                 <tr key={centre.id} className="border-b border-gray-50 transition hover:bg-gray-50 dark:border-slate-700/50 dark:hover:bg-slate-700/30">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <img src={centre.logo} alt="" className="h-9 w-9 rounded-lg bg-gray-100 object-contain" />
+                      <img src={centre.logo || undefined} alt="" className="h-9 w-9 rounded-lg bg-gray-100 object-contain" />
                       <div><p className="font-medium text-gray-900 dark:text-white">{centre.name}</p><p className="text-xs text-gray-400">{centre.email}</p></div>
                     </div>
                   </td>

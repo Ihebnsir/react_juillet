@@ -10,9 +10,10 @@ import AnimatedSearchBar from "../components/UI/AnimatedSearchBar";
 import { ApercuProduit } from '../components/home/ApercuProduit';
 import CompetencesParDomaine from '../components/home/CompetencesParDomaine';
 import { mockCentres } from '../data/mockCentres';
-import { mockFormations } from '../data/mockFormations';
 import { mockTemoignages } from '../data/mockTemoignages';
 import { getStats, getTemoignages } from '../services/contenuAccueilService';
+
+export const loadTrendingFormations = () => formationsService.getTrending(4);
 
 export const HomePage = () => {
 
@@ -20,12 +21,14 @@ export const HomePage = () => {
   const navigate = useNavigate();
   const [trendingFormations, setTrendingFormations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [formationsError, setFormationsError] = useState(null);
   const [recherche, setRecherche] = useState("");
   const [stats, setStats] = useState(getStats());
   const [temoignages, setTemoignages] = useState(getTemoignages());
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const safeTrendingFormations = Array.isArray(trendingFormations) ? trendingFormations : [];
 
    useEffect(() => {
     // Detect reduced motion preference
@@ -39,11 +42,12 @@ export const HomePage = () => {
     
     const loadFormations = async () => {
       try {
-        const trending = await formationsService.getTrending(4);
-        setTrendingFormations(trending);
-      } catch {
-        // Keep the home page usable when the optional API is unavailable.
-        setTrendingFormations(mockFormations.slice(0, 4));
+        const trending = await loadTrendingFormations();
+        setTrendingFormations(Array.isArray(trending) ? trending : []);
+        setFormationsError(null);
+      } catch (error) {
+        setTrendingFormations([]);
+        setFormationsError(error);
       } finally {
         setLoading(false);
       }
@@ -55,6 +59,20 @@ export const HomePage = () => {
     
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const retryFormations = async () => {
+    setLoading(true);
+    try {
+      const trending = await loadTrendingFormations();
+      setTrendingFormations(Array.isArray(trending) ? trending : []);
+      setFormationsError(null);
+    } catch (error) {
+      setTrendingFormations([]);
+      setFormationsError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -331,8 +349,10 @@ export const HomePage = () => {
               </div>
             </div>
 
+            {formationsError ? <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-700">Impossible de charger les formations. <button type="button" onClick={retryFormations} className="ml-2 font-semibold underline">Réessayer</button></div> : null}
+            {!formationsError && safeTrendingFormations.length === 0 ? <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">Aucune formation disponible pour le moment.</div> : null}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {trendingFormations.map((formation, idx) => (
+              {!formationsError && safeTrendingFormations.map((formation, idx) => (
                 <div key={formation.id} className="animate-[fadeInUp_0.55s_ease-out_both]" style={{ animationDelay: `${idx * 60}ms` }}>
                   <FormationCard formation={formation} />
                 </div>

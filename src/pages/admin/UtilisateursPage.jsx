@@ -17,7 +17,7 @@ import { ModalShell } from '../../components/UI/ModalShell';
 import { ConfirmDialog } from '../../components/UI/ConfirmDialog';
 import { EmptyState } from '../../components/dashboard/EmptyState';
 import { AnimatedStatCard } from '../../components/dashboard/AnimatedStatCard';
-import { mockApprenants } from '../../data/mockUsers';
+import { usersService } from '../../services/usersService';
 
 // ================================================================
 // CONSTANTS
@@ -406,7 +406,9 @@ export const UtilisateursPage = () => {
   const tableRef = useRef(null);
 
   // ----- State -----
-  const [apprenants, setApprenants] = useState(() => [...mockApprenants]);
+  const [apprenants, setApprenants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({
     statut: 'all',
@@ -436,6 +438,22 @@ export const UtilisateursPage = () => {
   const [editForm, setEditForm] = useState({ nom: '', email: '', telephone: '', ville: '' });
   // Local state for notes
   const [noteText, setNoteText] = useState('');
+
+  const loadUsers = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const result = await usersService.getAll({ role: 'apprenant' });
+      setApprenants(result.data);
+    } catch (error) {
+      setLoadError(error);
+      setApprenants([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadUsers(); }, [loadUsers]);
 
   // ----- Derived Data -----
   const cities = useMemo(() => ['all', ...new Set(apprenants.map((u) => u.ville).filter(Boolean))], [apprenants]);
@@ -582,30 +600,33 @@ export const UtilisateursPage = () => {
     setEditModal({ open: true, user });
   };
 
-  const handleEditSave = () => {
+  const handleEditSave = async () => {
     if (!editModal.user) return;
     const userId = editModal.user.id;
-    updateUserInList(userId, {
-      nom: editForm.nom,
-      email: editForm.email,
-      telephone: editForm.telephone,
-      ville: editForm.ville,
-    });
-    recordAction(userId, 'modifier', 'Profil modifié');
-    setEditModal({ open: false, user: null });
-    showToast('success', 'Profil modifié avec succès.');
+    try {
+      const updated = await usersService.update(userId, editForm);
+      updateUserInList(userId, updated);
+      setEditModal({ open: false, user: null });
+      showToast('success', 'Profil modifié avec succès.');
+    } catch (error) {
+      showToast('error', 'Impossible de modifier ce profil.');
+    }
   };
 
-  const handleSuspend = (userId) => {
-    updateUserInList(userId, { statut: 'suspendu', workflow: 'suspendu' });
-    recordAction(userId, 'suspendu', 'Compte suspendu');
-    showToast('warning', 'Compte suspendu.');
+  const handleSuspend = async (userId) => {
+    try {
+      const updated = await usersService.update(userId, { statut: 'suspendu' });
+      updateUserInList(userId, updated);
+      showToast('warning', 'Compte suspendu.');
+    } catch (error) { showToast('error', 'Impossible de suspendre ce compte.'); }
   };
 
-  const handleReactivate = (userId) => {
-    updateUserInList(userId, { statut: 'actif', workflow: 'actif' });
-    recordAction(userId, 'reactiver', 'Compte réactivé');
-    showToast('success', 'Compte réactivé.');
+  const handleReactivate = async (userId) => {
+    try {
+      const updated = await usersService.update(userId, { statut: 'actif' });
+      updateUserInList(userId, updated);
+      showToast('success', 'Compte réactivé.');
+    } catch (error) { showToast('error', 'Impossible de réactiver ce compte.'); }
   };
 
   const handleVerify = (userId) => {
@@ -630,14 +651,13 @@ export const UtilisateursPage = () => {
   };
 
   const handleResetPassword = (userId) => {
-    recordAction(userId, 'reset_password', 'Mot de passe réinitialisé (simulation)');
-    showToast('success', 'Email de réinitialisation envoyé (simulation).');
+    void userId;
+    showToast('warning', 'La réinitialisation du mot de passe n’est pas disponible via le backend.');
   };
 
   const handleSendMessage = (userId) => {
-    const target = apprenants.find((u) => u.id === userId);
-    recordAction(userId, 'message', 'Message envoyé (simulation)');
-    showToast('success', `Message envoyé à ${target?.nom || 'l\'apprenant'} (simulation).`);
+    void userId;
+    showToast('warning', 'La messagerie administrateur vers un apprenant n’est pas disponible via le backend.');
   };
 
   const handleDesactiver = (userId) => {
@@ -646,15 +666,16 @@ export const UtilisateursPage = () => {
     showToast('warning', 'Compte désactivé.');
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!confirmState.id) return;
-    const target = apprenants.find((u) => u.id === confirmState.id);
-    if (target) {
-      recordAction(confirmState.id, 'supprimer', 'Compte supprimé');
+    try {
+      await usersService.remove(confirmState.id);
+      setApprenants((prev) => prev.map((user) => user.id === confirmState.id ? { ...user, statut: 'desactive', workflow: 'archive' } : user));
+      setConfirmState({ open: false, id: null, action: null });
+      showToast('success', 'Compte désactivé.');
+    } catch (error) {
+      showToast('error', 'Impossible de désactiver ce compte.');
     }
-    setApprenants((prev) => prev.filter((u) => u.id !== confirmState.id));
-    setConfirmState({ open: false, id: null, action: null });
-    showToast('success', 'Apprenant supprimé.');
   };
 
   const requestConfirm = (id, action) => {
@@ -664,28 +685,14 @@ export const UtilisateursPage = () => {
   // ---- Notes ----
   const handleAddNote = () => {
     if (!notesModal.user || !noteText.trim()) return;
-    const newNote = {
-      id: `note-${Date.now()}`,
-      date: new Date().toISOString().split('T')[0],
-      auteur: authUser?.name || 'Admin',
-      contenu: noteText.trim(),
-    };
-    const userId = notesModal.user.id;
-    const target = apprenants.find((u) => u.id === userId);
-    updateUserInList(userId, {
-      notesInternes: [...(target?.notesInternes || []), newNote],
-    });
     setNoteText('');
-    showToast('success', 'Note ajoutée.');
+    showToast('warning', 'Les notes internes utilisateur ne sont pas disponibles via le backend.');
   };
 
   const handleDeleteNote = (userId, noteId) => {
-    const target = apprenants.find((u) => u.id === userId);
-    if (!target) return;
-    updateUserInList(userId, {
-      notesInternes: (target.notesInternes || []).filter((n) => n.id !== noteId),
-    });
-    showToast('success', 'Note supprimée.');
+    void userId;
+    void noteId;
+    showToast('warning', 'Les notes internes utilisateur ne sont pas disponibles via le backend.');
   };
 
   // ---- Sort ----
@@ -737,6 +744,8 @@ export const UtilisateursPage = () => {
   // ================================================================
   return (
     <div className="space-y-6">
+      {loading ? <div className="rounded-2xl bg-white p-8 text-sm text-slate-500 shadow-sm dark:bg-slate-800">Chargement des utilisateurs...</div> : null}
+      {loadError ? <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-700">Impossible de charger les utilisateurs. <button type="button" onClick={loadUsers} className="ml-2 font-semibold underline">Réessayer</button></div> : null}
       {/* Toast */}
       <AnimatePresence>
         {toast.show && (

@@ -1,27 +1,43 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FiArrowLeft, FiMapPin, FiStar, FiCheckCircle, FiExternalLink } from 'react-icons/fi';
-import { getCenterById } from '../data/mockData';
+import { centresService } from '../services/centresService';
 import { formationsService } from '../services/formationsService';
 
 export const CenterProfilePage = () => {
   const { id } = useParams();
   const [centre, setCentre] = useState(null);
   const [formations, setFormations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadCenter = async () => {
-      const centreData = getCenterById(id);
-      setCentre(centreData);
-      const centerFormations = await formationsService.getCenterFormations(id);
-      setFormations(centerFormations);
+      setLoading(true);
+      setError(null);
+      try {
+        const centreData = await centresService.getById(id);
+        const centerFormations = await formationsService.getCenterFormations(centreData.id);
+        setCentre(centreData);
+        setFormations(centerFormations);
+      } catch (requestError) {
+        setCentre(null);
+        setFormations([]);
+        setError(requestError);
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadCenter();
   }, [id]);
 
-  if (!centre) {
-    return <div className="min-h-screen p-8 text-center">Centre introuvable</div>;
+  if (loading) {
+    return <div className="min-h-screen p-8 text-center">Chargement du centre...</div>;
+  }
+
+  if (error || !centre) {
+    return <div className="min-h-screen p-8 text-center"><p>Impossible de charger ce centre.</p><Link to="/centres" className="mt-3 inline-block text-teal-600 underline">Retour aux centres</Link></div>;
   }
 
   return (
@@ -41,9 +57,9 @@ export const CenterProfilePage = () => {
               </div>
               <p className="mt-3 text-gray-600 dark:text-slate-300">{centre.description}</p>
               <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600 dark:text-slate-300">
-                <span className="flex items-center gap-2"><FiMapPin /> {centre.city}</span>
-                <span className="flex items-center gap-2"><FiStar className="text-yellow-400" /> {centre.averageRating}/5</span>
-                <a href={centre.website} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-teal-600 hover:text-teal-700"><FiExternalLink /> Site web</a>
+                <span className="flex items-center gap-2"><FiMapPin /> {centre.city || centre.ville || '—'}</span>
+                {centre.averageRating ? <span className="flex items-center gap-2"><FiStar className="text-yellow-400" /> {centre.averageRating}/5</span> : null}
+                {centre.siteWeb ? <a href={centre.siteWeb} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-teal-600 hover:text-teal-700"><FiExternalLink /> Site web</a> : null}
               </div>
             </div>
           </div>
@@ -52,12 +68,12 @@ export const CenterProfilePage = () => {
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-8">
           <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-slate-100">Formations actives</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {formations.map((formation) => (
+            {formations.length > 0 ? formations.map((formation) => (
               <Link key={formation.id} to={`/formations/${formation.id}`} className="rounded-lg border border-gray-200 dark:border-slate-700 p-4 hover:border-teal-500 transition">
                 <h3 className="font-semibold text-gray-900 dark:text-slate-100">{formation.title}</h3>
                 <p className="text-sm text-gray-600 dark:text-slate-300 mt-2">{formation.description}</p>
               </Link>
-            ))}
+            )) : <p className="text-sm text-slate-500">Aucune formation publiée par ce centre.</p>}
           </div>
         </div>
       </div>

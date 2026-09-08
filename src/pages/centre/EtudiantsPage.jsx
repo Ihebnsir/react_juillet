@@ -5,26 +5,12 @@ import { ModalShell } from '../../components/UI/ModalShell';
 import { ConfirmDialog } from '../../components/UI/ConfirmDialog';
 import { EmptyStateCard } from '../../components/UI/EmptyStateCard';
 import { ManagementPageLayout } from '../../components/centre/ManagementPageLayout';
-import { mockStudents } from '../../data/mockStudents';
 import { useAuth } from '../../context/AuthContext';
 import { useTrash } from '../../context/TrashContext';
 import { useActivityLog } from '../../context/ActivityContext';
 import fileToBase64 from '../../utils/fileToBase64';
 
-const STORAGE_KEY = 'skillbridge_students';
 const PAGE_SIZE = 4;
-
-const readStoredStudents = () => {
-  if (typeof window === 'undefined') return mockStudents;
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (!stored) return mockStudents;
-    const parsed = JSON.parse(stored);
-    return Array.isArray(parsed) && parsed.length ? parsed : mockStudents;
-  } catch {
-    return mockStudents;
-  }
-};
 
 const normalizeStudent = (payload) => ({
   ...payload,
@@ -141,7 +127,7 @@ export const EtudiantsPage = () => {
   const { user } = useAuth();
   const { softDelete } = useTrash();
   const { recordActivity } = useActivityLog();
-  const [students, setStudents] = useState(readStoredStudents);
+  const [students, setStudents] = useState([]);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
   const [formation, setFormation] = useState('all');
@@ -149,10 +135,6 @@ export const EtudiantsPage = () => {
   const [modalState, setModalState] = useState({ open: false, mode: 'add', selected: null });
   const [confirmState, setConfirmState] = useState({ open: false, id: null });
   const [toast, setToast] = useState({ type: '', message: '' });
-
-  useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(students));
-  }, [students]);
 
   const formationOptions = useMemo(() => ['all', ...new Set(students.flatMap((student) => student.enrolledFormations || []).filter(Boolean))], [students]);
 

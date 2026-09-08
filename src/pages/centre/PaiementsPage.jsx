@@ -1,30 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { FiFileText } from 'react-icons/fi';
 import { ToastMessage } from '../../components/UI/ToastMessage';
 import { ManagementPageLayout } from '../../components/centre/ManagementPageLayout';
-import { mockPayments } from '../../data/mockPayments';
-
-const STORAGE_KEY = 'skillbridge_payments';
-
-const readStoredPayments = () => {
-  if (typeof window === 'undefined') return mockPayments;
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (!stored) return mockPayments;
-    const parsed = JSON.parse(stored);
-    return Array.isArray(parsed) && parsed.length ? parsed : mockPayments;
-  } catch {
-    return mockPayments;
-  }
-};
 
 export const PaiementsPage = () => {
-  const [payments] = useState(readStoredPayments);
+  const [payments] = useState([]);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
   const [toast, setToast] = useState({ type: '', message: '' });
-
-  useEffect(() => window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payments)), [payments]);
 
   const filteredPayments = useMemo(() => payments.filter((payment) => {
     const matchSearch = [payment.invoice, payment.customer, payment.status].join(' ').toLowerCase().includes(search.toLowerCase());

@@ -6,7 +6,7 @@ import { ModerationPage } from './ModerationPage';
 import { LitigesPage } from './LitigesPage';
 
 describe('ModerationPage', () => {
-  it('supports filtering and the main moderation actions', () => {
+  it('supports filtering and the main moderation actions without fabricating backend success', () => {
     window.localStorage.clear();
     render(
       <MemoryRouter>
@@ -26,19 +26,19 @@ describe('ModerationPage', () => {
     expect(screen.getByText(/Profil risque/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getAllByRole('button', { name: /Créer un litige/i })[0]);
-    expect(screen.getByText(/Litige créé/i)).toBeInTheDocument();
+    expect(screen.getByText(/Cette action est indisponible: cette vue utilise des données legacy/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getAllByRole('button', { name: /Suspendre compte/i })[0]);
-    expect(screen.getByText(/Compte de/i)).toBeInTheDocument();
+    expect(screen.getByText(/Cette action est indisponible: cette vue utilise des données legacy/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getAllByRole('button', { name: /Marquer traité/i })[0]);
-    expect(screen.getAllByText(/Alerte/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Cette action est indisponible: cette vue utilise des données legacy/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getAllByRole('button', { name: /Ignorer/i })[0]);
-    expect(screen.getAllByText(/Alerte/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Cette action est indisponible: cette vue utilise des données legacy/i)).toBeInTheDocument();
   });
 
-  it('creates a real dispute dossier visible in the litiges page', () => {
+  it('does not fabricate a dispute dossier in the litiges view', () => {
     window.localStorage.clear();
     const { unmount } = render(
       <MemoryRouter>
@@ -47,7 +47,8 @@ describe('ModerationPage', () => {
     );
 
     fireEvent.click(screen.getAllByRole('button', { name: /Créer un litige/i })[0]);
-    expect(screen.getByText(/Litige créé/i)).toBeInTheDocument();
+    expect(screen.getByText(/Cette action est indisponible: cette vue utilise des données legacy/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Litige créé/i)).not.toBeInTheDocument();
 
     unmount();
     cleanup();
@@ -62,6 +63,6 @@ describe('ModerationPage', () => {
       </AuthProvider>
     );
 
-    expect(screen.getAllByText(/Litige Fraude détectée/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Litige Fraude détectée/i)).not.toBeInTheDocument();
   });
 });

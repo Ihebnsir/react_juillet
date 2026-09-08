@@ -3,7 +3,6 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { formationsService } from "../../services/formationsService";
 import { reservationsService } from "../../services/reservationsService";
-import { mockUsers } from "../../data/mockUsers";
 import { ListeInscritsTable } from "../../components/centre/ListeInscritsTable";
 import { ToastMessage } from "../../components/UI/ToastMessage";
 import { FiBriefcase } from "react-icons/fi";
@@ -32,7 +31,7 @@ export const DetailOffrePage = () => {
         const reservations = await reservationsService.getReservationsParFormation(id);
         const detailed = reservations.map((reservation) => ({
           ...reservation,
-          learnerName: reservation.learnerName || mockUsers.find((user) => user.id === reservation.learnerId)?.nom || reservation.learnerId,
+          learnerName: reservation.learnerName || reservation.learner?.email || reservation.learnerId,
         }));
         if (mounted) setInscriptions(detailed);
       } catch (error) {

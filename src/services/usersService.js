@@ -1,64 +1,52 @@
-import { MOCK_USERS } from "../data/mockData";
+import { apiRequest } from './apiClient';
 
-// Service pour la gestion des utilisateurs et centres
+const statusMap = { active: 'actif', inactive: 'desactive', suspended: 'suspendu', banned: 'suspendu' };
+const toBackendStatus = { actif: 'active', suspendu: 'suspended', desactive: 'inactive' };
+const normalizeUserStatus = (status) => statusMap[status] || status || 'desactive';
+
+const normalizeUser = (user = {}) => ({
+  ...user,
+  id: user.id || user._id,
+  nom: [user.prenom, user.nom].filter(Boolean).join(' ') || user.email || 'Utilisateur',
+  email: user.email || '',
+  telephone: user.telephone || '',
+  ville: user.ville || '',
+  statut: normalizeUserStatus(user.status),
+  workflow: normalizeUserStatus(user.status),
+  emailVerifie: Boolean(user.emailVerified),
+  profilVerifie: Boolean(user.profileVerified),
+  profilComplete: null,
+  dateInscription: user.createdAt || null,
+  derniereConnexion: user.lastLoginAt || null,
+  formations: [],
+  historique: [],
+  activiteRecente: [],
+  notesInternes: [],
+});
+
 export const usersService = {
-  // Récupérer un utilisateur par ID
-  getById: async (id) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const user = MOCK_USERS.find((u) => u.id === id);
-        if (user) {
-          resolve(user);
-        } else {
-          reject("Utilisateur non trouvé");
-        }
-      }, 300);
-    });
+  async getAll(params = {}) {
+    const query = new URLSearchParams({ page: 1, limit: 100, ...params });
+    const result = await apiRequest(`/api/users?${query}`);
+    return { ...result, data: Array.isArray(result?.data) ? result.data.map(normalizeUser) : [] };
   },
-
-  // Récupérer tous les centres
-  getAllCenters: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const centers = MOCK_USERS.filter((u) => u.role === "center");
-        resolve(centers);
-      }, 400);
-    });
+  async getById(id) {
+    const result = await apiRequest(`/api/users/${encodeURIComponent(id)}`);
+    return normalizeUser(result?.data);
   },
-
-  // Récupérer les centres vérifiés
-  getVerifiedCenters: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const centers = MOCK_USERS.filter(
-          (u) => u.role === "center" && u.profile.verified
-        );
-        resolve(centers);
-      }, 300);
+  async update(id, updates) {
+    const payload = {};
+    ['nom', 'prenom', 'email', 'telephone', 'ville'].forEach((field) => {
+      if (updates[field] !== undefined) payload[field] = updates[field];
     });
+    if (updates.statut && toBackendStatus[updates.statut]) payload.status = toBackendStatus[updates.statut];
+    const result = await apiRequest(`/api/users/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(payload) });
+    return normalizeUser(result?.data);
   },
-
-  // Mettre à jour le profil d'un utilisateur
-  updateProfile: async (userId, profileData) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const user = MOCK_USERS.find((u) => u.id === userId);
-        if (user) {
-          user.profile = { ...user.profile, ...profileData };
-          resolve(user);
-        }
-      }, 400);
-    });
-  },
-
-  // Récupérer le centre d'une formation
-  getCenterByFormation: async (formationId) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Dans une vraie app, on cherchait le centerId de la formation
-        // Ici on simule simplement
-        resolve(MOCK_USERS.find((u) => u.role === "center"));
-      }, 200);
-    });
+  async remove(id) {
+    const result = await apiRequest(`/api/users/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    return normalizeUser(result?.data);
   },
 };
+
+export { normalizeUser, normalizeUserStatus };

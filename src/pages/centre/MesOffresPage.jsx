@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { centresService } from "../../services/centresService";
 import { formationsService } from "../../services/formationsService";
 import { reservationsService } from "../../services/reservationsService";
 import { useReservations } from "../../context/ReservationContext";
@@ -29,7 +30,8 @@ export const MesOffresPage = () => {
         setFormations([]);
         return;
       }
-      const data = await formationsService.getMesFormations(user.id);
+      const centre = await centresService.getMyCentre();
+      const data = await formationsService.getMesFormations(centre.id);
       setFormations(data);
     } finally {
       setLoading(false);

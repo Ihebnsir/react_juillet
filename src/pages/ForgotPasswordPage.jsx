@@ -18,7 +18,10 @@ export const ForgotPasswordPage = () => {
     }
 
     setSubmitted(true);
-    setToast({ type: "success", message: t("login.forgotSent") });
+    setToast({
+      type: "warning",
+      message: "La réinitialisation du mot de passe n’est pas disponible via le backend.",
+    });
   };
 
   return (
@@ -63,8 +66,8 @@ export const ForgotPasswordPage = () => {
             </form>
 
             {submitted && (
-              <div className="rounded-3xl border border-teal-100 bg-teal-50 p-4 text-sm text-slate-700 dark:border-teal-900/50 dark:bg-slate-800 dark:text-slate-200">
-                {t("login.forgotSent")}
+              <div className="rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-slate-800 dark:text-amber-200">
+                La réinitialisation du mot de passe n’est pas disponible via le backend.
               </div>
             )}
           </div>
