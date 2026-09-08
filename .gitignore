@@ -150,6 +150,7 @@ dist
 # misc
 .DS_Store
 .env.local
+.env.e2e.local
 .env.development.local
 .env.test.local
 .env.production.local

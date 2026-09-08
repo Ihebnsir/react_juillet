@@ -37,6 +37,7 @@ import { MesReservationsPage } from "./pages/apprenant/MesReservationsPage";
 import { PaymentCheckoutPage } from "./pages/apprenant/PaymentCheckoutPage";
 import { MesFavorisPage } from "./pages/apprenant/MesFavorisPage";
 import { MesCertificationsPage } from "./pages/apprenant/MesCertificationsPage";
+import { CertificationDetailPage } from "./pages/apprenant/CertificationDetailPage";
 import { RecommandationsPage } from "./pages/apprenant/RecommandationsPage";
 import { MesAvisPage } from "./pages/apprenant/MesAvisPage";
 import { ParametresPage } from "./pages/apprenant/ParametresPage";
@@ -69,6 +70,7 @@ import { ContactAdminPage } from "./pages/admin/ContactAdminPage";
 import { AdminNotificationsPage } from "./pages/admin/AdminNotificationsPage";
 import { ActivityLogPage } from "./pages/admin/ActivityLogPage";
 import { AdminTrashPage } from "./pages/admin/AdminTrashPage";
+import CertificationsPage from "./pages/admin/CertificationsPage";
 import { MessageriePage as ApprenantMessageriePage } from "./pages/apprenant/MessageriePage";
 import { MessageriePage as CentreMessageriePage } from "./pages/centre/MessageriePage";
 import CentreCalendarPage from "./pages/centre/CentreCalendarPage";
@@ -76,6 +78,9 @@ import { SupportPage as AdminSupportPage } from "./pages/admin/SupportPage";
 import VerifierCertificatPage from "./pages/VerifierCertificatPage";
 import { FormateursPage } from "./pages/centre/FormateursPage";
 import { EntreprisesPartenairesPage } from "./pages/centre/EntreprisesPartenairesPage";
+import CentreDocumentsPage from "./pages/admin/CentreDocumentsPage";
+import LitigesWorkspacePage from "./pages/LitigesPage";
+import SignalementsPage from "./pages/SignalementsPage";
 
 /**
  * Wrapper qui rend le layout approprié selon le rôle de l'utilisateur.
@@ -106,6 +111,7 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
     '/settings',
     '/support',
     '/notifications',
+    '/signalements',
     '/activity-history',
     '/trash',
     '/centre',
@@ -143,6 +149,8 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
             <Route element={<SharedRouteLayout />}>
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/signalements" element={<SignalementsPage />} />
+              <Route path="/litiges" element={<LitigesWorkspacePage />} />
             </Route>
           </Route>
 
@@ -155,6 +163,7 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
               <Route path="/paiement/:reservationId" element={<PaymentCheckoutPage />} />
               <Route path="/favoris" element={<MesFavorisPage />} />
               <Route path="/certifications" element={<MesCertificationsPage />} />
+              <Route path="/certifications/:id" element={<CertificationDetailPage />} />
               <Route path="/recommandations" element={<RecommandationsPage />} />
               <Route path="/mes-avis" element={<MesAvisPage />} />
               <Route path="/parametres" element={<ParametresPage />} />
@@ -202,6 +211,8 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
               <Route path="/admin/centres-en-attente" element={<CentresEnAttentePage />} />
               <Route path="/admin/utilisateurs" element={<UtilisateursPage />} />
               <Route path="/admin/litiges" element={<LitigesPage />} />
+              <Route path="/admin/documents" element={<CentreDocumentsPage />} />
+              <Route path="/admin/certifications" element={<CertificationsPage />} />
               <Route path="/admin/notifications" element={<AdminNotificationsPage />} />
               <Route path="/admin/activity-log" element={<ActivityLogPage />} />
               <Route path="/admin/trash" element={<AdminTrashPage />} />

@@ -21,6 +21,8 @@ const sections = [
       { to: '/admin/centres-en-attente', label: 'Centres', icon: FiUsers },
       { to: '/admin/utilisateurs', label: 'Utilisateurs', icon: FiUsers },
       { to: '/admin/litiges', label: 'Litiges', icon: FiAlertTriangle },
+      { to: '/admin/documents', label: 'Documents centres', icon: FiFileText },
+      { to: '/admin/certifications', label: 'Certifications', icon: FiFileText },
       { to: '/admin/contenu-accueil', label: 'Contenu', icon: FiFileText },
     ],
   },

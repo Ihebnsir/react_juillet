@@ -40,6 +40,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "e2e:credentials": "node scripts/verify-e2e-credentials.js",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

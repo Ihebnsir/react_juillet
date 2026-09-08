@@ -58,6 +58,7 @@ import {
   mockActionTimeline,
 } from '../../data/mockModeration';
 import { loadLitigesFromStorage, saveLitigesToStorage } from '../../data/mockLitiges';
+import { SignalementsModerationPanel } from './SignalementsModerationPanel';
 
 const TABLE_COLUMNS = [
   { key: 'type', label: 'Type' },
@@ -395,6 +396,7 @@ export const ModerationView = () => {
       className="px-4 py-6 sm:px-6 lg:px-8"
     >
       <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+        <SignalementsModerationPanel />
         {notice ? (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-100 shadow-lg shadow-emerald-500/10">
             {notice}

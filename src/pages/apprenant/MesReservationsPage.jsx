@@ -331,27 +331,7 @@ export const MesReservationsPage = () => {
 
   const handleDownloadCertificate = async (e, reservation) => {
     e.stopPropagation();
-    try {
-      const certificate = await getCertificateForReservation(reservation.id, user?.name || "Apprenant");
-      if (certificate) {
-        const doc = generatePDFCertificate({
-          id: certificate.id,
-          trainee: certificate.trainee,
-          formation: certificate.formation,
-          centreName: certificate.centreName,
-          formationCategory: certificate.formationCategory,
-          issuedAt: certificate.issuedAt,
-        });
-        doc.save(`certificat-${reservation.formationId}.pdf`);
-
-        setToast({ type: "success", message: "Certificat téléchargé avec succès" });
-      } else {
-        setToast({ type: "error", message: "Certificat non disponible pour cette formation" });
-      }
-    } catch (err) {
-      console.error("Erreur certificat:", err);
-      setToast({ type: "error", message: "Erreur lors du téléchargement du certificat" });
-    }
+    setToast({ type: "error", message: "Le téléchargement PDF n'est pas disponible." });
   };
 
   const handleReview = (e, reservation) => {

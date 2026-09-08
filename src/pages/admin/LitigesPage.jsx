@@ -6,8 +6,8 @@
  * les dossiers déjà escaladés par ModerationPage.
  */
 import React from 'react';
-import { LitigesView } from '../../components/admin/LitigesView';
+import LitigesWorkspacePage from '../LitigesPage';
 
-export const LitigesPage = () => <LitigesView />;
+export const LitigesPage = () => <LitigesWorkspacePage />;
 
 export default LitigesPage;

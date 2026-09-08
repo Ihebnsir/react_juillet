@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import { FiGrid, FiBookOpen, FiCalendar, FiMessageSquare, FiX, FiUsers, FiBriefcase, FiLayers, FiClipboard, FiFileText, FiDollarSign, FiSettings, FiAward, FiBell, FiClock, FiTrash2, FiUserCheck } from 'react-icons/fi';
+import { FiGrid, FiBookOpen, FiCalendar, FiMessageSquare, FiX, FiUsers, FiBriefcase, FiLayers, FiClipboard, FiFileText, FiDollarSign, FiSettings, FiAward, FiBell, FiClock, FiTrash2, FiUserCheck, FiAlertTriangle } from 'react-icons/fi';
 import { AppTopbar } from '../components/Layout/AppTopbar';
 
 const sections = [
@@ -30,6 +30,8 @@ const sections = [
     title: 'Communication',
     items: [
       { to: '/centre/messagerie', label: 'Messages', icon: FiMessageSquare },
+      { to: '/signalements', label: 'Mes signalements', icon: FiAlertTriangle },
+      { to: '/litiges', label: 'Litiges', icon: FiAlertTriangle },
     ],
   },
   {

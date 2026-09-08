@@ -29,6 +29,10 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
+### Local browser E2E credentials
+
+Copy `.env.e2e.local.example` to `.env.e2e.local` and fill the values through the local credential handoff. The file is ignored by git and is consumed only by Node scripts under `scripts/`; it is never bundled into the React application. Run `npm run e2e:credentials` to verify availability without printing passwords.
+
 ### `npm run eject`
 
 **Note: this is a one-way operation. Once you `eject`, you can't go back!**

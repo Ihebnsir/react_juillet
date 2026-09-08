@@ -1,27 +1,24 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { AuthProvider } from '../../context/AuthContext';
-import { NotificationProvider } from '../../context/NotificationContext';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { LitigesPage } from './LitigesPage';
+import { litigesService } from '../../services/litigesService';
 
-describe('LitigesPage', () => {
-  it('supports the main litiges actions', () => {
-    render(
-      <AuthProvider>
-        <NotificationProvider>
-          <LitigesPage />
-        </NotificationProvider>
-      </AuthProvider>
-    );
+jest.mock('../../services/litigesService', () => ({ litigesService: {
+  getAll: jest.fn(), getById: jest.fn(), updateStatus: jest.fn(), assign: jest.fn(), addMessage: jest.fn(), addNote: jest.fn(), close: jest.fn(), archive: jest.fn(),
+} }));
+jest.mock('../../context/AuthContext', () => ({ useAuth: () => ({ user: { role: 'admin' } }) }));
 
-    expect(screen.getAllByText(/Gestion des dossiers|Case Management/i).length).toBeGreaterThan(0);
+const report = { id: 'litige-1', numeroDossier: 'LTG-1', titre: 'Dossier réel', description: 'Description backend', statut: 'ouvert', categorie: 'Paiement', priorite: 'haute', conversation: [], notesInternes: [] };
 
-    fireEvent.click(screen.getAllByRole('button', { name: /Voir dossier/i })[0]);
-    expect(screen.getByText(/Informations/i)).toBeInTheDocument();
-
-    fireEvent.click(screen.getAllByRole('button', { name: /Justificatifs/i })[0]);
-    expect(screen.getByText(/Documents/i)).toBeInTheDocument();
-
-    fireEvent.click(screen.getAllByRole('button', { name: /Arbitrer/i })[0]);
-    expect(screen.getAllByText(/Décision finale/i).length).toBeGreaterThan(0);
+describe('Admin LitigesPage', () => {
+  beforeEach(() => { jest.clearAllMocks(); litigesService.getAll.mockResolvedValue({ data: [report] }); litigesService.getById.mockResolvedValue(report); });
+  it('renders backend data, filters through API, opens detail, and updates valid status', async () => {
+    render(<LitigesPage />);
+    expect(await screen.findByText('Dossier réel')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('statut'), { target: { value: 'analyse' } });
+    await waitFor(() => expect(litigesService.getAll).toHaveBeenLastCalledWith(expect.objectContaining({ statut: 'analyse' })));
+    fireEvent.click(screen.getByRole('button', { name: 'Voir détail' }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Prochain statut'), { target: { value: 'analyse' } });
+    await waitFor(() => expect(litigesService.updateStatus).toHaveBeenCalledWith('litige-1', { statut: 'analyse' }));
   });
 });
