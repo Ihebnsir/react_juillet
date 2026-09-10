@@ -3,15 +3,13 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { formationsService } from "../services/formationsService";
+import { centresService } from "../services/centresService";
 import heroVideo from "../assets/videos/hero-education.mp4";
 import { FormationCard } from "../components/Cards/FormationCard";
 import { FiArrowRight, FiCheckCircle, FiShield, FiGlobe, FiGrid, FiClock } from "react-icons/fi";
 import AnimatedSearchBar from "../components/UI/AnimatedSearchBar";
 import { ApercuProduit } from '../components/home/ApercuProduit';
 import CompetencesParDomaine from '../components/home/CompetencesParDomaine';
-import { mockCentres } from '../data/mockCentres';
-import { mockTemoignages } from '../data/mockTemoignages';
-import { getStats, getTemoignages } from '../services/contenuAccueilService';
 
 export const loadTrendingFormations = () => formationsService.getTrending(4);
 
@@ -22,9 +20,8 @@ export const HomePage = () => {
   const [trendingFormations, setTrendingFormations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formationsError, setFormationsError] = useState(null);
+  const [centres, setCentres] = useState([]);
   const [recherche, setRecherche] = useState("");
-  const [stats, setStats] = useState(getStats());
-  const [temoignages, setTemoignages] = useState(getTemoignages());
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -54,8 +51,7 @@ export const HomePage = () => {
     };
 
     loadFormations();
-    setStats(getStats());
-    setTemoignages(getTemoignages());
+    centresService.getAll().then((result) => setCentres(result.data || [])).catch(() => setCentres([]));
     
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -190,9 +186,9 @@ export const HomePage = () => {
           Ils forment déjà avec SkillBridge
         </p>
         <div className="flex items-center justify-center gap-10 flex-wrap opacity-60 select-none pointer-events-none">
-          {mockCentres.slice(0, 5).map((c) => (
-            <img key={c.id} src={c.logo} alt={c.nom || c.name} className="h-8 grayscale" />
-          ))}
+          {centres.length > 0 ? centres.slice(0, 5).map((centre) => (
+            centre.logo ? <img key={centre.id} src={centre.logo} alt={centre.name} className="h-8 grayscale" /> : <span key={centre.id} className="text-sm text-slate-400">{centre.name}</span>
+          )) : <span className="text-sm text-slate-400">Données partenaires indisponibles</span>}
         </div>
       </section>
 
@@ -201,10 +197,10 @@ export const HomePage = () => {
         <div className="sb-surface rounded-3xl px-6 py-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: "Centres vérifiés", value: `${stats.centres}+`, tone: "badge-status-success" },
-              { label: "Formations", value: `${stats.formations}+`, tone: "badge-status-warning" },
-              { label: "Apprenants", value: `${stats.apprenants}k+`, tone: "badge-status-success" },
-              { label: "Satisfaction", value: `${stats.satisfaction}/5`, tone: "badge-status-warning" },
+              { label: "Centres vérifiés", value: "Donnée indisponible", tone: "badge-status-success" },
+              { label: "Formations", value: "Donnée indisponible", tone: "badge-status-warning" },
+              { label: "Apprenants", value: "Donnée indisponible", tone: "badge-status-success" },
+              { label: "Satisfaction", value: "Donnée indisponible", tone: "badge-status-warning" },
             ].map((stat, idx) => (
               <div key={idx} className="p-3 rounded-2xl bg-white/60 dark:bg-slate-900/30 border border-white/50 dark:border-slate-700/50">
                 <div className={`flex items-center gap-2 ${idx % 2 === 0 ? 'justify-start' : 'justify-start'} animate-[fadeInUp_0.5s_ease-out_0.05s_both]`}>
@@ -365,31 +361,7 @@ export const HomePage = () => {
             <h2 className="text-2xl md:text-3xl font-display font-bold mb-8 text-slate-900 dark:text-white">
               Pourquoi choisir SkillBridge ?
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-              {temoignages.length > 0 ? temoignages.slice(0, 4).map((t) => (
-                <div key={t.id} className="card">
-                  <div className="mb-4 flex items-center gap-3">
-                    <img src={t.avatar || '/images/avatars/avatar1.jpg'} alt={t.nom} className="h-11 w-11 rounded-full object-cover" />
-                    <div>
-                      <p className="font-semibold text-slate-900 dark:text-slate-100">{t.nom}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{t.role}</p>
-                    </div>
-                  </div>
-                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">“{t.citation}”</p>
-                </div>
-              )) : mockTemoignages.slice(0, 4).map((t) => (
-                <div key={t.id} className="card">
-                  <div className="mb-4 flex items-center gap-3">
-                    <img src={t.avatar} alt={t.nom} className="h-11 w-11 rounded-full object-cover" />
-                    <div>
-                      <p className="font-semibold text-slate-900 dark:text-slate-100">{t.nom}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{t.role}</p>
-                    </div>
-                  </div>
-                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">“{t.citation}”</p>
-                </div>
-              ))}
-            </div>
+            <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">Les témoignages publics sont indisponibles.</div>
           </section>
         </>
       )}

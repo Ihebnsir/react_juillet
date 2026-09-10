@@ -64,12 +64,20 @@ const NotificationProviderInner = ({ children }) => {
   }, [notifications]);
 
   const markAllAsRead = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       await notificationsService.markAllAsRead();
-      setNotifications((previous) => previous.map((item) => ({ ...item, lu: true })));
-      setUnreadCount(0);
+      const [listResult, count] = await Promise.all([
+        notificationsService.getAll({ page: 1, limit: 100 }),
+        notificationsService.getUnreadCount(),
+      ]);
+      setNotifications(listResult.data.map(normalizeNotification));
+      setUnreadCount(count);
     } catch (requestError) {
       setError(requestError);
+    } finally {
+      setLoading(false);
     }
   }, []);
 

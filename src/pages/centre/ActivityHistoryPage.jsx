@@ -49,6 +49,7 @@ export const ActivityHistoryPage = () => {
       </div>
 
       <div className="space-y-4">
+        {activities.length === 0 ? <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200">L’historique backend n’est pas disponible.</div> : null}
         <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
           {filteredActivities.length === 0
             ? 'Aucune activité trouvée'

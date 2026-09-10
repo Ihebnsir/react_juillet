@@ -34,6 +34,27 @@ export async function login(email, password) {
   return persistAuthResponse(result);
 }
 
+export async function forgotPassword(email) {
+  return apiRequest('/api/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function verifyResetCode(email, code) {
+  return apiRequest('/api/auth/verify-reset-code', {
+    method: 'POST',
+    body: JSON.stringify({ email, code }),
+  });
+}
+
+export async function resetPassword(resetToken, newPassword, confirmPassword) {
+  return apiRequest('/api/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ resetToken, newPassword, confirmPassword }),
+  });
+}
+
 export async function register(userData) {
   const result = await apiRequest('/api/auth/register', {
     method: 'POST',

@@ -168,20 +168,14 @@ function GlobalSearchModal({ open, onClose, raccourcis }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef(null);
 
-  // Importer les données mock pour la recherche
-  const getSearchData = useMemo(() => () => {
-    try {
-      const { mockFormations } = require('../../data/mockFormations');
-      const { mockStudents } = require('../../data/mockStudents');
-      const { mockTrainers } = require('../../data/mockTrainers');
-      const { mockDocuments } = require('../../data/mockDocuments');
-      const { mockUsers } = require('../../data/mockUsers');
-      const { mockPartnerCompanies } = require('../../data/mockPartnerCompanies');
-      return { mockFormations, mockStudents, mockTrainers, mockDocuments, mockUsers, mockPartnerCompanies };
-    } catch {
-      return { mockFormations: [], mockStudents: [], mockTrainers: [], mockDocuments: [], mockUsers: [], mockPartnerCompanies: [] };
-    }
-  }, []);
+  const getSearchData = useMemo(() => () => ({
+    formations: [],
+    students: [],
+    trainers: [],
+    documents: [],
+    users: [],
+    partnerCompanies: [],
+  }), []);
 
   // Catégories de recherche
   const searchCategories = useMemo(() => [
@@ -200,7 +194,7 @@ function GlobalSearchModal({ open, onClose, raccourcis }) {
       icon: FiBookOpen,
       color: 'text-emerald-400',
       bgColor: 'bg-emerald-500/10',
-      getItems: () => getSearchData().mockFormations || [],
+      getItems: () => getSearchData().formations,
       search: (q, items) => items.filter(f => 
         f.title?.toLowerCase().includes(q.toLowerCase()) || 
         f.category?.toLowerCase().includes(q.toLowerCase())
@@ -215,7 +209,7 @@ function GlobalSearchModal({ open, onClose, raccourcis }) {
       icon: FiUsers,
       color: 'text-violet-400',
       bgColor: 'bg-violet-500/10',
-      getItems: () => getSearchData().mockStudents || [],
+      getItems: () => getSearchData().students,
       search: (q, items) => items.filter(s => 
         s.name?.toLowerCase().includes(q.toLowerCase()) || 
         s.email?.toLowerCase().includes(q.toLowerCase())
@@ -230,7 +224,7 @@ function GlobalSearchModal({ open, onClose, raccourcis }) {
       icon: FiUserCheck,
       color: 'text-amber-400',
       bgColor: 'bg-amber-500/10',
-      getItems: () => getSearchData().mockTrainers || [],
+      getItems: () => getSearchData().trainers,
       search: (q, items) => items.filter(t => 
         t.name?.toLowerCase().includes(q.toLowerCase()) || 
         t.speciality?.toLowerCase().includes(q.toLowerCase())
@@ -245,7 +239,7 @@ function GlobalSearchModal({ open, onClose, raccourcis }) {
       icon: FiBriefcase,
       color: 'text-rose-400',
       bgColor: 'bg-rose-500/10',
-      getItems: () => getSearchData().mockPartnerCompanies || [],
+      getItems: () => getSearchData().partnerCompanies,
       search: (q, items) => items.filter(c => 
         c.name?.toLowerCase().includes(q.toLowerCase()) || 
         c.sector?.toLowerCase().includes(q.toLowerCase())
@@ -260,7 +254,7 @@ function GlobalSearchModal({ open, onClose, raccourcis }) {
       icon: FiFileText,
       color: 'text-cyan-400',
       bgColor: 'bg-cyan-500/10',
-      getItems: () => getSearchData().mockDocuments || [],
+      getItems: () => getSearchData().documents,
       search: (q, items) => items.filter(d => 
         d.name?.toLowerCase().includes(q.toLowerCase()) || 
         d.type?.toLowerCase().includes(q.toLowerCase())
@@ -275,7 +269,7 @@ function GlobalSearchModal({ open, onClose, raccourcis }) {
       icon: FiSettings,
       color: 'text-slate-400',
       bgColor: 'bg-slate-500/10',
-      getItems: () => getSearchData().mockUsers || [],
+      getItems: () => getSearchData().users,
       search: (q, items) => items.filter(u => 
         u.name?.toLowerCase().includes(q.toLowerCase()) || 
         u.email?.toLowerCase().includes(q.toLowerCase()) || 

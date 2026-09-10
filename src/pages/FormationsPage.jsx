@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { formationsService } from "../services/formationsService";
 import { FormationCard } from "../components/Cards/FormationCard";
-import { DOMAINS, CITIES, PRICE_RANGES } from "../data/mockData";
 import { FiSearch, FiFilter } from "react-icons/fi";
 
 const CATEGORY_TO_DOMAIN = {
@@ -14,6 +13,13 @@ const CATEGORY_TO_DOMAIN = {
   "cybersecurite": "Marketing",
   "langues": "Management",
 };
+
+const PRICE_RANGES = [
+  { label: "0-200 DT", min: 0, max: 200 },
+  { label: "200-500 DT", min: 200, max: 500 },
+  { label: "500-1000 DT", min: 500, max: 1000 },
+  { label: "1000+ DT", min: 1000, max: Infinity },
+];
 
 export const FormationsPage = () => {
   const { t } = useTranslation();
@@ -33,6 +39,16 @@ export const FormationsPage = () => {
     priceMax: Infinity,
     sortBy: "trending",
   });
+
+  const domainOptions = useMemo(
+    () => Array.from(new Set((formations || []).map((formation) => formation?.domain || formation?.category || formation?.categorie).filter(Boolean))).sort(),
+    [formations]
+  );
+
+  const cityOptions = useMemo(
+    () => Array.from(new Set((formations || []).map((formation) => formation?.city).filter(Boolean))).sort(),
+    [formations]
+  );
 
   useEffect(() => {
     const loadFormations = async () => {
@@ -102,7 +118,7 @@ export const FormationsPage = () => {
                   className="w-full px-4 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
                   <option value="">Tous les domaines</option>
-                  {DOMAINS.map((domain) => (
+                  {domainOptions.map((domain) => (
                     <option key={domain} value={domain}>
                       {domain}
                     </option>
@@ -126,7 +142,7 @@ export const FormationsPage = () => {
                   className="w-full px-4 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
                   <option value="">Toutes les villes</option>
-                  {CITIES.map((city) => (
+                  {cityOptions.map((city) => (
                     <option key={city} value={city}>
                       {city}
                     </option>

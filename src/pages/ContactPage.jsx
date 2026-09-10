@@ -12,6 +12,10 @@ export const ContactPage = () => {
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
+  if (!contact) {
+    return <main className="min-h-screen px-4 py-16"><div className="mx-auto max-w-4xl rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-800">Les informations de contact ne sont pas disponibles via le backend.</div></main>;
+  }
+
   return (
     <main className="min-h-screen bg-brand-50/70 px-4 py-16 dark:bg-slate-950 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-8">

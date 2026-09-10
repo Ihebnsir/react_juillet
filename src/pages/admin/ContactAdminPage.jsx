@@ -27,6 +27,10 @@ export const ContactAdminPage = () => {
     setContact(getContactInfo());
   }, []);
 
+  if (!contact) {
+    return <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-800">La gestion des informations de contact est indisponible tant qu’un endpoint backend dédié n’est pas fourni.</div>;
+  }
+
   const validate = () => {
     const newErrors = { ...initialErrors };
     let valid = true;

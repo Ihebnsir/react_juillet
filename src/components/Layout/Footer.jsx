@@ -13,10 +13,10 @@ export const Footer = () => {
   }, []);
 
   const socialLinks = [
-    { href: contact.social?.facebook || "#", icon: FiFacebook, label: "Facebook" },
-    { href: contact.social?.twitter || "#", icon: FiTwitter, label: "Twitter" },
-    { href: contact.social?.linkedin || "#", icon: FiLinkedin, label: "LinkedIn" },
-    { href: contact.social?.instagram || "#", icon: FiInstagram, label: "Instagram" },
+    { href: contact?.social?.facebook || "#", icon: FiFacebook, label: "Facebook" },
+    { href: contact?.social?.twitter || "#", icon: FiTwitter, label: "Twitter" },
+    { href: contact?.social?.linkedin || "#", icon: FiLinkedin, label: "LinkedIn" },
+    { href: contact?.social?.instagram || "#", icon: FiInstagram, label: "Instagram" },
   ];
 
   return (
@@ -36,7 +36,7 @@ export const Footer = () => {
               formation.
             </p>
             <p className="mt-3 text-xs text-gray-400">
-              {contact.email} &middot; {contact.phone}
+              {contact ? `${contact.email} · ${contact.phone}` : 'Informations de contact indisponibles'}
             </p>
           </div>
 

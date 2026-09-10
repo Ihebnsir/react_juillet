@@ -1,115 +1,71 @@
-import { MOCK_USERS, MOCK_FORMATIONS } from "../data/mockData";
+import { usersService } from "./usersService";
+import { centresService } from "./centresService";
+import { formationsService } from "./formationsService";
 
-// Service pour l'administration
+const normalizeLegacyVerificationRequest = (centre) => ({
+  id: centre.id || centre._id,
+  centerName: centre.name || centre.nom || centre.email || 'Centre',
+  email: centre.email || '',
+  description: centre.description || '',
+  city: centre.ville || centre.city || '',
+  website: centre.siteWeb || centre.website || '',
+  status: centre.statutVerification || centre.verifie === true ? 'verified' : 'pending',
+});
+
 export const adminService = {
-  // Obtenir les statistiques du dashboard
-  getStatistics: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const stats = {
-          totalUsers: MOCK_USERS.length,
-          totalLearners: MOCK_USERS.filter((u) => u.role === "learner").length,
-          totalCenters: MOCK_USERS.filter((u) => u.role === "center").length,
-          verifiedCenters: MOCK_USERS.filter(
-            (u) => u.role === "center" && u.profile.verified
-          ).length,
-          totalFormations: MOCK_FORMATIONS.length,
-          averageFormationPrice:
-            MOCK_FORMATIONS.reduce((sum, f) => sum + f.price, 0) /
-            MOCK_FORMATIONS.length,
-        };
-        resolve(stats);
-      }, 500);
-    });
+  async getStatistics() {
+    const [usersResult, formationsResult, centresResult] = await Promise.all([
+      usersService.getAll(),
+      formationsService.getAll(),
+      centresService.getAll(),
+    ]);
+
+    const users = usersResult?.data || [];
+    const formations = formationsResult || [];
+    const centres = centresResult?.data || [];
+
+    return {
+      totalUsers: users.length,
+      totalLearners: users.filter((user) => user?.role === 'apprenant' || user?.role === 'learner').length,
+      totalCenters: users.filter((user) => user?.role === 'centre' || user?.role === 'center').length,
+      verifiedCenters: centres.filter((centre) => centre?.verifie || centre?.statutVerification === 'VERIFIE').length,
+      totalFormations: formations.length,
+      averageFormationPrice: formations.length
+        ? formations.reduce((sum, formation) => sum + Number(formation.price || 0), 0) / formations.length
+        : 0,
+    };
   },
 
-  // Récupérer tous les utilisateurs
-  getAllUsers: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(MOCK_USERS);
-      }, 400);
-    });
+  async getAllUsers() {
+    const result = await usersService.getAll();
+    return result?.data || [];
   },
 
-  // Récupérer les demandes de vérification de centre
-  getVerificationRequests: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const requests = MOCK_USERS.filter(
-          (u) => u.role === "center" && !u.profile.verified
-        ).map((u) => ({
-          id: u.id,
-          centerName: u.name,
-          email: u.email,
-          description: u.profile.description,
-          city: u.profile.city,
-          website: u.profile.website,
-          status: "pending",
-        }));
-        resolve(requests);
-      }, 400);
-    });
+  async getVerificationRequests() {
+    const result = await centresService.getAll();
+    const centres = result?.data || [];
+    return centres
+      .filter((centre) => !(centre?.verifie === true || centre?.statutVerification === 'VERIFIE'))
+      .map(normalizeLegacyVerificationRequest);
   },
 
-  // Approuver une demande de vérification
-  approveCenterVerification: async (centerId) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const center = MOCK_USERS.find((u) => u.id === centerId);
-        if (center) {
-          center.profile.verified = true;
-          resolve({ success: true, message: "Centre vérifié avec succès" });
-        } else {
-          resolve({ success: false, message: "Centre non trouvé" });
-        }
-      }, 400);
-    });
+  async approveCenterVerification(centerId) {
+    await centresService.verify(centerId);
+    return { success: true, message: 'Centre vérifié avec succès' };
   },
 
-  // Rejeter une demande de vérification
-  rejectCenterVerification: async (centerId, reason) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const center = MOCK_USERS.find((u) => u.id === centerId);
-        if (center) {
-          center.profile.verificationRejectionReason = reason;
-          resolve({ success: true, message: "Demande rejetée" });
-        } else {
-          resolve({ success: false, message: "Centre non trouvé" });
-        }
-      }, 400);
-    });
+  async rejectCenterVerification(centerId, reason) {
+    await centresService.reject(centerId, reason);
+    return { success: true, message: 'Demande rejetée' };
   },
 
-  // Suspendre un utilisateur
-  suspendUser: async (userId, reason) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const user = MOCK_USERS.find((u) => u.id === userId);
-        if (user) {
-          user.suspended = true;
-          user.suspensionReason = reason;
-          resolve({ success: true, message: "Utilisateur suspendu" });
-        } else {
-          resolve({ success: false, message: "Utilisateur non trouvé" });
-        }
-      }, 400);
-    });
+  async suspendUser(userId, reason) {
+    await usersService.update(userId, { statut: 'suspendu' });
+    return { success: true, message: 'Utilisateur suspendu', reason };
   },
 
-  // Supprimer un compte utilisateur
-  deleteUser: async (userId) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const index = MOCK_USERS.findIndex((u) => u.id === userId);
-        if (index !== -1) {
-          MOCK_USERS.splice(index, 1);
-          resolve({ success: true, message: "Utilisateur supprimé" });
-        } else {
-          resolve({ success: false, message: "Utilisateur non trouvé" });
-        }
-      }, 400);
-    });
+  async deleteUser(userId) {
+    await usersService.remove(userId);
+    return { success: true, message: 'Utilisateur supprimé' };
   },
 };

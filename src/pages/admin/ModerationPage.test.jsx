@@ -1,68 +1,35 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { AuthProvider } from '../../context/AuthContext';
-import { NotificationProvider } from '../../context/NotificationContext';
 import { ModerationPage } from './ModerationPage';
-import { LitigesPage } from './LitigesPage';
+import { signalementsService } from '../../services/signalementsService';
+
+jest.mock('../../services/signalementsService', () => ({
+  signalementsService: {
+    getAdminList: jest.fn(),
+    getById: jest.fn(),
+    updateStatus: jest.fn(),
+    escalate: jest.fn(),
+    remove: jest.fn(),
+  },
+}));
 
 describe('ModerationPage', () => {
-  it('supports filtering and the main moderation actions without fabricating backend success', () => {
-    window.localStorage.clear();
-    render(
-      <MemoryRouter>
-        <ModerationPage />
-      </MemoryRouter>
-    );
+  beforeEach(() => jest.clearAllMocks());
 
-    expect(screen.getByRole('heading', { name: /Centre de modération/i })).toBeInTheDocument();
+  it('renders moderation records returned by the backend service', async () => {
+    signalementsService.getAdminList.mockResolvedValue({ data: [{ id: 'report-1', type: 'Spam', contenu: 'Signalement réel', status: 'En attente', createdAt: '2026-09-10T10:00:00.000Z' }] });
+    render(<MemoryRouter><ModerationPage /></MemoryRouter>);
 
-    fireEvent.change(screen.getByPlaceholderText(/Recherche globale/i), {
-      target: { value: 'fraude' },
-    });
-
-    expect(screen.getAllByText(/Fraude détectée/i).length).toBeGreaterThan(0);
-
-    fireEvent.click(screen.getAllByRole('button', { name: /Voir détail/i })[0]);
-    expect(screen.getByText(/Profil risque/i)).toBeInTheDocument();
-
-    fireEvent.click(screen.getAllByRole('button', { name: /Créer un litige/i })[0]);
-    expect(screen.getByText(/Cette action est indisponible: cette vue utilise des données legacy/i)).toBeInTheDocument();
-
-    fireEvent.click(screen.getAllByRole('button', { name: /Suspendre compte/i })[0]);
-    expect(screen.getByText(/Cette action est indisponible: cette vue utilise des données legacy/i)).toBeInTheDocument();
-
-    fireEvent.click(screen.getAllByRole('button', { name: /Marquer traité/i })[0]);
-    expect(screen.getByText(/Cette action est indisponible: cette vue utilise des données legacy/i)).toBeInTheDocument();
-
-    fireEvent.click(screen.getAllByRole('button', { name: /Ignorer/i })[0]);
-    expect(screen.getByText(/Cette action est indisponible: cette vue utilise des données legacy/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Modération des signalements/i })).toBeInTheDocument();
+    expect(await screen.findByText('Signalement réel')).toBeInTheDocument();
+    expect(signalementsService.getAdminList).toHaveBeenCalledWith({ page: 1, limit: 10, type: '', status: '' });
   });
 
-  it('does not fabricate a dispute dossier in the litiges view', () => {
-    window.localStorage.clear();
-    const { unmount } = render(
-      <MemoryRouter>
-        <ModerationPage />
-      </MemoryRouter>
-    );
+  it('shows a backend error instead of fabricating moderation records', async () => {
+    signalementsService.getAdminList.mockRejectedValue(new Error('Service indisponible.'));
+    render(<MemoryRouter><ModerationPage /></MemoryRouter>);
 
-    fireEvent.click(screen.getAllByRole('button', { name: /Créer un litige/i })[0]);
-    expect(screen.getByText(/Cette action est indisponible: cette vue utilise des données legacy/i)).toBeInTheDocument();
-    expect(screen.queryByText(/Litige créé/i)).not.toBeInTheDocument();
-
-    unmount();
-    cleanup();
-
-    render(
-      <AuthProvider>
-        <NotificationProvider>
-          <MemoryRouter>
-            <LitigesPage />
-          </MemoryRouter>
-        </NotificationProvider>
-      </AuthProvider>
-    );
-
-    expect(screen.queryByText(/Litige Fraude détectée/i)).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Service indisponible.'));
+    expect(screen.queryByText(/Fraude détectée/i)).not.toBeInTheDocument();
   });
 });

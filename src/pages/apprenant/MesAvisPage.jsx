@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FiStar, FiInbox } from 'react-icons/fi';
 import { useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { getMesAvisForUser, updateAvis } from '../../services/apprenantExperienceService';
 import ModifierAvisModal from '../../components/avis/ModifierAvisModal';
 import { ToastMessage } from '../../components/UI/ToastMessage';
 
 export const MesAvisPage = () => {
-  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const formationIdParam = searchParams.get('formationId');
-  const [avisList, setAvisList] = useState(() => getMesAvisForUser(user?.id || 1));
+  const [avisList, setAvisList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [avisEnEdition, setAvisEnEdition] = useState(null);
   const [toast, setToast] = useState({ type: '', message: '' });
   const highlightRef = useRef(null);
@@ -22,12 +22,23 @@ export const MesAvisPage = () => {
     }
   }, [formationIdParam]);
 
+  useEffect(() => {
+    let mounted = true;
+    getMesAvisForUser()
+      .then((items) => { if (mounted) setAvisList(items); })
+      .catch((requestError) => { if (mounted) setError(requestError?.message || 'Les avis sont indisponibles.'); })
+      .finally(() => { if (mounted) setLoading(false); });
+    return () => { mounted = false; };
+  }, []);
+
   const handleSave = async (id, { note, commentaire }) => {
-    await updateAvis(id, { note, commentaire });
-    setAvisList((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, note, commentaire } : a))
-    );
-    setToast({ type: 'success', message: 'Avis mis à jour avec succès' });
+    try {
+      await updateAvis(id, { note, commentaire });
+      setAvisList((prev) => prev.map((a) => (a.id === id ? { ...a, note, commentaire } : a)));
+      setToast({ type: 'success', message: 'Avis mis à jour avec succès' });
+    } catch (requestError) {
+      setError(requestError?.message === 'FORMATION_REVIEWS_UNAVAILABLE' ? 'Les avis ne sont pas encore pris en charge par le backend.' : requestError?.message || 'Impossible de mettre à jour l’avis.');
+    }
   };
 
   return (
@@ -42,7 +53,9 @@ export const MesAvisPage = () => {
         />
       )}
 
-      {avisList.length === 0 ? (
+      {loading ? <p className="text-sm text-slate-500">Chargement...</p> : null}
+      {error ? <p role="alert" className="mb-4 rounded-xl bg-amber-50 p-4 text-sm text-amber-800">{error}</p> : null}
+      {!loading && avisList.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 p-10 text-center dark:border-slate-700 dark:bg-slate-900/40">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-300">
             <FiInbox size={24} />
@@ -50,7 +63,7 @@ export const MesAvisPage = () => {
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Aucun avis pour l'instant</h2>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Vos avis sur les formations terminées apparaîtront ici.</p>
         </div>
-      ) : (
+      ) : !loading ? (
         <div className="space-y-4">
           {avisList.map((item) => (
             <div key={item.id} className="card flex flex-col justify-between gap-4 p-5 md:flex-row md:items-start">
@@ -67,7 +80,7 @@ export const MesAvisPage = () => {
             </div>
           ))}
         </div>
-      )}
+      ) : null}
 
       {avisEnEdition && (
         <ModifierAvisModal
