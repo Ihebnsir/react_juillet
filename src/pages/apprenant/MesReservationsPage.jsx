@@ -7,7 +7,6 @@ import { useNotifications } from "../../context/NotificationContext";
 import { formationsService } from "../../services/formationsService";
 import { formatPriceTND } from "../../utils/formatPrice";
 import { ToastMessage } from "../../components/UI/ToastMessage";
-import { jsPDF } from "jspdf";
 import {
   FiCalendar,
   FiMapPin,
@@ -74,124 +73,9 @@ const formatShortDate = (dateStr) => {
   });
 };
 
-// Generate professional PDF certificate
-const generatePDFCertificate = (data) => {
-  const doc = new jsPDF("landscape", "mm", "a4");
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-
-  // Background - elegant border
-  doc.setFillColor(255, 255, 255);
-  doc.rect(0, 0, pageWidth, pageHeight, "F");
-
-  // Decorative border
-  doc.setDrawColor(0, 150, 136);
-  doc.setLineWidth(3);
-  doc.rect(15, 15, pageWidth - 30, pageHeight - 30, "S");
-
-  // Inner border
-  doc.setDrawColor(200, 230, 225);
-  doc.setLineWidth(0.5);
-  doc.rect(20, 20, pageWidth - 40, pageHeight - 40, "S");
-
-  // Top decorative line
-  doc.setFillColor(0, 150, 136);
-  doc.rect(15, 35, pageWidth - 30, 2, "F");
-
-  // Bottom decorative line
-  doc.rect(15, pageHeight - 45, pageWidth - 30, 2, "F");
-
-  // Title
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(32);
-  doc.setTextColor(0, 150, 136);
-  doc.text("CERTIFICAT DE RÉUSSITE", pageWidth / 2, 65, { align: "center" });
-
-  // Subtitle
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(14);
-  doc.setTextColor(100, 100, 100);
-  doc.text("SkillBridge - Plateforme de Formation", pageWidth / 2, 78, { align: "center" });
-
-  // Decorative line below title
-  doc.setDrawColor(0, 150, 136);
-  doc.setLineWidth(0.3);
-  doc.line(pageWidth / 2 - 40, 84, pageWidth / 2 + 40, 84);
-
-  // Body text
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(14);
-  doc.setTextColor(80, 80, 80);
-  doc.text("Ce certificat est décerné à", pageWidth / 2, 105, { align: "center" });
-
-  // Learner name
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(26);
-  doc.setTextColor(40, 40, 40);
-  doc.text(data.trainee || "Apprenant", pageWidth / 2, 125, { align: "center" });
-
-  // For completing
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(14);
-  doc.setTextColor(80, 80, 80);
-  doc.text("Pour avoir complété avec succès la formation", pageWidth / 2, 145, { align: "center" });
-
-  // Formation name
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
-  doc.setTextColor(0, 150, 136);
-  doc.text(data.formation || "", pageWidth / 2, 165, { align: "center" });
-
-  // Centre name
-  if (data.centreName) {
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(13);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Proposé par ${data.centreName}`, pageWidth / 2, 182, { align: "center" });
-  }
-
-  // Category
-  if (data.formationCategory) {
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(12);
-    doc.setTextColor(120, 120, 120);
-    doc.text(`Catégorie : ${data.formationCategory}`, pageWidth / 2, 195, { align: "center" });
-  }
-
-  // Date
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(12);
-  doc.setTextColor(100, 100, 100);
-  doc.text(`Délivré le ${formatDate(data.issuedAt)}`, pageWidth / 2, 215, { align: "center" });
-
-  // Certificate ID
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(10);
-  doc.setTextColor(160, 160, 160);
-  doc.text(`ID : ${data.id}`, pageWidth / 2, 228, { align: "center" });
-
-  // Signature line
-  doc.setDrawColor(0, 150, 136);
-  doc.setLineWidth(0.5);
-  doc.line(pageWidth / 2 - 40, 250, pageWidth / 2 + 40, 250);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.setTextColor(80, 80, 80);
-  doc.text("Signature SkillBridge", pageWidth / 2, 258, { align: "center" });
-
-  // Bottom seal/decorative element
-  doc.setFillColor(0, 150, 136);
-  doc.circle(pageWidth / 2, pageHeight - 35, 8, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(10);
-  doc.text("SB", pageWidth / 2, pageHeight - 32, { align: "center" });
-
-  return doc;
-};
-
 export const MesReservationsPage = () => {
   const { user } = useAuth();
-  const { getUserReservations, annulerReservation, getCertificateForReservation, error: reservationError } = useReservations();
+  const { getUserReservations, annulerReservation, error: reservationError } = useReservations();
   const { refresh: refreshNotifications } = useNotifications();
   const navigate = useNavigate();
 
@@ -329,9 +213,9 @@ export const MesReservationsPage = () => {
     navigate(`/paiement/${reservation.id}`, { state: { reservation } });
   };
 
-  const handleDownloadCertificate = async (e, reservation) => {
+  const handleDownloadCertificate = async (e) => {
     e.stopPropagation();
-    setToast({ type: "error", message: "Le téléchargement PDF n'est pas disponible." });
+    setToast({ type: "error", message: "Le téléchargement PDF n'est pas disponible avec le backend actuel." });
   };
 
   const handleReview = (e, reservation) => {
@@ -801,11 +685,13 @@ export const MesReservationsPage = () => {
                             {reservation.status === "terminee" && (
                               <>
                                 <button
+                                  type="button"
                                   onClick={(e) => handleDownloadCertificate(e, reservation)}
-                                  className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 transition hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40"
+                                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                                  aria-disabled="true"
                                 >
                                   <FiDownload size={15} />
-                                  Télécharger le certificat
+                                  PDF non disponible
                                 </button>
                                 <button
                                   onClick={(e) => handleReview(e, reservation)}

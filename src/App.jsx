@@ -139,7 +139,7 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
           <Route path="/auth/github/callback" element={<GithubCallbackPage />} />
           <Route path="/auth/linkedin/callback" element={<LinkedinCallbackPage />} />
           <Route path="/centres/:id" element={<CenterProfilePage />} />
-          <Route path="/verifier-certificat/:id" element={<VerifierCertificatPage />} />
+          <Route path="/verifier-certificat/:id?" element={<VerifierCertificatPage />} />
 
           {/**
            * Routes partagées (notifications, settings) – définies AVANT les groupes
