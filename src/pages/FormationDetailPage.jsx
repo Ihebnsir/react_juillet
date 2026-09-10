@@ -341,6 +341,7 @@ export const FormationDetailPage = () => {
                 <MessageCircle size={16} />
                 Poser une question au centre
               </button>
+              {user ? <Link to={`/signalements?cibleType=formation&cibleId=${formation.id}`} className="inline-flex items-center justify-center rounded-lg border border-rose-300 px-8 py-3 font-medium text-rose-700 transition hover:bg-rose-50 dark:border-rose-700 dark:text-rose-300 dark:hover:bg-rose-900/20">Signaler un problème</Link> : null}
               <button
                 onClick={() => setIsDetailModalOpen(true)}
                 className="px-8 py-3 rounded-lg border border-slate-600 text-slate-200 font-medium transition hover:bg-slate-800"

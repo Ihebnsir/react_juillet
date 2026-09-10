@@ -20,8 +20,8 @@ const sections = [
     title: 'Communication',
     items: [
       { to: '/notifications', label: 'Notifications', icon: FiBell },
-      { to: '/signalements', label: 'Mes signalements', icon: FiAlertTriangle },
-      { to: '/litiges', label: 'Mes litiges', icon: FiAlertTriangle },
+      { to: '/signalements', label: 'Signaler un problème', icon: FiAlertTriangle },
+      { to: '/litiges', label: 'Suivi des litiges', icon: FiAlertTriangle },
       { to: '/messagerie', label: 'Messages', icon: FiMessageCircle },
     ],
   },

@@ -34,6 +34,7 @@ import { ContactPage } from "./pages/ContactPage";
 import { CentresPage } from "./pages/CentresPage";
 import { DashboardPage as ApprenantDashboardPage } from "./pages/apprenant/DashboardPage";
 import { MesReservationsPage } from "./pages/apprenant/MesReservationsPage";
+import LearnerSessionsPage from "./pages/apprenant/SessionsPage";
 import { PaymentCheckoutPage } from "./pages/apprenant/PaymentCheckoutPage";
 import { MesFavorisPage } from "./pages/apprenant/MesFavorisPage";
 import { MesCertificationsPage } from "./pages/apprenant/MesCertificationsPage";
@@ -50,6 +51,7 @@ import { DetailOffrePage } from "./pages/centre/DetailOffrePage";
 import { ReservationsRecuesPage } from "./pages/centre/ReservationsRecuesPage";
 import { StatutVerificationPage } from "./pages/centre/StatutVerificationPage";
 import { SessionsPage } from "./pages/centre/SessionsPage";
+import AttendancePage from "./pages/centre/AttendancePage";
 import { EtudiantsPage } from "./pages/centre/EtudiantsPage";
 import { CertificatsPage } from "./pages/centre/CertificatsPage";
 import { PaiementsPage } from "./pages/centre/PaiementsPage";
@@ -160,6 +162,7 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
               <Route path="/formations" element={<FormationsPage />} />
               <Route path="/formations/:id" element={<FormationDetailPage />} />
               <Route path="/reservations" element={<MesReservationsPage />} />
+              <Route path="/sessions" element={<LearnerSessionsPage />} />
               <Route path="/paiement/:reservationId" element={<PaymentCheckoutPage />} />
               <Route path="/favoris" element={<MesFavorisPage />} />
               <Route path="/certifications" element={<MesCertificationsPage />} />
@@ -181,6 +184,7 @@ function AppShell({ showPreloader, fadingOut, setShowPreloader, setFadingOut }) 
               <Route path="/centre/offres" element={<MesOffresPage />} />
               <Route path="/centre/offres/nouvelle" element={<NouvelleOffrePage />} />
               <Route path="/centre/sessions" element={<SessionsPage />} />
+              <Route path="/centre/presences" element={<AttendancePage />} />
               <Route path="/centre/etudiants" element={<EtudiantsPage />} />
               <Route path="/centre/formateurs" element={<FormateursPage />} />
               <Route path="/centre/entreprises-partenaires" element={<EntreprisesPartenairesPage />} />

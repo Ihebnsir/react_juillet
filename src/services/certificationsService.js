@@ -1,4 +1,4 @@
-import { apiRequest } from './apiClient';
+import { apiRequest, apiRequestBlob } from './apiClient';
 
 const getId = (value) => (value && typeof value === 'object' ? value.id || value._id : value);
 
@@ -41,6 +41,9 @@ export const certificationsService = {
   async revoke(id) {
     const result = await apiRequest(`/api/certifications/${encodeURIComponent(id)}/revoke`, { method: 'PATCH' });
     return normalizeCertification(result?.data);
+  },
+  async downloadPdf(id) {
+    return apiRequestBlob(`/api/certifications/${encodeURIComponent(id)}/pdf`, { accept: 'application/pdf' });
   },
 };
 

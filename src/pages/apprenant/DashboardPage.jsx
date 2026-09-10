@@ -9,6 +9,8 @@ import { useNotifications } from '../../context/NotificationContext';
 import { messagingService } from '../../services/messagingService';
 import { reservationsService } from '../../services/reservationsService';
 import { certificationsService } from '../../services/certificationsService';
+import { progressService } from '../../services/progressService';
+import { attendanceService } from '../../services/attendanceService';
 
 const statusLabels = {
   PENDING: 'En attente',
@@ -49,7 +51,9 @@ export const DashboardPage = () => {
   const [reservationMeta, setReservationMeta] = useState({ total: 0 });
   const [certifications, setCertifications] = useState([]);
   const [conversations, setConversations] = useState([]);
-  const [state, setState] = useState({ reservations: 'loading', certifications: 'loading', conversations: 'loading' });
+  const [progress, setProgress] = useState([]);
+  const [attendance, setAttendance] = useState([]);
+  const [state, setState] = useState({ reservations: 'loading', certifications: 'loading', conversations: 'loading', progress: 'loading' });
   const [errors, setErrors] = useState({});
 
   const loadReservations = async () => {
@@ -91,10 +95,19 @@ export const DashboardPage = () => {
     }
   };
 
+  const loadLearningData = async () => {
+    setState((current) => ({ ...current, progress: 'loading' }));
+    try {
+      const [progressResult, attendanceResult] = await Promise.all([progressService.mine(), attendanceService.mine()]);
+      setProgress(progressResult.data || []); setAttendance(attendanceResult.data || []); setState((current) => ({ ...current, progress: 'ready' }));
+    } catch (error) { setProgress([]); setAttendance([]); setErrors((current) => ({ ...current, progress: error })); setState((current) => ({ ...current, progress: 'error' })); }
+  };
+
   useEffect(() => {
     loadReservations();
     loadCertifications();
     loadConversations();
+    loadLearningData();
   }, []);
 
   const stats = useMemo(() => ({
@@ -149,7 +162,7 @@ export const DashboardPage = () => {
           <section className="card p-6"><div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Notifications</h2><span className="rounded-full bg-brand-500/10 px-2.5 py-1 text-xs font-semibold text-brand-700 dark:text-brand-300">{unreadCount} non lues</span></div>{recentNotifications.length === 0 ? <p className="text-sm text-slate-500">Aucune notification récente.</p> : <div className="space-y-3">{recentNotifications.map((item) => <div key={item.id} className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-700"><p className="font-medium text-slate-900 dark:text-slate-100">{item.title}</p><p className="mt-1 text-sm text-slate-500">{item.message}</p></div>)}</div>}</section>
           <section className="card p-6"><div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Messages</h2><Link to="/messagerie" className="text-sm text-accent-400 hover:underline">Ouvrir →</Link></div><SectionState loading={state.conversations === 'loading'} error={errors.conversations} empty={state.conversations === 'ready' && conversations.length === 0} title="Aucun message" description="Vos conversations apparaîtront ici." onRetry={loadConversations} />{state.conversations === 'ready' && conversations.length > 0 ? <div className="space-y-3">{conversations.slice(0, 3).map((conversation) => <div key={conversation.id} className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-700"><FiMessageCircle className="text-brand-500" /><div className="min-w-0 flex-1"><p className="truncate font-medium text-slate-900 dark:text-slate-100">{conversation.participantName}</p><p className="truncate text-sm text-slate-500">{conversation.lastMessage || 'Aucun message'}</p></div>{conversation.unreadCount > 0 ? <span className="rounded-full bg-rose-500 px-2 py-0.5 text-xs font-semibold text-white">{conversation.unreadCount}</span> : null}</div>)}</div> : null}</section>
           <section className="card p-6"><div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Certifications</h2><Link to="/certifications" className="text-sm text-accent-400 hover:underline">Tout voir →</Link></div><SectionState loading={state.certifications === 'loading'} error={errors.certifications} empty={state.certifications === 'ready' && certifications.length === 0} title="Aucune certification" description="Les certifications émises apparaîtront ici." onRetry={loadCertifications} />{state.certifications === 'ready' && certifications.length > 0 ? <div className="space-y-3">{certifications.slice(0, 3).map((certification) => <div key={certification.id} className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-700"><p className="font-medium text-slate-900 dark:text-slate-100">{certification.formation || 'Certification'}</p><p className="text-sm text-slate-500">{certification.centre} · {formatDate(certification.date)}</p><p className="mt-1 text-xs text-slate-400">{certification.status || 'Statut non renseigné'}</p></div>)}</div> : null}</section>
-          <section className="card p-6"><h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Progression d’apprentissage</h2><p className="mt-2 text-sm text-slate-500">Le suivi détaillé de la progression, de l’assiduité et des séances n’est pas encore fourni par le backend.</p></section>
+          <section className="card p-6"><h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Progression d’apprentissage</h2>{state.progress === 'loading' ? <p className="mt-2 text-sm text-slate-500">Chargement...</p> : state.progress === 'error' ? <p role="alert" className="mt-2 text-sm text-rose-700">Impossible de charger votre progression. <button type="button" onClick={loadLearningData} className="underline">Réessayer</button></p> : progress.length === 0 ? <p className="mt-2 text-sm text-slate-500">Aucune progression disponible.</p> : <div className="mt-3 space-y-3">{progress.slice(0, 4).map((item) => <div key={item.id} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-700"><div className="flex justify-between text-sm"><span>{item.formationTitle || 'Formation'}</span><span>{item.percentage}%</span></div><div className="mt-2 h-2 rounded-full bg-slate-200"><div className="h-2 rounded-full bg-brand-500" style={{ width: `${item.percentage}%` }} /></div></div>)}</div>}{state.progress === 'ready' ? <div className="mt-4 border-t pt-4"><p className="text-sm font-semibold">Présence</p>{attendance.length === 0 ? <p className="mt-2 text-xs text-slate-500">Aucune présence disponible.</p> : <div className="mt-2 space-y-1 text-xs text-slate-500">{attendance.slice(0, 4).map((item) => <p key={item.id}>{item.sessionTitle || 'Session'} · {item.status}</p>)}</div>}</div> : null}</section>
         </div>
       </div>
     </div>

@@ -47,4 +47,26 @@ export async function apiRequest(path, options = {}) {
   return result;
 }
 
+export async function apiRequestBlob(path, options = {}) {
+  const token = localStorage.getItem(TOKEN_KEY);
+  const headers = new Headers(options.headers || {});
+  headers.set('Accept', options.accept || '*/*');
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+
+  let response;
+  try {
+    response = await fetch(`${API_URL}${path}`, { ...options, headers });
+  } catch {
+    throw new ApiError('NETWORK_ERROR', 0);
+  }
+
+  if (!response.ok) {
+    let result = null;
+    try { result = await response.json(); } catch { /* Binary endpoints may return no JSON error. */ }
+    throw new ApiError(result?.message || result?.error || `HTTP_${response.status}`, response.status, result?.errors);
+  }
+
+  return { blob: await response.blob(), filename: response.headers.get('Content-Disposition') || '' };
+}
+
 export { API_URL, TOKEN_KEY };

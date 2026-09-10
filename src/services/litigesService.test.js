@@ -14,12 +14,12 @@ describe('litigesService', () => {
   it('preserves request payloads for mutations', async () => {
     await litigesService.updateStatus('litige-1', { statut: 'analyse' });
     await litigesService.assign('litige-1', { responsableId: 'admin-1' });
-    await litigesService.addMessage('litige-1', { contenu: 'Bonjour' });
-    await litigesService.addAttachmentMetadata('litige-1', { nom: 'preuve.pdf', type: 'metadata' });
+    await litigesService.addMessage('litige-1', { message: 'Bonjour' });
+    await litigesService.addAttachmentMetadata('litige-1', { nom: 'preuve.pdf', type: 'application/pdf', url: 'https://example.test/preuve.pdf' });
     await litigesService.addNote('litige-1', { contenu: 'Vérifier le dossier' });
     await litigesService.close('litige-1', { decisionFinale: 'Décision' });
     await litigesService.archive('litige-1');
-    expect(apiRequest.mock.calls.map(([, options]) => options?.body)).toEqual([JSON.stringify({ statut: 'analyse' }), JSON.stringify({ responsableId: 'admin-1' }), JSON.stringify({ contenu: 'Bonjour' }), JSON.stringify({ nom: 'preuve.pdf', type: 'metadata' }), JSON.stringify({ contenu: 'Vérifier le dossier' }), JSON.stringify({ decisionFinale: 'Décision' }), undefined]);
+    expect(apiRequest.mock.calls.map(([, options]) => options?.body)).toEqual([JSON.stringify({ statut: 'analyse' }), JSON.stringify({ responsableId: 'admin-1' }), JSON.stringify({ message: 'Bonjour' }), JSON.stringify({ nom: 'preuve.pdf', type: 'application/pdf', url: 'https://example.test/preuve.pdf' }), JSON.stringify({ contenu: 'Vérifier le dossier' }), JSON.stringify({ decisionFinale: 'Décision' }), undefined]);
   });
   it('propagates backend errors', async () => {
     const error = new Error('HTTP_409'); apiRequest.mockRejectedValue(error);

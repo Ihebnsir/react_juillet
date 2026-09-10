@@ -4,15 +4,10 @@ import { ToastMessage } from '../../components/UI/ToastMessage';
 import { TrainerFormModal } from '../../components/centre/TrainerFormModal';
 import { ConfirmDialog } from '../../components/UI/ConfirmDialog';
 import { EmptyStateCard } from '../../components/UI/EmptyStateCard';
-import { useAuth } from '../../context/AuthContext';
-import { useTrash } from '../../context/TrashContext';
-import { useActivityLog } from '../../context/ActivityContext';
+import { trainersService } from '../../services/trainersService';
 
 const PAGE_SIZE = 3;
 export const FormateursPage = () => {
-  const { user } = useAuth();
-  const { softDelete } = useTrash();
-  const { recordActivity } = useActivityLog();
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [specialityFilter, setSpecialityFilter] = useState('all');
@@ -21,6 +16,17 @@ export const FormateursPage = () => {
   const [modalState, setModalState] = useState({ open: false, mode: 'add', selected: null });
   const [confirmState, setConfirmState] = useState({ open: false, trainerId: null });
   const [toast, setToast] = useState({ type: '', message: '' });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const loadTrainers = async () => {
+    setLoading(true); setError('');
+    try { const result = await trainersService.list(); setTrainers(result.data || []); }
+    catch (requestError) { setTrainers([]); setError(requestError?.status === 401 ? 'Session expirée.' : requestError?.status === 403 ? 'Accès refusé.' : requestError?.message || 'Impossible de charger les formateurs.'); }
+    finally { setLoading(false); }
+  };
+
+  React.useEffect(() => { loadTrainers(); }, []);
 
   const specialityOptions = useMemo(() => {
     return ['all', ...new Set(trainers.map((trainer) => trainer.speciality).filter(Boolean))];
@@ -56,59 +62,32 @@ export const FormateursPage = () => {
     setModalState({ open: false, mode: 'add', selected: null });
   };
 
-  const handleSaveTrainer = (payload) => {
-    const normalized = {
-      ...payload,
-      name: `${payload.firstName} ${payload.lastName}`.trim(),
-      avatar: payload.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(payload.name || payload.firstName || 'trainer')}`,
-    };
-
-    setTrainers((prev) => {
-      const exists = prev.some((item) => item.id === payload.id);
-      if (exists) {
-        return prev.map((item) => (item.id === payload.id ? normalized : item));
-      }
-      return [normalized, ...prev];
-    });
-
-    recordActivity({
-      user: user?.name || 'Système',
-      action: modalState.mode === 'edit' ? 'Formateur modifié' : 'Formateur ajouté',
-      type: 'users',
-      details: `${normalized.name} • ${modalState.mode === 'edit' ? 'mise à jour' : 'création'} du profil formateur.`,
-    });
-
-    setToast({ type: 'success', message: modalState.mode === 'edit' ? 'Formateur mis à jour avec succès.' : 'Formateur ajouté avec succès.' });
-    closeModal();
+  const handleSaveTrainer = async (payload) => {
+    try {
+      const request = { nom: payload.lastName || '', prenom: payload.firstName || '', email: payload.email, telephone: payload.phone, specialite: payload.speciality, status: payload.status };
+      const saved = modalState.mode === 'edit' ? await trainersService.update(payload.id, request) : await trainersService.create(request);
+      setTrainers((prev) => modalState.mode === 'edit' ? prev.map((item) => item.id === saved.id ? saved : item) : [saved, ...prev]);
+      setToast({ type: 'success', message: modalState.mode === 'edit' ? 'Formateur mis à jour.' : 'Formateur ajouté.' }); closeModal();
+    } catch (requestError) { setToast({ type: 'error', message: requestError?.message || 'Impossible d’enregistrer le formateur.' }); }
   };
 
   const removeTrainer = (trainerId) => {
     setConfirmState({ open: true, trainerId });
   };
 
-  const confirmDeleteTrainer = () => {
+  const confirmDeleteTrainer = async () => {
     const trainerToRemove = trainers.find((trainer) => trainer.id === confirmState.trainerId);
     if (!trainerToRemove) return;
 
-    setTrainers((prev) => prev.filter((trainer) => trainer.id !== confirmState.trainerId));
-    softDelete({
-      type: 'formateur',
-      item: trainerToRemove,
-      deletedBy: user?.name || 'Système',
-    });
-    recordActivity({
-      user: user?.name || 'Système',
-      action: 'Formateur supprimé',
-      type: 'users',
-      details: `${trainerToRemove.name || 'Formateur'} déplacé vers la corbeille.`,
-    });
-    setConfirmState({ open: false, trainerId: null });
-    setToast({ type: 'success', message: 'Formateur supprimé avec succès.' });
+    try { await trainersService.remove(trainerToRemove.id); setTrainers((prev) => prev.filter((trainer) => trainer.id !== confirmState.trainerId)); setConfirmState({ open: false, trainerId: null }); setToast({ type: 'success', message: 'Formateur supprimé.' }); }
+    catch (requestError) { setToast({ type: 'error', message: requestError?.message || 'Impossible de supprimer le formateur.' }); }
   };
 
   return (
     <div className="space-y-6">
       <ToastMessage type={toast.type} message={toast.message} onClose={() => setToast({ type: '', message: '' })} />
+      {loading ? <p className="rounded-xl bg-slate-100 p-4 text-sm text-slate-500">Chargement...</p> : null}
+      {error ? <p role="alert" className="rounded-xl bg-rose-50 p-4 text-sm text-rose-700">{error} <button type="button" onClick={loadTrainers} className="ml-2 underline">Réessayer</button></p> : null}
 
       <div className="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-800">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -148,8 +127,7 @@ export const FormateursPage = () => {
             >
               <option value="all">Tous statuts</option>
               <option value="Actif">Actif</option>
-              <option value="Disponibilité limitée">Disponibilité limitée</option>
-              <option value="En pause">En pause</option>
+              <option value="Inactif">Inactif</option>
             </select>
           </div>
 
@@ -187,7 +165,7 @@ export const FormateursPage = () => {
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex items-center gap-4">
                   <img
-                    src={trainer.avatar}
+                    src={trainer.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name || 'Formateur')}`}
                     alt={trainer.name}
                     className="h-16 w-16 rounded-2xl object-cover"
                     onError={(event) => {
@@ -208,7 +186,7 @@ export const FormateursPage = () => {
                 <div className="grid gap-2 text-sm text-slate-600 dark:text-slate-300 md:grid-cols-2">
                   <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-900/60">
                     <div className="text-xs uppercase tracking-wide text-slate-500">Cours assignés</div>
-                    <div className="mt-1 font-medium">{trainer.assignedCourses.join(', ')}</div>
+                    <div className="mt-1 font-medium">{trainer.assignedCourses.length ? trainer.assignedCourses.join(', ') : 'Indisponible'}</div>
                   </div>
                   <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-900/60">
                     <div className="text-xs uppercase tracking-wide text-slate-500">Statut</div>
@@ -219,6 +197,7 @@ export const FormateursPage = () => {
                 <div className="flex items-center gap-2">
                   <button type="button" onClick={() => openViewModal(trainer)} className="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700"><FiEye size={16} /></button>
                   <button type="button" onClick={() => openEditModal(trainer)} className="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700"><FiEdit2 size={16} /></button>
+                  <button type="button" onClick={async () => { try { const saved = await trainersService.updateStatus(trainer.id, trainer.status === 'Actif' ? 'inactive' : 'active'); setTrainers((prev) => prev.map((item) => item.id === saved.id ? saved : item)); } catch (requestError) { setToast({ type: 'error', message: requestError?.message || 'Impossible de modifier le statut.' }); } }} className="rounded-lg border border-amber-200 p-2 text-amber-600" aria-label={trainer.status === 'Actif' ? 'Désactiver' : 'Activer'}><FiUserCheck size={16} /></button>
                   <button type="button" onClick={() => removeTrainer(trainer.id)} className="rounded-lg border border-rose-200 p-2 text-rose-600 transition hover:bg-rose-50 dark:border-rose-700 dark:text-rose-300 dark:hover:bg-rose-900/20"><FiTrash2 size={16} /></button>
                 </div>
               </div>

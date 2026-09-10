@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { signalementsService } from '../services/signalementsService';
 import { useNotifications } from '../context/NotificationContext';
 import { getSignalementStatusClass } from '../utils/signalementStatus';
@@ -16,8 +17,9 @@ const getErrorMessage = (error) => {
 const listItems = (result) => result?.data || result?.items || [];
 
 export const SignalementsPage = () => {
+  const [searchParams] = useSearchParams();
   const { refresh: refreshNotifications } = useNotifications();
-  const [form, setForm] = useState({ type: '', contenu: '', cibleType: 'autre', cibleId: '' });
+  const [form, setForm] = useState({ type: '', contenu: '', cibleType: searchParams.get('cibleType') || 'autre', cibleId: searchParams.get('cibleId') || '' });
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);

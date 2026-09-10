@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { SignalementsPage } from './SignalementsPage';
 import { signalementsService } from '../services/signalementsService';
 
@@ -9,7 +10,7 @@ describe('SignalementsPage', () => {
   beforeEach(() => { jest.clearAllMocks(); signalementsService.getMine.mockResolvedValue({ data: [] }); });
 
   it('validates required fields and does not show fake success after API failure', async () => {
-    render(<SignalementsPage />);
+    render(<MemoryRouter><SignalementsPage /></MemoryRouter>);
     fireEvent.click(screen.getByRole('button', { name: /Envoyer/i }));
     expect(await screen.findByRole('alert')).toHaveTextContent(/Renseignez/i);
     fireEvent.change(screen.getByRole('combobox', { name: /Type/i }), { target: { value: 'Spam' } });
@@ -22,8 +23,17 @@ describe('SignalementsPage', () => {
 
   it('renders history data and exact statuses', async () => {
     signalementsService.getMine.mockResolvedValue({ data: [{ id: 'sig-1', type: 'Spam', contenu: 'Publicité', status: 'Résolu', createdAt: '2026-09-01' }] });
-    render(<SignalementsPage />);
+    render(<MemoryRouter><SignalementsPage /></MemoryRouter>);
     expect(await screen.findByText('Résolu')).toBeInTheDocument();
     expect(screen.getByText('Publicité')).toBeInTheDocument();
+  });
+
+  it('keeps a formation target from a contextual reporting link and sends the exact payload', async () => {
+    signalementsService.create.mockResolvedValue({ id: 'sig-2' });
+    render(<MemoryRouter initialEntries={['/signalements?cibleType=formation&cibleId=formation-1']}><SignalementsPage /></MemoryRouter>);
+    fireEvent.change(screen.getByRole('combobox', { name: /Type/i }), { target: { value: 'Problème technique' } });
+    fireEvent.change(screen.getByRole('textbox', { name: /Contenu/i }), { target: { value: 'La session ne se charge pas' } });
+    fireEvent.click(screen.getByRole('button', { name: /Envoyer/i }));
+    await waitFor(() => expect(signalementsService.create).toHaveBeenCalledWith({ type: 'Problème technique', contenu: 'La session ne se charge pas', cibleType: 'formation', cibleId: 'formation-1' }));
   });
 });

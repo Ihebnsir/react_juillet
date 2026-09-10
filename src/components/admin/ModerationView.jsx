@@ -57,7 +57,6 @@ import {
   mockRiskUsers,
   mockActionTimeline,
 } from '../../data/mockModeration';
-import { loadLitigesFromStorage, saveLitigesToStorage } from '../../data/mockLitiges';
 import { SignalementsModerationPanel } from './SignalementsModerationPanel';
 
 const TABLE_COLUMNS = [
@@ -205,7 +204,6 @@ export const ModerationView = () => {
   const [alerts] = useState(() => loadModerationAlertsFromStorage());
   const [tableRows] = useState(() => loadModerationTableFromStorage());
   const [auditEntries, setAuditEntries] = useState(() => mockActionTimeline.map((entry) => ({ ...entry })));
-  const [litiges] = useState(() => loadLitigesFromStorage());
 
   useEffect(() => {
     saveModerationAlertsToStorage(alerts);
@@ -215,9 +213,6 @@ export const ModerationView = () => {
     saveModerationTableToStorage(tableRows);
   }, [tableRows]);
 
-  useEffect(() => {
-    saveLitigesToStorage(litiges);
-  }, [litiges]);
 
   useEffect(() => {
     if (!notice) return undefined;

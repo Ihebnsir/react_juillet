@@ -10,6 +10,8 @@ const categoryOptions = [
   { value: 'system', label: 'Système' },
   { value: 'formations', label: 'Formations' },
   { value: 'users', label: 'Utilisateurs' },
+  { value: 'signalements', label: 'Signalements' },
+  { value: 'litiges', label: 'Litiges' },
 ];
 
 const formatTimestamp = (value) => new Date(value).toLocaleString('fr-FR', {
@@ -26,6 +28,8 @@ export const NotificationsPage = () => {
   const { notifications, markAsRead, markAllAsRead, deleteNotification, unreadCount, loading, error } = useNotifications();
   const [filter, setFilter] = useState('all');
   const openNotification = (notification) => {
+    if (notification.category === 'signalements') { navigate('/signalements'); return; }
+    if (notification.category === 'litiges') { navigate('/litiges'); return; }
     if (notification.category !== 'messages') return;
     const route = user?.role === 'admin' ? '/admin/support' : user?.role === 'centre' ? '/centre/messagerie' : '/messagerie';
     navigate(route, notification.conversationId ? { state: { conversationId: notification.conversationId } } : undefined);
@@ -38,6 +42,8 @@ export const NotificationsPage = () => {
       if (filter === 'system') return item.category === 'system' || item.kind === 'system';
       if (filter === 'formations') return item.category === 'formations' || item.kind === 'formations';
       if (filter === 'users') return item.category === 'users' || item.kind === 'users';
+      if (filter === 'signalements') return item.category === 'signalements' || item.kind === 'signalements';
+      if (filter === 'litiges') return item.category === 'litiges' || item.kind === 'litiges';
       return true;
     });
   }, [filter, notifications]);
@@ -77,7 +83,7 @@ export const NotificationsPage = () => {
           <div className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">Aucune notification pour ce filtre.</div>
         ) : (
           visibleNotifications.map((notification) => (
-            <div key={notification.id} onClick={() => openNotification(notification)} className={`rounded-2xl border p-4 transition ${notification.category === 'messages' ? 'cursor-pointer hover:border-brand-300' : ''} ${notification.lu ? 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900/50' : 'border-brand-200 bg-brand-50/70 dark:border-brand-800 dark:bg-brand-900/10'}`}>
+            <div key={notification.id} onClick={() => openNotification(notification)} className={`rounded-2xl border p-4 transition ${['messages', 'signalements', 'litiges'].includes(notification.category) ? 'cursor-pointer hover:border-brand-300' : ''} ${notification.lu ? 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900/50' : 'border-brand-200 bg-brand-50/70 dark:border-brand-800 dark:bg-brand-900/10'}`}>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
                   <div className="rounded-2xl bg-slate-100 p-2 text-slate-600 dark:bg-slate-700 dark:text-slate-200">
