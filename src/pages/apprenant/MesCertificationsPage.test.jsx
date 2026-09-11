@@ -10,6 +10,8 @@ describe('MesCertificationsPage', () => {
   it('renders backend certificates and filters through the API', async () => {
     render(<MemoryRouter><MesCertificationsPage /></MemoryRouter>);
     expect(await screen.findByText('CERT-1')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /télécharger le pdf/i })).toHaveAttribute('href', '/certifications/cert-1');
+    expect(screen.queryByText(/PDF et téléchargement non disponibles/i)).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Statut'), { target: { value: 'revoquee' } });
     expect(await screen.findByText('Page 1')).toBeInTheDocument();
     expect(certificationsService.getMine).toHaveBeenLastCalledWith({ page: 1, limit: 10, status: 'revoquee' });

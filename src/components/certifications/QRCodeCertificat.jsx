@@ -2,7 +2,7 @@ import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 
 function QRCodeCertificat({ certificationId, taille = 120 }) {
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
   const url = `${baseUrl}/verifier-certificat/${certificationId}`;
 
   return (

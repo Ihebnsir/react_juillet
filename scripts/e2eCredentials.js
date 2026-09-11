@@ -4,6 +4,8 @@ const path = require('path');
 const REQUIRED_KEYS = [
   'E2E_LEARNER_EMAIL',
   'E2E_LEARNER_PASSWORD',
+  'E2E_CENTRE_EMAIL',
+  'E2E_CENTRE_PASSWORD',
   'E2E_ADMIN_EMAIL',
   'E2E_ADMIN_PASSWORD',
 ];
@@ -36,6 +38,7 @@ const loadE2ECredentials = (rootDir = path.resolve(__dirname, '..')) => {
 
   return {
     learner: { email: values.E2E_LEARNER_EMAIL, password: values.E2E_LEARNER_PASSWORD },
+    centre: { email: values.E2E_CENTRE_EMAIL, password: values.E2E_CENTRE_PASSWORD },
     admin: { email: values.E2E_ADMIN_EMAIL, password: values.E2E_ADMIN_PASSWORD },
   };
 };

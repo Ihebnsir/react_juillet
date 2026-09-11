@@ -12,8 +12,9 @@ describe('CertificationsPage', () => {
     fireEvent.change(screen.getByLabelText('Apprenant'), { target: { value: 'learner-1' } });
     fireEvent.change(screen.getByLabelText('Formation'), { target: { value: 'formation-1' } });
     fireEvent.change(screen.getByLabelText('Centre'), { target: { value: 'centre-1' } });
+    fireEvent.change(screen.getByLabelText("Date d'obtention *"), { target: { value: '2026-09-11' } });
     fireEvent.click(screen.getByRole('button', { name: 'Émettre' }));
-    await waitFor(() => expect(certificationsService.create).toHaveBeenCalledWith({ apprenantId: 'learner-1', formationId: 'formation-1', centreId: 'centre-1' }));
+    await waitFor(() => expect(certificationsService.create).toHaveBeenCalledWith({ apprenantId: 'learner-1', formationId: 'formation-1', centreId: 'centre-1', dateObtention: '2026-09-11' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Révoquer' }));
     await waitFor(() => expect(certificationsService.revoke).toHaveBeenCalledWith('cert-1'));
   });
@@ -23,6 +24,7 @@ describe('CertificationsPage', () => {
     fireEvent.change(screen.getByLabelText('Apprenant'), { target: { value: 'learner-1' } });
     fireEvent.change(screen.getByLabelText('Formation'), { target: { value: 'formation-1' } });
     fireEvent.change(screen.getByLabelText('Centre'), { target: { value: 'centre-1' } });
+    fireEvent.change(screen.getByLabelText("Date d'obtention *"), { target: { value: '2026-09-11' } });
     fireEvent.click(screen.getByRole('button', { name: 'Émettre' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(/existe déjà|révoquée/i);
     expect(screen.queryByRole('status')).not.toBeInTheDocument();

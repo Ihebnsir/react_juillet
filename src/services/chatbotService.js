@@ -1,6 +1,6 @@
 const N8N_CHAT_WEBHOOK_URL =
   process.env.REACT_APP_N8N_CHAT_WEBHOOK_URL ||
-  "https://ihebnsir27.app.n8n.cloud/webhook/9313cf9a-1f4f-4b61-8919-197c1d171ad8/chat";
+  (process.env.NODE_ENV === 'test' ? 'https://example.test/webhook/chat' : '');
 
 const getResponseText = (payload) => {
   if (typeof payload === "string") {
@@ -24,9 +24,10 @@ const getResponseText = (payload) => {
 };
 
 export async function sendChatbotMessage({ chatInput, sessionId }) {
+  if (!N8N_CHAT_WEBHOOK_URL) {
+    throw new Error('CHATBOT_CONFIG_MISSING');
+  }
   const body = { chatInput, sessionId };
-  console.log("N8N URL:", N8N_CHAT_WEBHOOK_URL);
-  console.log("N8N REQUEST:", body);
 
   const response = await fetch(N8N_CHAT_WEBHOOK_URL, {
     method: "POST",
@@ -35,8 +36,6 @@ export async function sendChatbotMessage({ chatInput, sessionId }) {
     },
     body: JSON.stringify(body),
   });
-  console.log("N8N STATUS:", response.status);
-
   if (!response.ok) {
     throw new Error(`Chatbot webhook returned ${response.status}`);
   }
@@ -45,7 +44,6 @@ export async function sendChatbotMessage({ chatInput, sessionId }) {
   const payload = contentType.includes("application/json")
     ? await response.json()
     : await response.text();
-  console.log("N8N RESPONSE:", payload);
   const text = getResponseText(payload);
 
   if (!text) {

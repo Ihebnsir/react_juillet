@@ -81,7 +81,8 @@ export function logout() {
 
 export function getCurrentUser() {
   const raw = localStorage.getItem(STORAGE_KEY);
-  return raw ? normalizeUser(JSON.parse(raw)) : null;
+  if (!raw) return null;
+  try { return normalizeUser(JSON.parse(raw)); } catch { return null; }
 }
 
 export function saveUser(user) {

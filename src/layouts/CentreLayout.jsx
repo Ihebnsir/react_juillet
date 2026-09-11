@@ -21,6 +21,7 @@ const sections = [
       { to: '/centre/sessions', label: 'Sessions', icon: FiLayers },
       { to: '/centre/reservations', label: 'Réservations', icon: FiCalendar },
       { to: '/centre/etudiants', label: 'Étudiants', icon: FiUsers },
+      { to: '/centre/presences', label: 'Présences', icon: FiUserCheck },
       { to: '/centre/formateurs', label: 'Formateurs', icon: FiUserCheck },
       { to: '/centre/entreprises-partenaires', label: 'Entreprises', icon: FiBriefcase },
       { to: '/centre/documents', label: 'Documents', icon: FiFileText },

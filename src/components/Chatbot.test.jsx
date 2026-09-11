@@ -31,7 +31,7 @@ describe("Chatbot", () => {
     expect(screen.getByText("Bonjour")).toBeInTheDocument();
     expect(screen.getByText("Réponse de l'agent n8n")).toBeInTheDocument();
     expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining("app.n8n.cloud/webhook/"),
+      expect.stringContaining("/webhook/"),
       expect.objectContaining({
         method: "POST",
         body: expect.stringMatching(/"chatInput":"Bonjour".*"sessionId":"skillbridge-/),

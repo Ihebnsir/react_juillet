@@ -54,19 +54,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginViaProvider = async ({ email, nom, avatar, provider }) => {
-    const userToUse = {
-      id: `provider-${Date.now()}`,
-      nom: nom || email?.split("@")[0] || "Utilisateur",
-      name: nom || email?.split("@")[0] || "Utilisateur",
-      email,
-      avatar,
-      role: "apprenant",
-      provider,
-    };
-    const normalizedUser = normalizeUser(userToUse);
-    setUser(normalizedUser);
-    saveUser(normalizedUser);
-    return normalizedUser;
+    throw new Error(`SOCIAL_AUTH_${String(provider || 'provider').toUpperCase()}_UNAVAILABLE`);
   };
 
   const register = async (userData) => {

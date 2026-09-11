@@ -1,4 +1,5 @@
-const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+const configuredApiUrl = process.env.REACT_APP_API_URL;
+const API_URL = (configuredApiUrl || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000')).replace(/\/$/, '');
 const TOKEN_KEY = 'skillbridge_token';
 
 export class ApiError extends Error {

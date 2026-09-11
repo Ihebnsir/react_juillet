@@ -30,7 +30,7 @@ const TopCentresEnhanced = ({ centres = [] }) => {
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10 overflow-hidden">
               {centre.logo ? (
-                <img src={centre.logo} alt={centre.name} className="h-full w-full object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = `<span class="text-xs font-bold text-slate-400">${(centre.name || '?')[0]}</span>`; }} />
+                <img src={centre.logo} alt={centre.name} className="h-full w-full object-cover" onError={(event) => { event.currentTarget.style.display = 'none'; const fallback = document.createElement('span'); fallback.className = 'text-xs font-bold text-slate-400'; fallback.textContent = (centre.name || '?')[0]; event.currentTarget.parentElement?.appendChild(fallback); }} />
               ) : (
                 <span className="text-xs font-bold text-slate-400">{(centre.name || '?')[0]}</span>
               )}
